@@ -1,0 +1,37 @@
+
+
+
+##
+
+
+
+## What does a DES animation look like?
+
+![]()
+
+## Benefits of animations
+
+:::: {.columns}
+
+::: {.column width='33%'}
+::: {.value-box icon="fa-solid fa-lightbulb" fragment="fade-in"}
+Helps non-technical users understand what's going on
+:::
+:::
+
+::: {.column width='33%'}
+::: {.value-box icon="fa-solid fa-bullhorn" fragment="fade-in"}
+Helps get people excited about your model
+:::
+:::
+
+::: {.column width='33%'}
+::: {.value-box icon="fa-solid fa-bug" fragment="fade-in"}
+Helps with debugging
+:::
+
+:::
+
+::::
+
+## Animations and web apps

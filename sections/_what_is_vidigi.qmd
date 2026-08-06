@@ -1,0 +1,32 @@
+# A package for animations
+
+## What is vidigi?
+
+
+
+## Who makes vidigi?
+
+Us!
+
+We've built it from the ground up with the intention of helping visualise health services.
+
+
+
+## Trade-offs we made
+
+
+
+
+
+
+
+# HSMA projects using vidigi
+
+## Helena Robinson -
+
+
+## Rey Tan -
+
+
+
+## John Williams - Stroke Bed Unit Modelling

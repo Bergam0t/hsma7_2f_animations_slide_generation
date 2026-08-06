@@ -1,0 +1,119 @@
+# Key Steps in a Vidigi Animation
+
+## What do you need?
+
+:::: {.columns}
+
+::: {.column width='33%'}
+::: {.value-box value="Step 1" icon="fa-solid fa-clipboard" fragment="true" icon-position="left"}
+Add logging steps for arrivals, queues, resource use, and departures
+:::
+:::
+
+::: {.column width='33%'}
+::: {.value-box value="Step 2" icon="fa-solid fa-table-cells" fragment="true" icon-position="left"}
+Set up a coordinate grid
+:::
+:::
+
+::: {.column width='33%'}
+::: {.value-box value="Step 3" icon="fa-solid fa-clapperboard" fragment="true" icon-position="left"}
+Set your animation parameters and generate your animation
+:::
+:::
+
+::::
+
+
+
+# Key Parts of Vidigi
+
+## Logger
+
+
+
+
+
+# Your First Vidigi Animation - a Walkthrough
+
+## Adding Logging Steps
+
+
+
+## Setting up a Layout Grid
+
+
+
+
+## Generating the Animation
+
+
+# Advanced Vidigi - Resource Use
+
+## Custom Resource Classes
+
+## Why do we need these?
+
+## Swapping in vidigi classes
+
+:::: {.columns}
+
+::: {.column width='45%'}
+Replace
+
+```python
+from simpy import Resource
+```
+
+with
+
+```python
+from vidigi.resources import VidigiStore as Resource
+```
+:::
+
+::: {.column width='10%'}
+
+
+::: {.fragment}
+
+OR
+
+:::
+
+
+:::
+
+::: {.column width='45%'}
+
+
+::: {.fragment}
+
+Replace
+
+```python
+from simpy import Resource
+```
+
+with
+
+```python
+from vidigi.resources import VidigiStore
+```
+
+and do a find and replace for
+
+`Resource` in your code, changing it to `VidigiStore`
+
+:::
+
+:::
+
+
+:::
+
+::::
+
+
+
+## Recording
