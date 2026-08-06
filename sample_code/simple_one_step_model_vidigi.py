@@ -80,9 +80,9 @@ class Model:
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
 
-            self.logger.log_queue(
-                entity_id=patient.id, event="nurse_treatment_ends"
-            )  # NEW
+            # self.logger.log_queue(
+            #     entity_id=patient.id, event="nurse_treatment_ends"
+            # )  # NEW
 
         self.logger.log_departure(entity_id=patient.id)  # NEW
 
@@ -99,30 +99,43 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
+    # NEW
+    def get_vidigi_event_log(self):
+        return self.logger.to_dataframe()
 
+
+# NEW #
 class Animation:
-    def __init__(self, param, model):
-        self.param = param
-        self.model = model
+    def __init__(self, event_log):
+        self.event_log = event_log
+
         self.layout = create_event_position_df(
             [
                 EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(event="queue_wait_begins", x=250, y=250, label="Queue"),
                 EventPosition(
-                    event="service_begins",
-                    x=250,
-                    y=150,
-                    resource="num_servers",
-                    label="Being Served",
+                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
                 ),
-                EventPosition(event="depart", x=250, y=50, label="Exit"),
+                EventPosition(
+                    event="being_seen_by_nurse",
+                    x=200,
+                    y=150,
+                    label="Being Seen By Nurse",
+                ),
+                # We don't need to visualise the 'nurse_treatment_ends' step as the timing will
+                # be identical to the depart step
+                EventPosition(event="depart", x=200, y=50, label="Exit"),
             ]
         )
 
-    # NEW #
-    def get_vidigi_log(self):
-        return self.logger.to_dataframe()
+    def generate_animation(self, time_interval=1):
+        return animate_activity_log(
+            event_log=self.event_log,
+            event_position_df=self.layout,
+            every_x_time_units=time_interval,
+        )
 
+
+# END NEW #
 
 my_params = Param()
 my_model = Model(my_params)
@@ -139,3 +152,11 @@ print(
     "90th percentile queuing time for the nurse was",
     f"{my_model.perc_90_q_time_nurse:.2f} minutes",
 )
+
+# NEW #
+my_event_log = my_model.get_vidigi_event_log()
+print(my_event_log.head(10))
+
+my_animation = Animation(my_event_log)
+my_animation.generate_animation()
+# END NEW #
