@@ -1,0 +1,193 @@
+---
+title: "Title"
+author:
+    name: Dr Dan Chalk, Sammi Rosser
+    affiliation: Health Service Modelling Associates Programme
+execute:
+  eval: false # Don't run code by default
+  echo: true # Display code cells by default
+format:
+  revealjs:
+    embed-resources: false # necessary for stlite-quarto and chalkboard to work
+    # embed-resources: true # comment in/out as appropriate
+    chalkboard: true
+    output-file: index.html # ensures picked up by github hosting
+    view-distance: 100
+    height: 800 # default height and width ensure consistent behaviour on different screens
+    width: 1250 # would recommend leaving this and height value as they are
+    preview-links: true
+    controls: false
+    controls-layout: edges
+    transition: fade
+    plotly-connected: true
+    background-transition: fade
+    menu:
+        numbers: true
+    preload-iframes: true
+    logo: "assets/hsma_logo.png"
+    footer-logo-link: "https://hsma.co.uk"
+    # background-image: "assets/hsma_bg_1.png"
+    background-image: "assets/banner_hq.png"
+    # background-size: cover
+    theme: [default, custom.scss]
+    title-slide-attributes:
+        data-background-image: assets/banner.png
+    include-in-header:
+      - text: |
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><link href='https://fonts.googleapis.com/css?family=Lexend' rel='stylesheet'>
+    verticator:
+      themetag: 'h1'
+      color: ''
+      inversecolor: ''
+      skipuncounted: false
+      clickable: true
+      position: 'auto'
+      offset: '3vmin'
+      autogenerate: true
+      tooltip: false
+      scale: 1
+    revealjs-plugins:
+      - verticator
+      - fullscreen
+      - pointer
+filters:
+  - stlite # modified stlite extension
+  - reveal-header
+---
+
+# Section Header Example
+
+Your Content Here
+
+## Slide Example
+
+This is a slide with some text on it.
+
+# Code Examples
+
+## Defining code snippets in the qmd file
+
+```{python}
+import plotly.express as px
+
+px.scatter(x=[1,2,3], y=[2,3,4])
+```
+
+
+## Defining and running code snippets in the qmd file
+
+```{python}
+#| eval: true
+
+import plotly.express as px
+import plotly.io as pio
+pio.renderers.default = "notebook"
+
+px.scatter(x=[1,2,3], y=[2,3,4], height=400)
+```
+
+## Including just the output
+
+```{python}
+#| eval: true
+#| echo: false
+
+import plotly.express as px
+import plotly.io as pio
+pio.renderers.default = "notebook"
+
+px.scatter(x=[1,2,3], y=[2,3,4])
+```
+
+## Importing code snippets from files
+
+```{python}
+{{< include code_examples/code_example_1.py >}}
+```
+
+## Importing and running code snippets
+
+```{python}
+#| eval: true
+{{< include code_examples/code_example_1.py >}}
+```
+
+## Embedded Streamlit
+
+```{stlite-python}
+import micropip
+await micropip.install("plotly")
+
+import streamlit as st
+from plotly import express as px
+
+st.title("Sample App")
+
+st.slider("Choose a number between 1 and 10", min_value=1, max_value=10, value=5)
+
+st.plotly_chart(
+    px.scatter(x=[1,2,3], y=[2,3,4])
+)
+```
+
+# Layouts
+
+## 2 col layout example
+
+:::: {.columns}
+
+::: {.column width='50%'}
+
+Here is column 1
+
+:::
+
+::: {.column width='50%'}
+
+Here is column 2
+
+:::
+
+::::
+
+## Incremental list reveal
+
+This will be on the screen at the start.
+
+:::{.incremental}
+
+- Here's bullet point 1
+- Here's bullet point 2
+
+:::
+
+
+## Fragments
+
+This will be on the screen at the start.
+
+:::{.fragment}
+
+This won't appear until you press a button.
+
+:::
+
+:::{.fragment}
+
+Then this will appear when you're ready.
+
+![](assets/hsma_logo.png)
+
+:::
+
+
+
+# Other features
+
+## Speaker notes
+
+There are some speaker notes on this slide - but you can't see them unless you're in speaker view!
+
+:::{.notes}
+Aha! I'm secret notes.
+:::

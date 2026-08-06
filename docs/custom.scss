@@ -1,0 +1,109 @@
+/*-- scss:defaults --*/
+
+$body-bg: #303030;
+$body-color: #fff;
+$link-color: #42affa;
+
+/*-- scss:rules --*/
+
+.reveal .slide blockquote {
+  border-left: 3px solid $text-muted;
+  padding-left: 0.5em;
+}
+
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  margin: 0px 20px 20px 20px;
+  color: #ffffff;
+  line-height: 0.9em;
+  letter-spacing: 0.02em;
+  text-shadow: none;
+ }
+
+ .reveal h1 {
+   margin: 0px 20px 20px 20px;
+   color: #ffffff;
+   line-height: 0.9em;
+   letter-spacing: 0.02em;
+   text-shadow: -1px -1px 4px black;
+  }
+
+p {
+    margin: 0px 20px 20px 20px !important;
+}
+
+body {
+    font-size: 22px;
+}
+
+.reveal .progress {
+  background: rgba(0, 0, 0, 0.2);
+  color: #8f0000; /* This sets the progress bar to dark red */
+}
+
+.reveal div.slide-menu-button a i.fas.fa-bars {
+    filter: brightness(10) saturate(0);
+}
+
+.reveal .slide-chalkboard-buttons i.fas {
+    filter: brightness(10) saturate(0);
+}
+
+// /* Style top-level slide sections */
+// .reveal .slides > section {
+//   background-color: rgba(56, 56, 56, 0.7);
+//   max-width: 100%; /* Prevent accidental overflow */
+//   margin: 20px auto;
+//   padding: 1em 0.5em 1.5em 0.5em; /* top, right, bottom, left */
+//   border-radius: 12px;
+//   box-sizing: border-box;
+//   color: white;
+//   display: block;
+//   word-wrap: break-word;
+//   overflow-wrap: break-word;
+// }
+
+// Create a grey box
+/* Remove extra padding from the slides container */
+.reveal .slides {
+  padding: 0 !important;
+  /* Style top-level slide sections */
+  background-color: rgba(56, 56, 56, 0.7);
+  margin: 0px 20px 20px 20px;
+  padding: 0px 20px 0px 20px; /* top, right, bottom, left */
+  border-radius: 12px;
+  box-sizing: border-box;
+  display: block;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+
+  /* Overspill effect */
+  transform: scaleX(1.1); /* 10% wider */
+  transform-origin: center;
+}
+
+/* Nested slide sections (if any) — remove padding but keep content */
+.reveal .slides section > section {
+  background: none;
+  padding: 10px 20px 20px 20px;
+  margin: 0;
+  border: none;
+}
+
+.sourceCode {
+  width: 95% !important;
+  max-width: 95% !important;
+}
+
+.cell-output {
+  width: 95% !important;
+  max-width: 95% !important;
+}
+
+iframe.stlite {
+    width: 1px;
+    min-width: 95% !important;
+}

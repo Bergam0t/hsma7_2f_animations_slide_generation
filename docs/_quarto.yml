@@ -1,0 +1,8 @@
+project:
+  title: "Title"
+  output-dir: docs
+
+format:
+  revealjs:
+    execute:
+      freeze: auto

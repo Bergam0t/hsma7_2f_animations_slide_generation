@@ -1,0 +1,8 @@
+/.quarto/
+*.pyc
+
+/.luarc.json
+
+**/*.quarto_ipynb
+
+_quarto_internal_scss_error.scss

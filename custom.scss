@@ -1,0 +1,268 @@
+/*-- scss:defaults --*/
+
+$body-bg: #303030;
+$body-color: #fff;
+$link-color: #42affa;
+
+/*-- scss:rules --*/
+
+.reveal .backgrounds {
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+}
+
+.reveal .slide blockquote {
+  border-left: 3px solid $text-muted;
+  padding-left: 0.5em;
+}
+
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  margin: 0px 20px 20px 20px;
+  color: #ffffff;
+  line-height: 0.9em;
+  letter-spacing: 0.02em;
+  text-shadow: none;
+}
+
+.reveal h1 {
+  margin: 0px 20px 20px 20px;
+  color: #ffffff;
+  line-height: 0.9em;
+  letter-spacing: 0.02em;
+  text-shadow: -1px -1px 4px black;
+}
+
+p {
+    margin: 0px 20px 20px 20px !important;
+}
+
+body {
+    font-size: 22px;
+}
+
+.reveal .progress {
+  background: rgba(0, 0, 0, 0.2);
+  color: #8f0000; /* This sets the progress bar to dark red */
+}
+
+.reveal div.slide-menu-button a i.fas.fa-bars {
+    filter: brightness(10) saturate(0);
+}
+
+.reveal .slide-chalkboard-buttons i.fas {
+    filter: brightness(10) saturate(0);
+}
+
+// Create a grey box using a pseudo-element (doesn't interfere with bg)
+.reveal .slides {
+  padding: 0 !important;
+  border-radius: 12px;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  transform: scaleX(1.1);
+  transform-origin: center;
+
+  /* Remove the background from here */
+  background-color: transparent;
+}
+
+// Default: content starts at the top for regular slides
+.reveal .slides > section {
+  /* background-color: rgba(56, 56, 56, 0.8); */
+  border-radius: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+  /* min-height: 85vh; */
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+// Title slide — target by id
+.reveal .slides > section#title-slide {
+  background-color: rgba(56, 56, 56, 0.8);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+// Restore alignment for title slide children
+.reveal .slides > section#title-slide h1,
+.reveal .slides > section#title-slide .quarto-title-authors,
+.reveal .slides > section#title-slide .quarto-title-author,
+.reveal .slides > section#title-slide .quarto-title-author-name,
+.reveal .slides > section#title-slide p {
+  text-align: center;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+// Grey box only on the stack wrapper (content slides)
+.reveal .slides > section.stack {
+  background-color: rgba(56, 56, 56, 0.8);
+  border-radius: 12px;
+}
+
+// Limit the width of the elements within the slides so they don't come too close to
+// the edge of the grey background box (or overhang)
+// .sourceCode {
+//   width: 95% !important;
+//   max-width: 95% !important;
+// }
+
+// .cell-output {
+//   width: 95% !important;
+//   max-width: 95% !important;
+// }
+
+.reveal .slides > section.stack > section.slide {
+  box-sizing: border-box;
+  /*  width: 100% !important; */
+  padding-right: 60px !important;
+}
+
+
+
+iframe.stlite {
+    width: 1px;
+    min-width: 95% !important;
+}
+
+.value-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  row-gap: 1.5rem;
+}
+
+/* Collapse to a single column on small screens */
+@media (max-width: 600px) {
+  .value-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+// Slides with no grey box
+// .reveal .slides section.no-box,
+// .reveal .slides > section.no-box,
+// .reveal .slides > section.stack > section.no-box {
+//   background-color: transparent !important;
+//   border-radius: 0 !important;
+//   box-shadow: none !important;
+// }
+
+// Slides with no grey box
+.reveal .slides > section.stack:has(> section.no-box) {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.reveal .slides > section.stack:has(> section.no-box) > section:not(.no-box) {
+  background-color: rgba(56, 56, 56, 0.8) !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+  padding: 20px !important;
+  padding-right: 60px !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+}
+
+// # header slide should be centred vertically
+.reveal .slides > section.stack:has(> section.no-box) > section:first-child {
+  justify-content: center !important;
+}
+
+/* Ensure column containers stretch to full width inside flex-slides */
+.reveal .slides section.stack:has(> section.no-box) section > .columns {
+  width: 100% !important;
+  flex-grow: 1; /* Allows the columns to fill vertical space if needed */
+}
+
+.bg-amber { background-color:rgb(211, 123, 0) ; }
+
+.bg-light-grey { background-color:rgb(197, 197, 197) ; }
+
+.bg-light-blue { background-color:rgb(106, 189, 192) ; }
+
+
+.centred-grid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  gap: 1rem;
+  width: 100%;
+
+  .fragment {
+    width: 60%;
+  }
+}
+
+// /* 1. Reset list to be stable */
+// .reveal .focus-list ul,
+// .reveal .focus-list ol {
+//   list-style-type: none !important;
+//   padding-left: 1em !important;
+//   position: relative;
+// }
+
+// /* 2. The Fragment Container */
+// .reveal .focus-list .fragment {
+//   display: block;
+//   width: 100%;
+//   visibility: hidden;
+//   opacity: 1 !important;
+//   position: relative;
+//   transition: all 0.4s ease;
+// }
+
+// .reveal .focus-list .fragment.visible {
+//   visibility: visible;
+// }
+
+// /* 3. The Bullet */
+// .reveal .focus-list .fragment::before {
+//   content: "•";
+//   position: absolute;
+//   left: -0.8em;
+//   color: inherit;
+// }
+
+// /* 4. THE DARK THEME FIX: Light Alpha Dimming */
+// .reveal .focus-list .fragment.visible {
+//   /* Use a transparent white so it sits 'on top' of the dark bg */
+//   color: rgba(255, 255, 255, 0.3) !important;
+//   /*font-weight: 400;*/
+// }
+
+// /* 5. Highlight the Current Item */
+// .reveal .focus-list .fragment.current-fragment {
+//   color: #ffffff !important; /* A bright, 'Neon' blue looks great on dark themes */
+//   /*font-weight: 700;*/
+//   /* Optional: adds a glow to the active line */
+//   /*text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);*/
+// }
+
+// /* 6. Keep Parents Bright */
+// .reveal .focus-list .fragment.current-fragment-ancestor {
+//   color: rgba(255, 255, 255, 0.85) !important;
+//   /*font-weight: 600;*/
+// }

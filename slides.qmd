@@ -1,0 +1,369 @@
+---
+title: "Title"
+author:
+    name: Dr Dan Chalk, Sammi Rosser
+    affiliation: Health Service Modelling Associates Programme
+execute:
+  eval: false # Don't run code by default
+  echo: true # Display code cells by default
+format:
+  live-revealjs:
+    embed-resources: false # necessary for stlite-quarto and chalkboard to work
+    # embed-resources: true # comment in/out as appropriate
+    chalkboard: true
+    output-file: index.html # ensures picked up by github hosting
+    view-distance: 100
+    height: 800 # default height and width ensure consistent behaviour on different screens
+    width: 1250 # would recommend leaving this and height value as they are
+    preview-links: true
+    controls: false
+    controls-layout: edges
+    transition: fade
+    plotly-connected: true
+    background-transition: fade
+    mermaid:
+      theme: neutral
+      format: svg
+    menu:
+        numbers: true
+    preload-iframes: true
+    logo: "assets/hsma_logo.png"
+    footer-logo-link: "https://hsma.co.uk"
+    # background-image: "assets/hsma_bg_1.png"
+    background-image: "assets/banner_hq.png"
+    # background-size: cover
+    theme: [default, custom.scss]
+    title-slide-attributes:
+        data-background-image: assets/banner.png
+    verticator:
+      themetag: 'h1'
+      color: ''
+      inversecolor: ''
+      skipuncounted: false
+      clickable: true
+      position: 'auto'
+      offset: '3vmin'
+      autogenerate: true
+      tooltip: false
+      scale: 1
+    include-in-header:
+      file: resources/header.html
+    revealjs-a11y:
+      high-contrast: false
+      alt-text-warnings: true
+      slide-change-cue:
+        visual: false
+        audio: false
+revealjs-plugins:
+  - verticator
+  - fullscreen
+  - pointer
+  - codefocus
+  - a11y
+filters:
+  - stlite # modified stlite extension
+  - reveal-header
+  - bergam0t/value-box
+  - bergam0t/focus-list
+  - code-fullscreen
+
+---
+
+# Section Header Example
+
+Your Content Here
+
+## Slide Example
+
+This is a slide with some text on it.
+
+# Code Examples
+
+## Defining code snippets in the qmd file
+
+```{python}
+import plotly.express as px
+
+px.scatter(x=[1,2,3], y=[2,3,4])
+```
+
+
+## Defining and running code snippets in the qmd file
+
+```{python}
+#| eval: true
+
+import plotly.express as px
+import plotly.io as pio
+pio.renderers.default = "notebook"
+
+px.scatter(x=[1,2,3], y=[2,3,4], height=400)
+```
+
+## Including just the output
+
+```{python}
+#| eval: true
+#| echo: false
+
+import plotly.express as px
+import plotly.io as pio
+pio.renderers.default = "notebook"
+
+px.scatter(x=[1,2,3], y=[2,3,4])
+```
+
+## Importing code snippets from files
+
+```{python}
+{{< include code_examples/code_example_1.py >}}
+```
+
+## Importing and running code snippets
+
+```{python}
+#| eval: true
+{{< include code_examples/code_example_1.py >}}
+```
+
+## Embedded Streamlit
+
+```{stlite-python}
+import micropip
+await micropip.install("plotly")
+
+import streamlit as st
+from plotly import express as px
+
+st.title("Sample App")
+
+st.slider("Choose a number between 1 and 10", min_value=1, max_value=10, value=5)
+
+st.plotly_chart(
+    px.scatter(x=[1,2,3], y=[2,3,4])
+)
+```
+
+# Layouts
+
+## 2 col layout example
+
+:::: {.columns}
+
+::: {.column width='50%'}
+
+Here is column 1
+
+:::
+
+::: {.column width='50%'}
+
+Here is column 2
+
+:::
+
+::::
+
+## Incremental list reveal
+
+This will be on the screen at the start.
+
+:::{.incremental}
+
+- Here's bullet point 1
+- Here's bullet point 2
+
+:::
+
+
+## Fragments
+
+This will be on the screen at the start.
+
+:::{.fragment}
+
+This won't appear until you press a button.
+
+:::
+
+:::{.fragment}
+
+Then this will appear when you're ready.
+
+![](assets/hsma_logo.png)
+
+:::
+
+## Simple boxes 1
+
+::: {.value-box .bg-amber style="font-size: 1.25rem;"}
+
+**Value boxes**
+
+A simple value box can help convey points, especially when combined with fragments.
+
+:::
+
+## Complex icon box layouts with index parameter
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### Left Column
+::: {.value-box fragment="true" index="2"}
+This appears SECOND (Index 2)
+:::
+:::
+
+::: {.column width="50%"}
+### Right Column
+::: {.value-box fragment="true" index="1"}
+This appears FIRST (Index 1)
+:::
+:::
+
+::::
+
+
+
+
+# Other features
+
+## Speaker notes
+
+There are some speaker notes on this slide - but you can't see them unless you're in speaker view!
+
+:::{.notes}
+Aha! I'm secret notes.
+:::
+
+
+## No box {.no-box}
+
+Use the {.no-box} syntax next to your slide title to remove the background grey box.
+
+This only works on second level slides - not # level slides.
+
+
+## Simple boxes 2
+
+::: {.fragment .fade-in-then-semi-out}
+
+::: {.value-box .bg-light-blue style="font-size: 1.25rem;"}
+
+**Value boxes**
+
+A simple value box can help convey points, especially when combined with fragments.
+
+:::
+
+:::
+
+::: {.fragment}
+
+::: {.value-box .bg-amber style="font-size: 1.25rem;"}
+
+**Value boxes**
+
+Like this!
+
+:::
+
+
+:::
+
+
+
+
+## Icon boxes
+
+::: {.value-box icon="bi-arrow-down-up" color="bg-light-blue" width="60%" align="center"}
+And here's a more advanced type of box with an icon
+:::
+
+::: {.value-box value="Big text" icon="bi-arrow-down-up" color="bg-light-blue" width="60%" align="center" fragment="fade-in-then-out"}
+And here's a more advanced type of box with an icon and a value
+:::
+
+::: {.value-box fragment="strike" width="60%" align="center"}
+And one without an icon
+:::
+
+
+## Complex icon box layouts with index parameter
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### Left Column
+::: {.value-box fragment="true" index="2"}
+This appears SECOND (Index 2)
+:::
+:::
+
+::: {.column width="50%"}
+### Right Column
+::: {.value-box fragment="true" index="1"}
+This appears FIRST (Index 1)
+:::
+:::
+
+::::
+
+
+## Fade-in-then-out-lists
+
+You can use the {.focus-list} div to auto fade in and out as you move through a list
+
+::: {.focus-list}
+* First important point
+* Second important point (previous one dims!)
+* Third important point
+:::
+
+
+## Fade-in-then-out-lists
+
+This works with indented lists too
+
+::: {.focus-list}
+* First important point
+  * And a sub-point on that matter
+* Second important point (previous one dims!)
+  * And a sub-point on that matter
+    * ... and a really nested point
+* Third important point
+:::
+
+
+
+
+## Code focus
+
+Using reunings code focus extension, we can highlight different parts of a code example.
+
+```{python}
+#| eval: false
+answer = "42"
+question = "What is the answer to life, the universe, and everything?"
+print(f"Question: '{question}'\n Answer: '{answer}'")
+```
+
+::: {.fragment .current-only data-code-focus="1"}
+When this fragment is shown, the first line of code will have the `focus` class added to it and it gets highlighted.
+:::
+
+::: {.fragment .current-only data-code-focus="3"}
+Then this line when we move through
+:::
+
+## Live code example
+
+```{pyodide}
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.random.normal(170, 10, 250)
+plt.hist(x)
+plt.show()
+```
