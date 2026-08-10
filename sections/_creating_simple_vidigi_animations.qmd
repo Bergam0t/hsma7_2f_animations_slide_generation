@@ -1,0 +1,17 @@
+
+
+
+# Your First Vidigi Animation - a Walkthrough
+
+## Adding a Logging Class
+
+## Adding Logging Steps
+
+
+
+## Setting up a Layout Grid
+
+
+
+
+## Generating the Animation

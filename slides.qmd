@@ -1,7 +1,8 @@
 ---
-title: "Title"
+title: "Animaniacs"
+subtitle: "Bringing your simulations to life with vidigi"
 author:
-    name: Dr Dan Chalk, Sammi Rosser
+    name: Sammi Rosser
     affiliation: Health Service Modelling Associates Programme
 execute:
   eval: false # Don't run code by default
@@ -59,7 +60,7 @@ revealjs-plugins:
   - fullscreen
   - pointer
   - codefocus
-  - a11y
+  # - a11y
 filters:
   - stlite # modified stlite extension
   - reveal-header
@@ -77,18 +78,21 @@ filters:
 
 {{< include sections/_creating_simple_vidigi_animations.qmd >}}
 
-{{< include sections/_vidigi_process_maps.qmd >}}
+{{< include sections/_adding_resource_use_vidigi_animations.qmd >}}
+
 
 {{< include sections/_vidigi_exercise_1.qmd >}}
 
-{{< include sections/_adding_resource_use_vidigi_animations.qmd >}}
+{{< include sections/_vidigi_process_maps.qmd >}}
 
 {{< include sections/_vidigi_with_trial_class.qmd >}}
 
 {{< include sections/_using_and_creating_custom_backgrounds.qmd >}}
 
+{{< include sections/_advanced_animations_three_step.qmd >}}
+
 {{< include sections/_vidigi_exercise_2.qmd >}}
 
-{{< include sections/_advanced_animations_three_step.qmd >}}
+{{< include sections/__animating_bigger_systems_and_longer_timescales.qmd >}}
 
 {{< include sections/_vidigi_exercise_3.qmd >}}

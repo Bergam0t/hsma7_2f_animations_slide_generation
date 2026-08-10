@@ -5,19 +5,19 @@
 :::: {.columns}
 
 ::: {.column width='33%'}
-::: {.value-box value="Step 1" icon="fa-solid fa-clipboard" fragment="true" icon-position="left"}
+::: {.value-box value="Step 1" icon="fa-solid fa-clipboard" fragment="true" icon-position="top" align="center" height="300px"}
 Add logging steps for arrivals, queues, resource use, and departures
 :::
 :::
 
 ::: {.column width='33%'}
-::: {.value-box value="Step 2" icon="fa-solid fa-table-cells" fragment="true" icon-position="left"}
+::: {.value-box value="Step 2" icon="fa-solid fa-table-cells" fragment="true" icon-position="top" align="center" height="300px"}
 Set up a coordinate grid
 :::
 :::
 
 ::: {.column width='33%'}
-::: {.value-box value="Step 3" icon="fa-solid fa-clapperboard" fragment="true" icon-position="left"}
+::: {.value-box value="Step 3" icon="fa-solid fa-clapperboard" fragment="true" icon-position="top"  align="center" height="300px"}
 Set your animation parameters and generate your animation
 :::
 :::
@@ -28,24 +28,68 @@ Set your animation parameters and generate your animation
 
 # Key Parts of Vidigi
 
-## Logger
+## EventLogger
+
+Vidigi's `EventLogger` class is the powerhouse of the whole shebang.
+
+It allows us to record the key types of events that happen throughout the model.
 
 
 
 
 
-# Your First Vidigi Animation - a Walkthrough
+## Using EventLogger
 
-## Adding Logging Steps
+We can import EventLogger from the `utils` module of lokigi like this.
+
+```python
+from lokigi.utils import EventLogger
+```
+We then set up an instance of EventLogger like so.
+
+```python
+my_logger = EventLogger(env=my_simpy_env)
+```
+
+I'll talk about *where* we do that in our model a bit later.
+
+Then we record different events like this.
+
+```python
+my_logger.log_queue()
+```
 
 
+## EventLogger's Logging Types
 
-## Setting up a Layout Grid
+<div style="display: flex; justify-content: center; align-items: center; height: 80vh">
 
+<img src="../diagrams/EventLogger.drawio.svg" style="height: 70vh;">
 
+</div>
 
+## Why EventLogger?
 
-## Generating the Animation
+:::: {.columns}
+
+::: {.column width='50%'}
+::: {.fragment}
+### The Format Vidigi Expects
+
+The EventLogger methods work with all of vidigi's defaults, making it less likely that you'll make errors when adding an animation in
+:::
+:::
+
+::: {.column width='50%'}
+
+:::{.fragment}
+### Extra Plotting Helpers
+
+Later, we'll see what other plots - not just animations - that EventLogger can automate for us
+:::
+:::
+
+::::
 
 
 # Advanced Vidigi - Resource Use
@@ -56,9 +100,6 @@ Set your animation parameters and generate your animation
 
 ## Swapping in vidigi classes
 
-:::: {.columns}
-
-::: {.column width='45%'}
 Replace
 
 ```python
@@ -70,22 +111,14 @@ with
 ```python
 from vidigi.resources import VidigiStore as Resource
 ```
-:::
 
-::: {.column width='10%'}
 
 
 ::: {.fragment}
-
+<hr>
 OR
-
+<hr>
 :::
-
-
-:::
-
-::: {.column width='45%'}
-
 
 ::: {.fragment}
 
@@ -106,14 +139,5 @@ and do a find and replace for
 `Resource` in your code, changing it to `VidigiStore`
 
 :::
-
-:::
-
-
-:::
-
-::::
-
-
 
 ## Recording

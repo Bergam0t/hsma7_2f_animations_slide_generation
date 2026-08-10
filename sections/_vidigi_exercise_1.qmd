@@ -1,0 +1,29 @@
+# Exercise 1
+
+## Vidigi Exercise 1
+
+You will be working with the model [TODO: model path] and the notebook [TODO: notebook path].
+
+:::: {.columns}
+
+::: {.column width='50%'}
+1. Add a logger
+2. Add the required logging steps
+    - arrival
+    - queue
+    - resource use
+    - departure
+3. Set up and generate the animation
+    - you have been provided with a starter template for the layout of your animation
+
+:::
+
+::: {.column width='50%'}
+### Extensions
+
+- Try increasing the arrival rate [TODO: To x]. Does the animation still look ok? Does it take longer to generate?
+- Try tweaking the EventPositions. Do you think a different layout might look better?
+- [TODO: Third extension]
+:::
+
+::::

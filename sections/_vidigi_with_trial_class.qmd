@@ -1,0 +1,9 @@
+# Incorporating the Trial Class
+
+## Trial, trial again
+
+So far we've been working with a vidigi model that only runs a single replication.
+
+However, we saw in earlier sessions how important it is to run **multiple replications** in simulation.
+
+So how can we make vidigi play nicely with the trial class?
