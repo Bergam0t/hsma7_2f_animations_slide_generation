@@ -1,0 +1,42 @@
+
+## The big reveal...
+
+:::: {.columns}
+
+::: {.column width='50%'}
+Vidigi's `animate_activity_log()` function that we've been using so far is actually three functions in a trenchcoat!
+:::
+
+::: {.column width='50%'}
+![](../assets/3_functions_in_a_trenchcoat_chatgpt.png)
+:::
+
+::::
+
+
+
+:::: {.columns}
+
+::: {.column width='33%'}
+::: {.value-box value="reshape_for_animations()" icon="fa-solid fa-clock" fragment="true" icon-position="left"}
+This function looks over the logs and creates a minute-by-minute breakdown of where everyone currently in the system is at that moment in time.
+
+(or over whatever time interval you specify)
+:::
+:::
+
+::: {.column width='33%'}
+::: {.value-box value="generate_animation_df()" icon="fa-solid fa_route" fragment="true" icon-position="left"}
+This function assigns everyone their consistent icon that they will have throughout the animation
+
+It also works out their physical position in the animation at each time point, assigning them coordinates that match their position in a queue or the resource they are using
+:::
+:::
+
+::: {.column width='33%'}
+::: {.value-box value="generate_animation()" icon="fa-solid fa_clapperboard" fragment="true" icon-position="left"}
+This is the final step that calls on Plotly to turn it into an animation
+:::
+:::
+
+::::
