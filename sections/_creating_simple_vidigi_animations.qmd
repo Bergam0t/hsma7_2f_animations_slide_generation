@@ -25,13 +25,300 @@ class Model:
         self.logger = EventLogger(env=self.env)  # NEW
 ```
 
-## Adding Logging Steps
+## Adding Logging Steps - Arrivals
+
+We can now access our logger where we need it by calling `self.logger`.
+
+We will place all of the logging steps in the `.attend_clinic()` method.
+
+Let's first add an arrival logging step!
+
+```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
+def attend_clinic(self, patient):
+    self.logger.log_arrival(entity_id=patient.id)  # NEW
+```
+
+Because we already gave our logger access to the SimPy env, it handles recording the time the event happened! So the only parameter we need to give our logger is an identifier for this patient, which they already record.
+
+## Adding Logging Steps - Queuing
+
+We now record a **queuing** step with `.log_queue()`
+
+This time, we also need to decide on a name for our event. This can be anything we like, though it's good practice to use `snake_case` (i.e. lowercase with underscores instead of spaces).
+
+```{.python code-line-style="dim:1-5,focus:6,dim:7-11" code-line-style-preset="emphasis"}
+def attend_clinic(self, patient):
+    self.logger.log_arrival(entity_id=patient.id)
+
+    start_q_nurse = self.env.now
+
+    self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")  # NEW
+
+    with self.nurse.request() as req:
+        yield req
+        end_q_nurse = self.env.now
+        ...
+```
+
+## The simple way to record activity use
+
+We're going to start with the simplest way of logging that someone is being seen by the nurse - also treating it as a `queue` in vidigi's language.
+
+```{.python code-line-style="dim:1-7,focus:8,dim:9-12,focus:13" code-line-style-preset="emphasis"}
+def attend_clinic(self, patient):
+    ...
+    with self.nurse.request() as req:
+        yield req
+        end_q_nurse = self.env.now
+        patient.q_time_nurse = end_q_nurse - start_q_nurse
+
+        self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")  # NEW
+
+        sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
+        yield self.env.timeout(sampled_nurse_act_time)
+
+        self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")  # NEW
+```
+
+## But it's not a queue?!
+
+Later, we'll look at vidigi's more advanced ways of tracking resource use, but treating it as a 'queue' step for now allows us to get a simple animation up and running very quickly.
+
+## Adding Logging Steps - Departure
+
+Finally, every patient needs one departure event.
+
+```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
+def attend_clinic(self, patient):
+    self.logger.log_arrival(entity_id=patient.id)  # NEW
+```
+
+<br>
+
+::: {.value-box icon="fa-solid fa-triangle-exclamation" icon-position="left" color="bg-red"}
+It's important that each patient only has **one** arrival and **one** departure event per model run.
+
+Things get messy if they don't!
+
+(So if there's any way they can 'leave and come back' in your model, think carefully about how you'll handle it...)
+:::
 
 
+## All the logging steps
+
+Let's recap the changes we made.
+
+```{.python code-line-style="dim:1,focus:2,dim:3-5,focus:6,dim:7-12,focus:13,dim:14-17,focus:18,dim:19,focus:20" code-line-style-preset="emphasis"}
+def attend_clinic(self, patient):
+    self.logger.log_arrival(entity_id=patient.id)  # NEW
+
+    start_q_nurse = self.env.now
+
+    self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")  # NEW
+
+    with self.nurse.request() as req:
+        yield req
+        end_q_nurse = self.env.now
+        patient.q_time_nurse = end_q_nurse - start_q_nurse
+
+        self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")  # NEW
+
+        sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
+        yield self.env.timeout(sampled_nurse_act_time)
+
+        self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")  # NEW
+
+    self.logger.log_departure(entity_id=patient.id)  # NEW
+```
+
+## Accessing our event log
+
+We'll want to grab out our event log as a pandas dataframe.
+
+It's neat to set up a little helper method in our `Model` class to do that.
+
+```{.python}
+def get_vidigi_event_log(self):
+    return self.logger.to_dataframe()
+```
+
+<br>
+
+Vidigi provides the `to_dataframe()` method for our convenience. This will look at the EventLogger object, find where it stores the event logs, and convert it into this format for us.
+
+## The new class - Animation
+
+Our models contain some key classes: `Params`, `Patient`, `Model`
+
+(also `Trial`, but in this first example, we're just working at the level of a single model - we'll look at wiring Vidigi into `Trial` a bit later)
+
+We're now going to define a brand new class called `Animation`.
+
+```{.python}
+class Animation:
+    def __init__(self, params, event_log):
+        self.params = params
+        self.event_log = event_log
+```
 
 ## Setting up a Layout Grid
 
+The next thing we'll define - still in our init method - is a layout grid.
+
+:::: {.columns}
+
+::: {.column width='40%'}
+```{.python}
+EventPosition(
+    event="nurse_wait_begins",
+    x=200,
+    y=250,
+    label="Waiting for Nurse"
+    )
+```
+:::
+
+::: {.column width='5%'}
+:::
+
+::: {.column width='55%' style="font-size: 75%;"}
+
+For each event we want in our animation, we create an `EventPosition` object and pass four things:
+
+- the event name (which should match what we called it in the logger)
+- an x coordinate for the front of that queue
+- a y coordinate for the front of that queue
+- a nicer label to use in the animation
+
+:::
+
+::::
 
 
+
+
+
+## Coordinates
+
+[TODO: create a blank axis]
+
+[TODO: grab full fig from vidigi paper]
+
+## Arrival and Departure Events
+
+Behind the scenes, EventLogger always gives these the same event name if you use `.log_arrival()` and `.log_departure()`.
+
+```{.python}
+EventPosition(
+    event="arrival", x=0, y=350, label="Entrance"
+)
+```
+
+<br>
+
+```{.python}
+EventPosition(
+    event="depart", x=200, y=50, label="Exit"
+)
+```
+
+## `create_event_position_df`
+
+::: {style="font-size: 75%;"}
+
+We pass a `list` of all our EventPosition objects.
+
+Remember - a Python list uses `[]` with each item separated by a `,`
+:::
+
+```{.python}
+create_event_position_df(
+    [
+        EventPosition(
+            event="arrival", x=0, y=350, label="Entrance"
+        ),
+        EventPosition(
+            event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+        ),
+        EventPosition(
+            event="being_seen_by_nurse", x=200, y=150, label="Being Seen By Nurse"
+        ),
+        # We don't need to visualise the 'nurse_treatment_ends' step
+        # as the timing will be identical to the depart step
+        EventPosition(
+            event="depart", x=200, y=50, label="Exit"
+        )
+    ]
+)
+```
+
+## The full Grid in situ
+
+We'll bind this to `self.layout`.
+
+```{.python code-line-style="dim:1-5,focus:6-23" code-line-style-preset="emphasis"}
+class Animation:
+    def __init__(self, params, event_log):
+        self.params = params
+        self.event_log = event_log
+
+        self.layout = create_event_position_df(
+            [
+                EventPosition(
+                    event="arrival", x=0, y=350, label="Entrance"
+                ),
+                EventPosition(
+                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+                ),
+                EventPosition(
+                    event="being_seen_by_nurse", x=200, y=150, label="Being Seen By Nurse"
+                ),
+                # We don't need to visualise the 'nurse_treatment_ends' step
+                # as the timing will be identical to the depart step
+                EventPosition(
+                    event="depart", x=200, y=50, label="Exit"
+                )
+            ]
+        )
+```
 
 ## Generating the Animation
+
+Now, we just need a small function to call vidigi's animation creation logic.
+
+```{.python code-line-style="dim:1-4,focus:5-11" code-line-style-preset="emphasis"}
+class Animation:
+    def __init__(self, params, event_log):
+        ...
+
+    def generate_animation(self, time_interval=1):
+        return animate_activity_log(
+            event_log=self.event_log,
+            event_position_df=self.layout,
+            every_x_time_units=time_interval,
+            scenario=self.params,
+        )
+```
+
+
+## Calling the animation
+
+```{.python code-line-style="dim:1-7,focus:8-12" code-line-style-preset="emphasis"}
+my_params = Param()
+my_model = Model(my_params)
+my_model.run_model()
+
+patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
+my_model.calculate_run_results(patient_df)
+
+my_event_log = my_model.get_vidigi_event_log()
+print(my_event_log.head(10))
+
+my_animation = Animation(my_params, my_event_log)
+my_animation.generate_animation()
+```
+
+## What does the event log look like?
+
+
+## What does the animation look like?

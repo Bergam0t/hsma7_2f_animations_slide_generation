@@ -16,6 +16,7 @@
 <link href="slides_files/libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-contrib/grid-no-htext-1.0.0/grid_no_htext.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-contrib/value-box-styles-1.0.0/value-box.css" rel="stylesheet">
+<link href="slides_files/libs/quarto-contrib/focus-list-styles-1.0.0/focus-list.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-contrib/code-line-style-0.1.0/code-line-style.css" rel="stylesheet"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.11.0">
 
@@ -225,6 +226,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="quarto-dark">
   <div class="reveal">
@@ -285,29 +287,56 @@ Sammi Rosser
 </section>
 <section id="what-is-vidigi" class="slide level2">
 <h2>What is vidigi?</h2>
-</section>
+<p>Vidigi is a package for creating animations of open-source discrete event simulations (like the ones you’ve been building in SimPy).</p>
+
+<img data-src="../assets/vidigi_multistep_demo.gif" class="r-stretch"></section>
 <section id="who-makes-vidigi" class="slide level2">
 <h2>Who makes vidigi?</h2>
 <p>Us!</p>
 <p>We’ve built it from the ground up with the intention of helping visualise health services.</p>
+<p>So if anything isn’t working, or if there is a feature you need that doesn’t exist, the chances are we can sort that for you!</p>
+<p>You and your projects can help shape the package!</p>
 </section>
-<section id="trade-offs-we-made" class="slide level2">
-<h2>Trade-offs we made</h2>
+<section id="extra-benefits-of-vidigi" class="slide level2">
+<h2>Extra Benefits of vidigi</h2>
+<div class="focus-list">
+<ul>
+<li><div class="fragment">
+Works in common web application frameworks (which we’ll introduce you to next week!)
+</div></li>
+<li><div class="fragment">
+Also works in Quarto
+</div></li>
+<li><div class="fragment">
+Or can output as a standalone file
+</div></li>
+<li><div class="fragment">
+Generates animations quickly enough to allow users to regenerate an animation after changing parameters
+</div></li>
+<li><div class="fragment">
+Supports custom icons
+</div></li>
+</ul>
+</div>
 </section></section>
 <section>
 <section id="hsma-projects-using-vidigi" class="title-slide slide level1 center">
 <h1>HSMA projects using vidigi</h1>
 
 </section>
-<section id="helena-robinson--" class="slide level2">
-<h2>Helena Robinson -</h2>
+<section id="helena-robinson---non-elective-flow-simulation" class="slide level2">
+<h2>Helena Robinson - Non-Elective Flow Simulation</h2>
+
+<img data-src="../assets/y5v39tbnlH.gif" class="r-stretch"><p>You can try her app out at <a href="https://non-elective-flow-simulation-coch.streamlit.app">non-elective-flow-simulation-coch.streamlit.app</a></p>
 </section>
-<section id="rey-tan--" class="slide level2">
-<h2>Rey Tan -</h2>
-</section>
+<section id="rey-tan---acute-ward-bed-occupancy" class="slide level2">
+<h2>Rey Tan - Acute Ward Bed Occupancy</h2>
+
+<img data-src="../assets/2026-08-10-17-16-09.png" class="r-stretch"></section>
 <section id="john-williams---stroke-bed-unit-modelling" class="slide level2">
 <h2>John Williams - Stroke Bed Unit Modelling</h2>
-</section></section>
+
+<img data-src=".png" class="r-stretch"></section></section>
 <section>
 <section id="key-steps-in-a-vidigi-animation" class="title-slide slide level1 center">
 <h1>Key Steps in a Vidigi Animation</h1>
@@ -397,14 +426,231 @@ Sammi Rosser
 <span id="cb4-15"><a href="" aria-label="15"></a>        <span class="va">self</span>.perc_90_q_time_nurse <span class="op">=</span> pd.NA</span>
 <span id="cb4-16"><a href="" aria-label="16"></a>        <span class="va">self</span>.logger <span class="op">=</span> EventLogger(env<span class="op">=</span><span class="va">self</span>.env)  <span class="co"># NEW</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="adding-logging-steps" class="slide level2">
-<h2>Adding Logging Steps</h2>
+<section id="adding-logging-steps---arrivals" class="slide level2">
+<h2>Adding Logging Steps - Arrivals</h2>
+<p>We can now access our logger where we need it by calling <code>self.logger</code>.</p>
+<p>We will place all of the logging steps in the <code>.attend_clinic()</code> method.</p>
+<p>Let’s first add an arrival logging step!</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" data-code-line-style="dim:1,focus:2" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="" aria-label="1"></a><span class="kw">def</span> attend_clinic(<span class="va">self</span>, patient):</span>
+<span id="cb5-2"><a href="" aria-label="2"></a>    <span class="va">self</span>.logger.log_arrival(entity_id<span class="op">=</span>patient.<span class="bu">id</span>)  <span class="co"># NEW</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Because we already gave our logger access to the SimPy env, it handles recording the time the event happened! So the only parameter we need to give our logger is an identifier for this patient, which they already record.</p>
+</section>
+<section id="adding-logging-steps---queuing" class="slide level2">
+<h2>Adding Logging Steps - Queuing</h2>
+<p>We now record a <strong>queuing</strong> step with <code>.log_queue()</code></p>
+<p>This time, we also need to decide on a name for our event. This can be anything we like, though it’s good practice to use <code>snake_case</code> (i.e.&nbsp;lowercase with underscores instead of spaces).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" data-code-line-style="dim:1-5,focus:6,dim:7-11" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="" aria-label="1"></a><span class="kw">def</span> attend_clinic(<span class="va">self</span>, patient):</span>
+<span id="cb6-2"><a href="" aria-label="2"></a>    <span class="va">self</span>.logger.log_arrival(entity_id<span class="op">=</span>patient.<span class="bu">id</span>)</span>
+<span id="cb6-3"><a href="" aria-label="3"></a></span>
+<span id="cb6-4"><a href="" aria-label="4"></a>    start_q_nurse <span class="op">=</span> <span class="va">self</span>.env.now</span>
+<span id="cb6-5"><a href="" aria-label="5"></a></span>
+<span id="cb6-6"><a href="" aria-label="6"></a>    <span class="va">self</span>.logger.log_queue(entity_id<span class="op">=</span>patient.<span class="bu">id</span>, event<span class="op">=</span><span class="st">"nurse_wait_begins"</span>)  <span class="co"># NEW</span></span>
+<span id="cb6-7"><a href="" aria-label="7"></a></span>
+<span id="cb6-8"><a href="" aria-label="8"></a>    <span class="cf">with</span> <span class="va">self</span>.nurse.request() <span class="im">as</span> req:</span>
+<span id="cb6-9"><a href="" aria-label="9"></a>        <span class="cf">yield</span> req</span>
+<span id="cb6-10"><a href="" aria-label="10"></a>        end_q_nurse <span class="op">=</span> <span class="va">self</span>.env.now</span>
+<span id="cb6-11"><a href="" aria-label="11"></a>        ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="the-simple-way-to-record-activity-use" class="slide level2">
+<h2>The simple way to record activity use</h2>
+<p>We’re going to start with the simplest way of logging that someone is being seen by the nurse - also treating it as a <code>queue</code> in vidigi’s language.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" data-code-line-style="dim:1-7,focus:8,dim:9-12,focus:13" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="" aria-label="1"></a><span class="kw">def</span> attend_clinic(<span class="va">self</span>, patient):</span>
+<span id="cb7-2"><a href="" aria-label="2"></a>    ...</span>
+<span id="cb7-3"><a href="" aria-label="3"></a>    <span class="cf">with</span> <span class="va">self</span>.nurse.request() <span class="im">as</span> req:</span>
+<span id="cb7-4"><a href="" aria-label="4"></a>        <span class="cf">yield</span> req</span>
+<span id="cb7-5"><a href="" aria-label="5"></a>        end_q_nurse <span class="op">=</span> <span class="va">self</span>.env.now</span>
+<span id="cb7-6"><a href="" aria-label="6"></a>        patient.q_time_nurse <span class="op">=</span> end_q_nurse <span class="op">-</span> start_q_nurse</span>
+<span id="cb7-7"><a href="" aria-label="7"></a></span>
+<span id="cb7-8"><a href="" aria-label="8"></a>        <span class="va">self</span>.logger.log_queue(entity_id<span class="op">=</span>patient.<span class="bu">id</span>, event<span class="op">=</span><span class="st">"being_seen_by_nurse"</span>)  <span class="co"># NEW</span></span>
+<span id="cb7-9"><a href="" aria-label="9"></a></span>
+<span id="cb7-10"><a href="" aria-label="10"></a>        sampled_nurse_act_time <span class="op">=</span> <span class="va">self</span>.nurse_consult_time_dist.sample()</span>
+<span id="cb7-11"><a href="" aria-label="11"></a>        <span class="cf">yield</span> <span class="va">self</span>.env.timeout(sampled_nurse_act_time)</span>
+<span id="cb7-12"><a href="" aria-label="12"></a></span>
+<span id="cb7-13"><a href="" aria-label="13"></a>        <span class="va">self</span>.logger.log_queue(entity_id<span class="op">=</span>patient.<span class="bu">id</span>, event<span class="op">=</span><span class="st">"nurse_treatment_ends"</span>)  <span class="co"># NEW</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="but-its-not-a-queue" class="slide level2">
+<h2>But it’s not a queue?!</h2>
+<p>Later, we’ll look at vidigi’s more advanced ways of tracking resource use, but treating it as a ‘queue’ step for now allows us to get a simple animation up and running very quickly.</p>
+</section>
+<section id="adding-logging-steps---departure" class="slide level2">
+<h2>Adding Logging Steps - Departure</h2>
+<p>Finally, every patient needs one departure event.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8" data-code-line-style="dim:1,focus:2" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="" aria-label="1"></a><span class="kw">def</span> attend_clinic(<span class="va">self</span>, patient):</span>
+<span id="cb8-2"><a href="" aria-label="2"></a>    <span class="va">self</span>.logger.log_arrival(entity_id<span class="op">=</span>patient.<span class="bu">id</span>)  <span class="co"># NEW</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><br></p>
+<div class="value-box bg-red" style="width:80%; height:; text-align:left;  display:flex; flex-direction:row; align-items:center; gap:1em;"><i class="icon fa-solid fa-triangle-exclamation" style="font-size:3em;color:white; flex-shrink:0;"></i><div class="details" style="font-size: display:flex;color:white; flex:1;">
+<p>It’s important that each patient only has one arrival and one departure event per model run.</p>
+<p>Things get messy if they don’t!</p>
+<p>(So if there’s any way they can ‘leave and come back’, think carefully about how you’ll handle it…)</p>
+</div></div>
+</section>
+<section id="all-the-logging-steps" class="slide level2">
+<h2>All the logging steps</h2>
+<p>Let’s recap the changes we made.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-code-line-style="dim:1,focus:2,dim:3-5,focus:6,dim:7-12,focus:13,dim:14-17,focus:18,dim:19,focus:20" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="" aria-label="1"></a><span class="kw">def</span> attend_clinic(<span class="va">self</span>, patient):</span>
+<span id="cb9-2"><a href="" aria-label="2"></a>    <span class="va">self</span>.logger.log_arrival(entity_id<span class="op">=</span>patient.<span class="bu">id</span>)  <span class="co"># NEW</span></span>
+<span id="cb9-3"><a href="" aria-label="3"></a></span>
+<span id="cb9-4"><a href="" aria-label="4"></a>    start_q_nurse <span class="op">=</span> <span class="va">self</span>.env.now</span>
+<span id="cb9-5"><a href="" aria-label="5"></a></span>
+<span id="cb9-6"><a href="" aria-label="6"></a>    <span class="va">self</span>.logger.log_queue(entity_id<span class="op">=</span>patient.<span class="bu">id</span>, event<span class="op">=</span><span class="st">"nurse_wait_begins"</span>)  <span class="co"># NEW</span></span>
+<span id="cb9-7"><a href="" aria-label="7"></a></span>
+<span id="cb9-8"><a href="" aria-label="8"></a>    <span class="cf">with</span> <span class="va">self</span>.nurse.request() <span class="im">as</span> req:</span>
+<span id="cb9-9"><a href="" aria-label="9"></a>        <span class="cf">yield</span> req</span>
+<span id="cb9-10"><a href="" aria-label="10"></a>        end_q_nurse <span class="op">=</span> <span class="va">self</span>.env.now</span>
+<span id="cb9-11"><a href="" aria-label="11"></a>        patient.q_time_nurse <span class="op">=</span> end_q_nurse <span class="op">-</span> start_q_nurse</span>
+<span id="cb9-12"><a href="" aria-label="12"></a></span>
+<span id="cb9-13"><a href="" aria-label="13"></a>        <span class="va">self</span>.logger.log_queue(entity_id<span class="op">=</span>patient.<span class="bu">id</span>, event<span class="op">=</span><span class="st">"being_seen_by_nurse"</span>)  <span class="co"># NEW</span></span>
+<span id="cb9-14"><a href="" aria-label="14"></a></span>
+<span id="cb9-15"><a href="" aria-label="15"></a>        sampled_nurse_act_time <span class="op">=</span> <span class="va">self</span>.nurse_consult_time_dist.sample()</span>
+<span id="cb9-16"><a href="" aria-label="16"></a>        <span class="cf">yield</span> <span class="va">self</span>.env.timeout(sampled_nurse_act_time)</span>
+<span id="cb9-17"><a href="" aria-label="17"></a></span>
+<span id="cb9-18"><a href="" aria-label="18"></a>        <span class="va">self</span>.logger.log_queue(entity_id<span class="op">=</span>patient.<span class="bu">id</span>, event<span class="op">=</span><span class="st">"nurse_treatment_ends"</span>)  <span class="co"># NEW</span></span>
+<span id="cb9-19"><a href="" aria-label="19"></a></span>
+<span id="cb9-20"><a href="" aria-label="20"></a>    <span class="va">self</span>.logger.log_departure(entity_id<span class="op">=</span>patient.<span class="bu">id</span>)  <span class="co"># NEW</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="accessing-our-event-log" class="slide level2">
+<h2>Accessing our event log</h2>
+<p>We’ll want to grab out our event log as a pandas dataframe.</p>
+<p>It’s neat to set up a little helper method in our <code>Model</code> class to do that.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="" aria-label="1"></a><span class="kw">def</span> get_vidigi_event_log(<span class="va">self</span>):</span>
+<span id="cb10-2"><a href="" aria-label="2"></a>    <span class="cf">return</span> <span class="va">self</span>.logger.to_dataframe()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Vidigi provides the <code>to_dataframe()</code> method for our convenience. This will look at the EventLogger object, find where it stores the event logs, and convert it into this format for us.</p>
+</section>
+<section id="the-new-class---animation" class="slide level2">
+<h2>The new class - Animation</h2>
+<p>Our models contain some key classes: <code>Params</code>, <code>Patient</code>, <code>Model</code></p>
+<p>(also <code>Trial</code>, but in this first example, we’re just working at the level of a single model - we’ll look at wiring Vidigi into <code>Trial</code> a bit later)</p>
+<p>We’re now going to define a brand new class called <code>Animation</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="" aria-label="1"></a><span class="kw">class</span> Animation:</span>
+<span id="cb11-2"><a href="" aria-label="2"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, params, event_log):</span>
+<span id="cb11-3"><a href="" aria-label="3"></a>        <span class="va">self</span>.params <span class="op">=</span> params</span>
+<span id="cb11-4"><a href="" aria-label="4"></a>        <span class="va">self</span>.event_log <span class="op">=</span> event_log</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="setting-up-a-layout-grid" class="slide level2">
 <h2>Setting up a Layout Grid</h2>
+<p>The next thing we’ll define - still in our init method - is a layout grid.</p>
+<div class="columns">
+<div class="column" style="width:40%;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="" aria-label="1"></a>EventPosition(</span>
+<span id="cb12-2"><a href="" aria-label="2"></a>    event<span class="op">=</span><span class="st">"nurse_wait_begins"</span>,</span>
+<span id="cb12-3"><a href="" aria-label="3"></a>    x<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb12-4"><a href="" aria-label="4"></a>    y<span class="op">=</span><span class="dv">250</span>,</span>
+<span id="cb12-5"><a href="" aria-label="5"></a>    label<span class="op">=</span><span class="st">"Waiting for Nurse"</span></span>
+<span id="cb12-6"><a href="" aria-label="6"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div><div class="column" style="width:5%;">
+
+</div><div class="column" style="font-size: 75%;">
+<p>For each event we want in our animation, we create an <code>EventPosition</code> object and pass four things:</p>
+<ul>
+<li>the event name (which should match what we called it in the logger)</li>
+<li>an x coordinate for the front of that queue</li>
+<li>a y coordinate for the front of that queue</li>
+<li>a nicer label to use in the animation</li>
+</ul>
+</div></div>
+</section>
+<section id="coordinates" class="slide level2">
+<h2>Coordinates</h2>
+<p>[TODO: create a blank axis]</p>
+<p>[TODO: grab full fig from vidigi paper]</p>
+</section>
+<section id="arrival-and-departure-events" class="slide level2">
+<h2>Arrival and Departure Events</h2>
+<p>Behind the scenes, EventLogger always gives these the same event name if you use <code>.log_arrival()</code> and <code>.log_departure()</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="" aria-label="1"></a>EventPosition(</span>
+<span id="cb13-2"><a href="" aria-label="2"></a>    event<span class="op">=</span><span class="st">"arrival"</span>, x<span class="op">=</span><span class="dv">0</span>, y<span class="op">=</span><span class="dv">350</span>, label<span class="op">=</span><span class="st">"Entrance"</span></span>
+<span id="cb13-3"><a href="" aria-label="3"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="" aria-label="1"></a>EventPosition(</span>
+<span id="cb14-2"><a href="" aria-label="2"></a>    event<span class="op">=</span><span class="st">"depart"</span>, x<span class="op">=</span><span class="dv">200</span>, y<span class="op">=</span><span class="dv">50</span>, label<span class="op">=</span><span class="st">"Exit"</span></span>
+<span id="cb14-3"><a href="" aria-label="3"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="create_event_position_df" class="slide level2">
+<h2><code>create_event_position_df</code></h2>
+<div style="font-size: 75%;">
+<p>We pass a <code>list</code> of all our EventPosition objects.</p>
+<p>Remember - a Python list uses <code>[]</code> with each item separated by a <code>,</code></p>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="" aria-label="1"></a>create_event_position_df(</span>
+<span id="cb15-2"><a href="" aria-label="2"></a>    [</span>
+<span id="cb15-3"><a href="" aria-label="3"></a>        EventPosition(</span>
+<span id="cb15-4"><a href="" aria-label="4"></a>            event<span class="op">=</span><span class="st">"arrival"</span>, x<span class="op">=</span><span class="dv">0</span>, y<span class="op">=</span><span class="dv">350</span>, label<span class="op">=</span><span class="st">"Entrance"</span></span>
+<span id="cb15-5"><a href="" aria-label="5"></a>        ),</span>
+<span id="cb15-6"><a href="" aria-label="6"></a>        EventPosition(</span>
+<span id="cb15-7"><a href="" aria-label="7"></a>            event<span class="op">=</span><span class="st">"nurse_wait_begins"</span>, x<span class="op">=</span><span class="dv">200</span>, y<span class="op">=</span><span class="dv">250</span>, label<span class="op">=</span><span class="st">"Waiting for Nurse"</span></span>
+<span id="cb15-8"><a href="" aria-label="8"></a>        ),</span>
+<span id="cb15-9"><a href="" aria-label="9"></a>        EventPosition(</span>
+<span id="cb15-10"><a href="" aria-label="10"></a>            event<span class="op">=</span><span class="st">"being_seen_by_nurse"</span>, x<span class="op">=</span><span class="dv">200</span>, y<span class="op">=</span><span class="dv">150</span>, label<span class="op">=</span><span class="st">"Being Seen By Nurse"</span></span>
+<span id="cb15-11"><a href="" aria-label="11"></a>        ),</span>
+<span id="cb15-12"><a href="" aria-label="12"></a>        <span class="co"># We don't need to visualise the 'nurse_treatment_ends' step</span></span>
+<span id="cb15-13"><a href="" aria-label="13"></a>        <span class="co"># as the timing will be identical to the depart step</span></span>
+<span id="cb15-14"><a href="" aria-label="14"></a>        EventPosition(</span>
+<span id="cb15-15"><a href="" aria-label="15"></a>            event<span class="op">=</span><span class="st">"depart"</span>, x<span class="op">=</span><span class="dv">200</span>, y<span class="op">=</span><span class="dv">50</span>, label<span class="op">=</span><span class="st">"Exit"</span></span>
+<span id="cb15-16"><a href="" aria-label="16"></a>        )</span>
+<span id="cb15-17"><a href="" aria-label="17"></a>    ]</span>
+<span id="cb15-18"><a href="" aria-label="18"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="the-full-grid-in-situ" class="slide level2">
+<h2>The full Grid in situ</h2>
+<p>We’ll bind this to <code>self.layout</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16" data-code-line-style="dim:1-5,focus:6-23" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="" aria-label="1"></a><span class="kw">class</span> Animation:</span>
+<span id="cb16-2"><a href="" aria-label="2"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, params, event_log):</span>
+<span id="cb16-3"><a href="" aria-label="3"></a>        <span class="va">self</span>.params <span class="op">=</span> params</span>
+<span id="cb16-4"><a href="" aria-label="4"></a>        <span class="va">self</span>.event_log <span class="op">=</span> event_log</span>
+<span id="cb16-5"><a href="" aria-label="5"></a></span>
+<span id="cb16-6"><a href="" aria-label="6"></a>        <span class="va">self</span>.layout <span class="op">=</span> create_event_position_df(</span>
+<span id="cb16-7"><a href="" aria-label="7"></a>            [</span>
+<span id="cb16-8"><a href="" aria-label="8"></a>                EventPosition(</span>
+<span id="cb16-9"><a href="" aria-label="9"></a>                    event<span class="op">=</span><span class="st">"arrival"</span>, x<span class="op">=</span><span class="dv">0</span>, y<span class="op">=</span><span class="dv">350</span>, label<span class="op">=</span><span class="st">"Entrance"</span></span>
+<span id="cb16-10"><a href="" aria-label="10"></a>                ),</span>
+<span id="cb16-11"><a href="" aria-label="11"></a>                EventPosition(</span>
+<span id="cb16-12"><a href="" aria-label="12"></a>                    event<span class="op">=</span><span class="st">"nurse_wait_begins"</span>, x<span class="op">=</span><span class="dv">200</span>, y<span class="op">=</span><span class="dv">250</span>, label<span class="op">=</span><span class="st">"Waiting for Nurse"</span></span>
+<span id="cb16-13"><a href="" aria-label="13"></a>                ),</span>
+<span id="cb16-14"><a href="" aria-label="14"></a>                EventPosition(</span>
+<span id="cb16-15"><a href="" aria-label="15"></a>                    event<span class="op">=</span><span class="st">"being_seen_by_nurse"</span>, x<span class="op">=</span><span class="dv">200</span>, y<span class="op">=</span><span class="dv">150</span>, label<span class="op">=</span><span class="st">"Being Seen By Nurse"</span></span>
+<span id="cb16-16"><a href="" aria-label="16"></a>                ),</span>
+<span id="cb16-17"><a href="" aria-label="17"></a>                <span class="co"># We don't need to visualise the 'nurse_treatment_ends' step</span></span>
+<span id="cb16-18"><a href="" aria-label="18"></a>                <span class="co"># as the timing will be identical to the depart step</span></span>
+<span id="cb16-19"><a href="" aria-label="19"></a>                EventPosition(</span>
+<span id="cb16-20"><a href="" aria-label="20"></a>                    event<span class="op">=</span><span class="st">"depart"</span>, x<span class="op">=</span><span class="dv">200</span>, y<span class="op">=</span><span class="dv">50</span>, label<span class="op">=</span><span class="st">"Exit"</span></span>
+<span id="cb16-21"><a href="" aria-label="21"></a>                )</span>
+<span id="cb16-22"><a href="" aria-label="22"></a>            ]</span>
+<span id="cb16-23"><a href="" aria-label="23"></a>        )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="generating-the-animation" class="slide level2">
 <h2>Generating the Animation</h2>
+<p>Now, we just need a small function to call vidigi’s animation creation logic.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17" data-code-line-style="dim:1-4,focus:5-11" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="" aria-label="1"></a><span class="kw">class</span> Animation:</span>
+<span id="cb17-2"><a href="" aria-label="2"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, params, event_log):</span>
+<span id="cb17-3"><a href="" aria-label="3"></a>        ...</span>
+<span id="cb17-4"><a href="" aria-label="4"></a></span>
+<span id="cb17-5"><a href="" aria-label="5"></a>    <span class="kw">def</span> generate_animation(<span class="va">self</span>, time_interval<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb17-6"><a href="" aria-label="6"></a>        <span class="cf">return</span> animate_activity_log(</span>
+<span id="cb17-7"><a href="" aria-label="7"></a>            event_log<span class="op">=</span><span class="va">self</span>.event_log,</span>
+<span id="cb17-8"><a href="" aria-label="8"></a>            event_position_df<span class="op">=</span><span class="va">self</span>.layout,</span>
+<span id="cb17-9"><a href="" aria-label="9"></a>            every_x_time_units<span class="op">=</span>time_interval,</span>
+<span id="cb17-10"><a href="" aria-label="10"></a>            scenario<span class="op">=</span><span class="va">self</span>.params,</span>
+<span id="cb17-11"><a href="" aria-label="11"></a>        )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="calling-the-animation" class="slide level2">
+<h2>Calling the animation</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18" data-code-line-style="dim:1-7,focus:8-12" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="" aria-label="1"></a>my_params <span class="op">=</span> Param()</span>
+<span id="cb18-2"><a href="" aria-label="2"></a>my_model <span class="op">=</span> Model(my_params)</span>
+<span id="cb18-3"><a href="" aria-label="3"></a>my_model.run_model()</span>
+<span id="cb18-4"><a href="" aria-label="4"></a></span>
+<span id="cb18-5"><a href="" aria-label="5"></a>patient_df <span class="op">=</span> my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)</span>
+<span id="cb18-6"><a href="" aria-label="6"></a>my_model.calculate_run_results(patient_df)</span>
+<span id="cb18-7"><a href="" aria-label="7"></a></span>
+<span id="cb18-8"><a href="" aria-label="8"></a>my_event_log <span class="op">=</span> my_model.get_vidigi_event_log()</span>
+<span id="cb18-9"><a href="" aria-label="9"></a><span class="bu">print</span>(my_event_log.head(<span class="dv">10</span>))</span>
+<span id="cb18-10"><a href="" aria-label="10"></a></span>
+<span id="cb18-11"><a href="" aria-label="11"></a>my_animation <span class="op">=</span> Animation(my_params, my_event_log)</span>
+<span id="cb18-12"><a href="" aria-label="12"></a>my_animation.generate_animation()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="what-does-the-event-log-look-like" class="slide level2">
+<h2>What does the event log look like?</h2>
+</section>
+<section id="what-does-the-animation-look-like" class="slide level2">
+<h2>What does the animation look like?</h2>
 </section></section>
 <section>
 <section id="advanced-vidigi-elements---resource-use" class="title-slide slide level1 center">
@@ -420,9 +666,9 @@ Sammi Rosser
 <section id="swapping-in-vidigi-classes" class="slide level2">
 <h2>Swapping in vidigi classes</h2>
 <p>Replace</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>with</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore <span class="im">as</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore <span class="im">as</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="fragment">
 <hr>
 OR
@@ -430,9 +676,9 @@ OR
 <p>:::</p>
 <div class="fragment">
 <p>Replace</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>with</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>and do a find and replace for</p>
 <p><code>Resource</code> in your code, changing it to <code>VidigiStore</code></p>
 </div>
