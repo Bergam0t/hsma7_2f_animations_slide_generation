@@ -1,9 +1,29 @@
-
-
-
 # Your First Vidigi Animation - a Walkthrough
 
 ## Adding a Logging Class
+
+The first thing we need to do is set up our logging class.
+
+We will add this when initialising our `Model` class.
+
+```{.python code-line-style="dim:1-15,focus:16" code-line-style-preset="emphasis"}
+class Model:
+    def __init__(self, param):
+        self.param = param
+        self.env = simpy.Environment()
+        self.patient_counter = 0
+        self.nurse = simpy.Resource(self.env, capacity=self.param.num_nurses)
+        self.patient_inter_dist = Exponential(mean=self.param.mean_patient_inter)
+        self.nurse_consult_time_dist = Lognormal(
+            mean=self.param.mean_nurse_consult_time,
+            stdev=self.param.sd_nurse_consult_time,
+        )
+        self.list_of_patients = []
+        self.mean_q_time_nurse = pd.NA
+        self.sd_q_time_nurse = pd.NA
+        self.perc_90_q_time_nurse = pd.NA
+        self.logger = EventLogger(env=self.env)  # NEW
+```
 
 ## Adding Logging Steps
 

@@ -7,7 +7,7 @@ You will be working with the model [TODO: model path] and the notebook [TODO: no
 :::: {.columns}
 
 ::: {.column width='50%'}
-1. Set up the
+1. Modify the code to account for the presence of the `Trial` class
 1. Generate a process map of this system
 1. Switch to using the three-step animation process
 1. Customise the icons so that high-priority patients are displayed differently

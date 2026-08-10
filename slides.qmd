@@ -67,16 +67,18 @@ filters:
   - bergam0t/value-box
   - bergam0t/focus-list
   - code-fullscreen
-
+  - code-line-style
 ---
 
 {{< include sections/_intro_to_animations.qmd >}}
 
 {{< include sections/_what_is_vidigi.qmd >}}
 
-{{< include sections/_elements_of_vidigi.qmd >}}
+{{< include sections/_elements_of_vidigi_simple.qmd >}}
 
 {{< include sections/_creating_simple_vidigi_animations.qmd >}}
+
+{{< include sections/_elements_of_vidigi_advanced_resource_use.qmd >}}
 
 {{< include sections/_adding_resource_use_vidigi_animations.qmd >}}
 
@@ -93,6 +95,6 @@ filters:
 
 {{< include sections/_vidigi_exercise_2.qmd >}}
 
-{{< include sections/__animating_bigger_systems_and_longer_timescales.qmd >}}
+{{< include sections/_animating_bigger_systems_and_longer_timescales.qmd >}}
 
 {{< include sections/_vidigi_exercise_3.qmd >}}
