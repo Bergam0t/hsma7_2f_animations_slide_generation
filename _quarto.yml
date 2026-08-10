@@ -1,6 +1,46 @@
 project:
   title: "Title"
   output-dir: docs
+  resources:
+    - assets/
+
+  # Only render the deck itself. Without this, Quarto also renders every other
+  # top-level .md / .ipynb file (README, LICENCE, scratch notebooks) into
+  # output-dir as its own standalone page.
+  # NOTE: if you rename slides.qmd, change this to match.
+  render:
+    - slides.qmd
+
+  # Quarto's default (non-website) project type copies the WHOLE project
+  # directory into output-dir on every render, and it ignores .gitignore.
+  # This hook deletes everything in output-dir that isn't listed in docs-keep
+  # below. Please don't remove it -- without it, docs/ silently accumulates
+  # your source files, data folders, __pycache__, lockfiles and multi-MB
+  # Jupyter intermediates, and GitHub Pages publishes the lot.
+  post-render:
+    - _docs_cleanup.py
+
+# Everything in output-dir NOT listed here is deleted after each render.
+# Add any folder your deck links to at runtime -- extra images, PDFs, data
+# files, handouts. If you drop an entry the deck actually needs, the deck
+# breaks silently on the published site, so check it after editing this list.
+docs-keep:
+  - index.html
+  - slides_files
+  - assets
+  - .nojekyll
+  - _extensions
+  - _freeze
+  - custom.scss
+  - title-slide.scss
+  - title-slide.html
+  - _brand.yml
+  - resources
+  - code_examples
+  - fullscreen
+  - diagrams
+  - sample_code
+  - sections
 
 format:
   revealjs:

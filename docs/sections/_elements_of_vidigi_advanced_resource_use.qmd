@@ -1,0 +1,50 @@
+
+# Advanced Vidigi Elements - Resource Use
+
+## Custom Resource Classes
+
+## Why do we need these?
+
+## Swapping in vidigi classes
+
+Replace
+
+```python
+from simpy import Resource
+```
+
+with
+
+```python
+from vidigi.resources import VidigiStore as Resource
+```
+
+
+
+::: {.fragment}
+<hr>
+OR
+<hr>
+:::
+
+::: {.fragment}
+
+Replace
+
+```python
+from simpy import Resource
+```
+
+with
+
+```python
+from vidigi.resources import VidigiStore
+```
+
+and do a find and replace for
+
+`Resource` in your code, changing it to `VidigiStore`
+
+:::
+
+## Recording

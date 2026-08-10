@@ -36,14 +36,13 @@ class Param:
 
 
 class Model:
-    def __init__(self, param):
+    # NEW
+    # We're going to start tracking a run_number parameter
+    def __init__(self, param, run_number):
         self.param = param
+        self.run_number = run_number  # NEW
         self.env = simpy.Environment()
         self.patient_counter = 0
-        # NEW
-        # We change simpy.Resource to VidigiStore
-        # and we change 'capacity' to 'num_resources' (as capacity has its own
-        # special meaning in vidigi's resources)
         self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
         self.patient_inter_dist = Exponential(mean=self.param.mean_patient_inter)
         self.nurse_consult_time_dist = Lognormal(
@@ -55,7 +54,9 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        self.logger = EventLogger(env=self.env)
+        # NEW
+        # We can now pass our run_number to our logger
+        self.logger = EventLogger(env=self.env, run_number=self.run_number)
 
     def generator_patient_arrivals(self):
         while True:
@@ -74,35 +75,24 @@ class Model:
         self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
 
         with self.nurse.request() as req:
-            # NEW
-            # We need to assign the result of this yield to a variable
-            # We can call it anything, but make sure you don't name it
-            # the exact same thing as your resource!
             nurse_obtained = yield req
 
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
 
-            # NEW
-            # We swap our queue event here for a resource_use_start event
             self.logger.log_resource_use_start(
                 entity_id=patient.id,
                 event="being_seen_by_nurse",
-                # We can then get the ID of the nurse and use this to
-                # track visually which nurse is assigned to which patient
-                resource_id=nurse_obtained.id_attribute,  # NEW
+                resource_id=nurse_obtained.id_attribute,
             )
 
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
 
-            # NEW
-            # We swap our queue event here for a resource_use_end event
             self.logger.log_resource_use_end(
                 entity_id=patient.id,
                 event="nurse_treatment_ends",
-                # We pass the nurse's ID again
-                resource_id=nurse_obtained.id_attribute,  # NEW
+                resource_id=nurse_obtained.id_attribute,
             )
 
         self.logger.log_departure(entity_id=patient.id)
@@ -124,6 +114,83 @@ class Model:
         return self.logger.to_dataframe()
 
 
+# NEW - but you've seen all this before.
+# It's *almost* identical to the content in session 2C!
+# We don't need to make any changes to it for the purposes
+# of getting the animation working - our changes will just
+# be in how we pass the event log to the animation
+# so we will make a little helper method at the end of this
+# class for that purpose
+class Trial:
+    def __init__(self, param):
+        self.param = param
+        self.list_of_simulation_replications = []
+        self.trial_mean_q_time_nurse = pd.NA
+        self.trial_sd_q_time_nurse = pd.NA
+        self.trial_perc_90_q_time_nurse = pd.NA
+
+    def run_trial(self):
+        for replication_id in range(self.param.num_replications):
+            # NEW
+            # We now just pass our replication_id into the model
+            # Note that the replication_id will count from 0
+            model_replication = Model(self.param, replication_id)
+            model_replication.run_model()
+            patient_df = model_replication.convert_entity_list_to_dataframe(
+                model_replication.list_of_patients
+            )
+            model_replication.calculate_run_results(patient_df)
+            self.list_of_simulation_replications.append(model_replication)
+
+    def calculate_trial_results(self):
+        self.replication_df = pd.DataFrame(
+            replication.__dict__ for replication in self.list_of_simulation_replications
+        )
+
+        self.trial_mean_q_time_nurse = self.replication_df["mean_q_time_nurse"].mean()
+
+        self.trial_sd_q_time_nurse = self.replication_df["mean_q_time_nurse"].std()
+
+        self.trial_perc_90_q_time_nurse = self.replication_df[
+            "mean_q_time_nurse"
+        ].quantile(0.9)
+
+    # NEW
+    # This bit really is new!
+    # We're going to make a small helper function to pull back the run
+    # we are interested in
+    # Remember - Python counts from 0
+    def get_run(self, run=0):
+        matching_replications = [
+            model
+            for model in self.list_of_simulation_replications
+            if model.run_number == run
+        ]
+
+        # Let's give ourselves a nicer error in case we accidentally ask for a run
+        # that doesn't exist
+        if len(matching_replications) == 0:
+            raise ValueError(f"No run found with run_number={run}")
+
+        # We *should* only have one match - but we could make a mistake in
+        # assigning run numbers.
+        # It's worth getting into the habit of checking things like this!
+        if len(matching_replications) != 1:
+            raise ValueError(
+                f"Expected exactly one run with run_number={run}, found {len(matching_replications)}"
+            )
+
+        # Now that we're happy there's only one matching run, we can safely just pull back
+        # the first (and only) item in our list comprehension
+        return matching_replications[0]
+
+        # We *could* have just done
+        # `return self.list_of_simulation_replications[run]`
+        # and left it at that, but this is more robust in case
+        # we ever make our model do something fancy like running
+        # lots of runs simultaneously across our computer's cores
+
+
 class Animation:
     def __init__(self, params, event_log):
         self.params = params
@@ -140,14 +207,8 @@ class Animation:
                     x=200,
                     y=150,
                     label="Being Seen By Nurse",
-                    # NEW
-                    # We now just need to pass in the resource to visualise
-                    # This will be looked up from our Params class, so we need
-                    # to make sure the name exactly matches how it's written there
                     resource="num_nurses",
                 ),
-                # We **still** don't need to visualise the 'nurse_treatment_ends' step as
-                # the timing will be identical to the depart step
                 EventPosition(event="depart", x=200, y=50, label="Exit"),
             ]
         )
@@ -161,26 +222,28 @@ class Animation:
         )
 
 
+# NEW (but again, you've seen this before in session 2C)
+# Rather than an individual run, we're just
+my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
+my_trial = Trial(my_params)
+my_trial.run_trial()
+my_trial.calculate_trial_results()
+print("TRIAL RESULTS")
+print("-----------------------")
+print("Queuing Time for the Nurse")
+print(f"Mean : {my_trial.trial_mean_q_time_nurse:.2f} minutes")
+print(f"SD : {my_trial.trial_sd_q_time_nurse:.2f} minutes")
+print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
+print()
+
 # NEW
-# We'll override the number of nurses so we can more clearly see what's going on
-my_params = Param(num_nurses=2)
-
-my_model = Model(my_params)
-my_model.run_model()
-
-patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
-my_model.calculate_run_results(patient_df)
-
-print(
-    f"Mean queuing time for the nurse was {my_model.mean_q_time_nurse:.2f}", "minutes"
-)
-print(f"SD queuing time for the nurse was {my_model.sd_q_time_nurse:.2f}", "minutes")
-print(
-    "90th percentile queuing time for the nurse was",
-    f"{my_model.perc_90_q_time_nurse:.2f} minutes",
-)
-
-my_event_log = my_model.get_vidigi_event_log()
+# Now instead of just calling 'get_vidigi_event_log()' directly
+# on our model run, we just grab back our chosen run from the trial
+# first (remembering that Python counts from 0)
+# Because that's the *entire* model object, we still have access to
+# any of the methods or attributes of that model object, so we can now
+# grab back
+my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
 print(my_event_log.head(10))
 
 my_animation = Animation(my_params, my_event_log)

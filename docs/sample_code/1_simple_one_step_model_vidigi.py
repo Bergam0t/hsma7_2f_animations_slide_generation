@@ -50,7 +50,7 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        self.logger = EventLogger(env=self.env, run_number=1)  # NEW
+        self.logger = EventLogger(env=self.env)  # NEW
 
     def generator_patient_arrivals(self):
         while True:

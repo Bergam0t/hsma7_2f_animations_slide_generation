@@ -15,7 +15,8 @@
 <script src="slides_files/libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
 <link href="slides_files/libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-contrib/grid-no-htext-1.0.0/grid_no_htext.css" rel="stylesheet">
-<link href="slides_files/libs/quarto-contrib/value-box-styles-1.0.0/value-box.css" rel="stylesheet"><meta charset="utf-8">
+<link href="slides_files/libs/quarto-contrib/value-box-styles-1.0.0/value-box.css" rel="stylesheet">
+<link href="slides_files/libs/quarto-contrib/code-line-style-0.1.0/code-line-style.css" rel="stylesheet"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.11.0">
 
   <meta name="author" content="Sammi Rosser">
@@ -359,19 +360,42 @@ Sammi Rosser
 <h2>Why EventLogger?</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<div class="value-box bg-blue" style="width:80%; height:; text-align:left;  display:flex; flex-direction:column; justify-content:center;"><div class="details" style="font-size: display:flex;color:white;">
+<div class="fragment">
 <h3 id="the-format-vidigi-expects">The Format Vidigi Expects</h3>
 <p>The EventLogger methods work with all of vidigi’s defaults, making it less likely that you’ll make errors when adding an animation in</p>
-</div></div>
+</div>
 </div><div class="column" style="width:50%;">
+<div class="fragment">
 <h3 id="extra-plotting-helpers">Extra Plotting Helpers</h3>
 <p>Later, we’ll see what other plots - not just animations - that EventLogger can automate for us</p>
+</div>
 </div></div>
 </section></section>
 <section>
 <section id="your-first-vidigi-animation---a-walkthrough" class="title-slide slide level1 center">
 <h1>Your First Vidigi Animation - a Walkthrough</h1>
 
+</section>
+<section id="adding-a-logging-class" class="slide level2">
+<h2>Adding a Logging Class</h2>
+<p>The first thing we need to do is set up our logging class.</p>
+<p>We will add this when initialising our <code>Model</code> class.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" data-code-line-style="dim:1-15,focus:16" data-code-line-style-preset="emphasis"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="" aria-label="1"></a><span class="kw">class</span> Model:</span>
+<span id="cb4-2"><a href="" aria-label="2"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, param):</span>
+<span id="cb4-3"><a href="" aria-label="3"></a>        <span class="va">self</span>.param <span class="op">=</span> param</span>
+<span id="cb4-4"><a href="" aria-label="4"></a>        <span class="va">self</span>.env <span class="op">=</span> simpy.Environment()</span>
+<span id="cb4-5"><a href="" aria-label="5"></a>        <span class="va">self</span>.patient_counter <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb4-6"><a href="" aria-label="6"></a>        <span class="va">self</span>.nurse <span class="op">=</span> simpy.Resource(<span class="va">self</span>.env, capacity<span class="op">=</span><span class="va">self</span>.param.num_nurses)</span>
+<span id="cb4-7"><a href="" aria-label="7"></a>        <span class="va">self</span>.patient_inter_dist <span class="op">=</span> Exponential(mean<span class="op">=</span><span class="va">self</span>.param.mean_patient_inter)</span>
+<span id="cb4-8"><a href="" aria-label="8"></a>        <span class="va">self</span>.nurse_consult_time_dist <span class="op">=</span> Lognormal(</span>
+<span id="cb4-9"><a href="" aria-label="9"></a>            mean<span class="op">=</span><span class="va">self</span>.param.mean_nurse_consult_time,</span>
+<span id="cb4-10"><a href="" aria-label="10"></a>            stdev<span class="op">=</span><span class="va">self</span>.param.sd_nurse_consult_time,</span>
+<span id="cb4-11"><a href="" aria-label="11"></a>        )</span>
+<span id="cb4-12"><a href="" aria-label="12"></a>        <span class="va">self</span>.list_of_patients <span class="op">=</span> []</span>
+<span id="cb4-13"><a href="" aria-label="13"></a>        <span class="va">self</span>.mean_q_time_nurse <span class="op">=</span> pd.NA</span>
+<span id="cb4-14"><a href="" aria-label="14"></a>        <span class="va">self</span>.sd_q_time_nurse <span class="op">=</span> pd.NA</span>
+<span id="cb4-15"><a href="" aria-label="15"></a>        <span class="va">self</span>.perc_90_q_time_nurse <span class="op">=</span> pd.NA</span>
+<span id="cb4-16"><a href="" aria-label="16"></a>        <span class="va">self</span>.logger <span class="op">=</span> EventLogger(env<span class="op">=</span><span class="va">self</span>.env)  <span class="co"># NEW</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="adding-logging-steps" class="slide level2">
 <h2>Adding Logging Steps</h2>
@@ -383,8 +407,8 @@ Sammi Rosser
 <h2>Generating the Animation</h2>
 </section></section>
 <section>
-<section id="advanced-vidigi---resource-use" class="title-slide slide level1 center">
-<h1>Advanced Vidigi - Resource Use</h1>
+<section id="advanced-vidigi-elements---resource-use" class="title-slide slide level1 center">
+<h1>Advanced Vidigi Elements - Resource Use</h1>
 
 </section>
 <section id="custom-resource-classes" class="slide level2">
@@ -396,9 +420,9 @@ Sammi Rosser
 <section id="swapping-in-vidigi-classes" class="slide level2">
 <h2>Swapping in vidigi classes</h2>
 <p>Replace</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>with</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore <span class="im">as</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore <span class="im">as</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="fragment">
 <hr>
 OR
@@ -406,14 +430,57 @@ OR
 <p>:::</p>
 <div class="fragment">
 <p>Replace</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="" aria-label="1"></a><span class="im">from</span> simpy <span class="im">import</span> Resource</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>with</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="" aria-label="1"></a><span class="im">from</span> vidigi.resources <span class="im">import</span> VidigiStore</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>and do a find and replace for</p>
 <p><code>Resource</code> in your code, changing it to <code>VidigiStore</code></p>
 </div>
 <section id="recording" class="slide level2">
 <h2>Recording</h2>
+</section>
+<section id="exercise-1" class="title-slide slide level1 center">
+<h1>Exercise 1</h1>
+
+</section>
+<section id="vidigi-exercise-1" class="slide level2">
+<h2>Vidigi Exercise 1</h2>
+<p>You will be working with the model [TODO: model path] and the notebook [TODO: notebook path].</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<ol type="1">
+<li>Add a logger</li>
+<li>Add the required logging steps
+<ul>
+<li>arrival</li>
+<li>queue</li>
+<li>resource use</li>
+<li>departure</li>
+</ul></li>
+<li>Set up and generate the animation
+<ul>
+<li>you have been provided with a starter template for the layout of your animation</li>
+</ul></li>
+</ol>
+</div><div class="column" style="width:50%;">
+<h3 id="extensions">Extensions</h3>
+<ul>
+<li>Try increasing the arrival rate [TODO: To x]. Does the animation still look ok? Does it take longer to generate?</li>
+<li>Try tweaking the EventPositions. Do you think a different layout might look better?</li>
+<li>[TODO: Third extension]</li>
+</ul>
+</div></div>
+</section>
+
+<section id="incorporating-the-trial-class" class="title-slide slide level1 center">
+<h1>Incorporating the Trial Class</h1>
+
+</section>
+<section id="trial-trial-again" class="slide level2">
+<h2>Trial, trial again</h2>
+<p>So far we’ve been working with a vidigi model that only runs a single replication.</p>
+<p>However, we saw in earlier sessions how important it is to run <strong>multiple replications</strong> in simulation.</p>
+<p>So how can we make vidigi play nicely with the trial class?</p>
 </section>
 <section id="the-big-reveal" class="slide level2">
 <h2>The big reveal…</h2>
@@ -439,8 +506,53 @@ OR
 <p>This is the final step that calls on Plotly to turn it into an animation</p>
 </div></div>
 </div></div>
+</section>
+<section id="why-bother" class="slide level2">
+<h2>Why bother?</h2>
+<p>Vidigi’s three step process allows us to poke our nose in part way through and <em>modify the animation logic</em></p>
+<p>Things like - changing - custom pathing</p>
+</section>
+
+<section id="advanced-feature-showcase" class="title-slide slide level1 center">
+<h1>Advanced Feature Showcase</h1>
 
 </section>
+<section id="icons-by-patient-priority" class="slide level2">
+<h2>Icons by patient priority</h2>
+</section>
+<section id="adding-patient-waits-or-los" class="slide level2">
+<h2>Adding patient waits or LOS</h2>
+</section>
+<section id="custom-pathing" class="slide level2">
+<h2>Custom pathing</h2>
+</section>
+
+<section id="exercise-2" class="title-slide slide level1 center">
+<h1>Exercise 2</h1>
+
+</section>
+<section id="vidigi-exercise-2" class="slide level2">
+<h2>Vidigi Exercise 2</h2>
+<p>You will be working with the model [TODO: model path] and the notebook [TODO: notebook path]. This model already has the logging steps set up, as well as a simple one-step animation.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<ol type="1">
+<li>Modify the code to account for the presence of the <code>Trial</code> class</li>
+<li>Generate a process map of this system</li>
+<li>Switch to using the three-step animation process</li>
+<li>Customise the icons so that high-priority patients are displayed differently</li>
+<li>Create a custom background in draw.io (or your preferred software) and apply it to your animation</li>
+</ol>
+</div><div class="column" style="width:50%;">
+<h3 id="extensions-1">Extensions</h3>
+<ul>
+<li>Try adding some additional information to your patients. What about their wait time, or something else you think would be useful to include?</li>
+</ul>
+</div></div>
+<p>Longer-term animation with the governor model?</p>
+
+</section>
+
 </div>
 <script type="ojs-module-contents">
 eyJjb250ZW50cyI6W119
@@ -877,6 +989,540 @@ W10=
         }
       });
       </script>
+    <script type="text/javascript">
+    (function () {
+      // ---------------------------------------------------------------------------
+      // Preset registry. name -> CSS class.
+      // ---------------------------------------------------------------------------
+      // Preset entries can be either a string (CSS class) or
+      // { cls, presence } when the style implies a presence animation.
+      const PRESETS = {
+        diff: {
+          add:  { cls: "cs-add",  presence: "enter" },
+          rem:  { cls: "cs-rem",  presence: "exit"  },
+          chg:  "cs-chg",
+          note: "cs-note"
+        },
+        emphasis: {
+          focus:  "cs-focus",
+          dim:    "cs-dim",
+          strong: "cs-strong",
+          mark:   "cs-mark",
+          hi:     "cs-hi"
+        }
+      };
+
+      // Inline style primitives. name -> CSS property name (or special handler).
+      const PRIMITIVES = {
+        bg:       "background-color",
+        fg:       "color",
+        gutter:   "border-left-color",
+        opacity:  "opacity",
+        weight:   "font-weight",
+        italic:   (v) => v ? { "font-style": "italic" } : {},
+        outline:  "outline",
+        marker:   (v) => ({ "--cs-marker": '"' + String(v).replace(/"/g, '\\"') + '"' }),
+        duration: (v) => ({ "--cs-duration": (typeof v === "number" ? v + "ms" : String(v)) }),
+        easing:   (v) => ({ "--cs-easing": String(v) }),
+        class:    null
+      };
+
+      function expandInlineStyle(def) {
+        // def is e.g. { bg: "#fff", gutter: "#c00", weight: "bold" }
+        // Returns { props: {cssProp -> value}, classes: [extra class names] }
+        const props = {};
+        const classes = [];
+        for (const [key, val] of Object.entries(def || {})) {
+          if (key === "class") {
+            if (Array.isArray(val)) classes.push(...val);
+            else classes.push(String(val));
+            continue;
+          }
+          // `fg` needs help reaching nested syntax-token spans, which set their
+          // own `color`. Tag the line with `cs-fg` so a descendant rule can force
+          // them to inherit the wrapper's color (see code-line-style.css).
+          if (key === "fg") {
+            props["color"] = String(val);
+            classes.push("cs-fg");
+            continue;
+          }
+          const handler = PRIMITIVES[key];
+          if (handler == null) {
+            console.warn("[code-line-style] unknown primitive:", key);
+            continue;
+          }
+          if (typeof handler === "function") {
+            Object.assign(props, handler(val));
+          } else {
+            props[handler] = String(val);
+          }
+        }
+        return { props, classes };
+      }
+
+      // Build a resolver bound to (preset list, inline styles map).
+      function makeResolver(presetNames, inlineStyles) {
+        return function resolve(name) {
+          if (inlineStyles && inlineStyles[name]) {
+            const def = inlineStyles[name];
+            return { type: "inline", def, presence: def.presence || null };
+          }
+          for (const p of presetNames) {
+            const preset = PRESETS[p];
+            if (!preset || !preset[name]) continue;
+            const v = preset[name];
+            if (typeof v === "string") return { type: "class", cls: v, presence: null };
+            return { type: "class", cls: v.cls, presence: v.presence || null };
+          }
+          return null;
+        };
+      }
+
+      // ---------------------------------------------------------------------------
+      // Parsing
+      // ---------------------------------------------------------------------------
+      function parseStep(payload) {
+        const out = [];
+        if (!payload) return out;
+        for (const seg of payload.split(",")) {
+          const s = seg.trim();
+          if (!s) continue;
+          const m = s.match(/^([a-zA-Z][\w-]*):(\d+)(?:-(\d+))?$/);
+          if (!m) { reportError("cannot parse segment: " + s); continue; }
+          const name = m[1];
+          const from = parseInt(m[2], 10);
+          const to = m[3] ? parseInt(m[3], 10) : from;
+          out.push({ name, from, to });
+        }
+        return out;
+      }
+
+      function parseRange(val) {
+        // Object form: { line: N, label?: "..." }
+        if (val && typeof val === "object" && !Array.isArray(val)) {
+          if (val.line == null) { reportError("region object missing `line`"); return null; }
+          const line = parseInt(val.line, 10);
+          const label = val.label != null ? String(val.label) : null;
+          return { from: line, to: line, label };
+        }
+        const s = String(val).trim();
+        const m = s.match(/^(\d+)(?:-(\d+))?$/);
+        if (!m) { reportError("cannot parse range: " + s); return null; }
+        return { from: parseInt(m[1], 10), to: m[2] ? parseInt(m[2], 10) : parseInt(m[1], 10), label: null };
+      }
+
+      // A step is { entries: [...], transition: {...}|null }.
+      function parseYamlStep(item) {
+        const entries = [];
+        let transition = null;
+        if (item == null || typeof item !== "object") return { entries, transition };
+        if (item.name && item.at != null) {
+          const ranges = Array.isArray(item.at) ? item.at : [item.at];
+          for (const r of ranges) {
+            const range = parseRange(r);
+            if (range) entries.push({ name: item.name, ...range });
+          }
+          if (item.transition) transition = item.transition;
+          return { entries, transition };
+        }
+        for (const [name, val] of Object.entries(item)) {
+          if (name === "transition") { transition = val; continue; }
+          const ranges = Array.isArray(val) ? val : [val];
+          for (const r of ranges) {
+            const range = parseRange(r);
+            if (range) entries.push({ name, ...range });
+          }
+        }
+        return { entries, transition };
+      }
+
+      // Compact-string step: no per-step transition.
+      function parseStringStep(payload) {
+        return { entries: parseStep(payload), transition: null };
+      }
+
+      // parseSpec → { steps, inlineStyles, presets, transition }
+      function parseSpec(spec) {
+        const empty = { steps: [], inlineStyles: {}, presets: null, transition: null };
+        if (!spec) return empty;
+        const trimmed = spec.trim();
+        if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+              return { ...empty, steps: parsed.map(parseYamlStep), transition: null };
+            }
+            const inlineStyles = parsed.styles || {};
+            const presetRaw = parsed.preset;
+            const presets = presetRaw == null ? null
+              : Array.isArray(presetRaw) ? presetRaw
+              : [presetRaw];
+            const transition = parsed.transition || null;
+            const stepsRaw = parsed.steps || parsed.items;
+            if (Array.isArray(stepsRaw)) {
+              return { steps: stepsRaw.map(parseYamlStep), inlineStyles, presets, transition };
+            }
+            const { styles, preset, transition: _t, ...rest } = parsed;
+            return { steps: [parseYamlStep(rest)], inlineStyles, presets, transition };
+          } catch (e) {
+            reportError("invalid JSON spec: " + e.message);
+            return empty;
+          }
+        }
+        return { ...empty, steps: trimmed.split("|").map(parseStringStep) };
+      }
+
+      const MODE_CLASSES = ["cs-mode-none", "cs-mode-fade", "cs-mode-slide", "cs-mode-wipe", "cs-mode-morph"];
+
+      function applyTransition(el, transition) {
+        if (!transition) return;
+        if (transition.duration != null) {
+          const v = typeof transition.duration === "number"
+            ? transition.duration + "ms"
+            : String(transition.duration);
+          el.style.setProperty("--cs-duration", v);
+        }
+        if (transition.easing) {
+          el.style.setProperty("--cs-easing", String(transition.easing));
+        }
+        if (transition.mode) {
+          el.classList.remove(...MODE_CLASSES);
+          el.classList.add("cs-mode-" + transition.mode);
+        }
+      }
+
+      // ---------------------------------------------------------------------------
+      // Error reporting
+      // ---------------------------------------------------------------------------
+      let currentBlock = null;
+      let debugMode = false;
+
+      function isDebug() {
+        if (debugMode) return true;
+        return /[?&]cls-debug=1\b/.test(window.location.search);
+      }
+
+      function reportError(msg) {
+        console.warn("[code-line-style] " + msg);
+        if (isDebug() && currentBlock) {
+          let banner = currentBlock.previousElementSibling;
+          if (!banner || !banner.classList || !banner.classList.contains("cs-error")) {
+            banner = document.createElement("div");
+            banner.className = "cs-error";
+            banner.style.cssText =
+              "background:#ffe4e1;color:#a00;border:1px solid #f88;padding:4px 8px;" +
+              "font-family:monospace;font-size:0.8em;margin-bottom:4px;border-radius:3px;";
+            currentBlock.parentElement.insertBefore(banner, currentBlock);
+          }
+          banner.appendChild(document.createTextNode("[code-line-style] " + msg));
+          banner.appendChild(document.createElement("br"));
+        }
+      }
+
+      // ---------------------------------------------------------------------------
+      // DOM helpers
+      // ---------------------------------------------------------------------------
+      function getLineEls(codeEl) {
+        return Array.from(codeEl.querySelectorAll(":scope > span[id]"));
+      }
+
+      // Attach a label rendered to the right margin, anchored to `el`. The label
+      // node is appended to the nearest `div.sourceCode` and positioned absolutely
+      // based on `el`'s bounding box. The label is announced via the live region.
+      function positionLabel(label, anchor, container) {
+        const cRect = container.getBoundingClientRect();
+        const eRect = anchor.getBoundingClientRect();
+        // Use offsets relative to the container's own coordinate system so reveal's
+        // CSS transform (slide scaling) doesn't distort the math.
+        const scaleY = cRect.height && container.offsetHeight ? container.offsetHeight / cRect.height : 1;
+        const scaleX = cRect.width && container.offsetWidth ? container.offsetWidth / cRect.width : 1;
+        const top = (eRect.top - cRect.top) * scaleY + (eRect.height * scaleY) / 2 - label.offsetHeight / 2;
+        const left = container.offsetWidth + 24;
+        label.style.top = top + "px";
+        label.style.left = left + "px";
+      }
+
+      const positionedLabels = new Set();
+
+      function attachLabel(el, text) {
+        const container = el.closest("div.sourceCode");
+        if (!container) return;
+        const label = document.createElement("span");
+        label.className = "cs-label";
+        label.textContent = text;
+        label._csAnchor = el;
+        label._csContainer = container;
+        container.appendChild(label);
+        positionedLabels.add(label);
+        requestAnimationFrame(() => positionLabel(label, el, container));
+        announce(text);
+      }
+
+      function repositionAllLabels() {
+        for (const label of positionedLabels) {
+          if (!label.isConnected) { positionedLabels.delete(label); continue; }
+          positionLabel(label, label._csAnchor, label._csContainer);
+        }
+      }
+
+      window.addEventListener("resize", repositionAllLabels);
+      if (window.Reveal) {
+        const rl = () => requestAnimationFrame(repositionAllLabels);
+        window.Reveal.on("slidechanged", rl);
+        window.Reveal.on("resize", rl);
+        window.Reveal.on("ready", rl);
+      }
+
+      function clearLabels(container) {
+        container.querySelectorAll(":scope > .cs-label").forEach((n) => {
+          positionedLabels.delete(n);
+          n.remove();
+        });
+      }
+
+      let liveRegion = null;
+      function announce(text) {
+        if (!liveRegion) {
+          liveRegion = document.createElement("div");
+          liveRegion.className = "cs-live";
+          liveRegion.setAttribute("aria-live", "polite");
+          liveRegion.setAttribute("aria-atomic", "true");
+          document.body.appendChild(liveRegion);
+        }
+        liveRegion.textContent = text;
+      }
+
+      // Apply an array of entries against the given line elements using resolve().
+      // Returns the set of (CSS class, prop-name) records touched so we can clear
+      // them later for progressive replace semantics.
+      function applyEntries(lines, entries, resolve) {
+        const touchedClasses = new Set();
+        const touchedProps = new Set();
+        // Per-element accumulator for inline props — later entries win on conflicts.
+        const elementProps = new Map();
+
+        for (const entry of entries) {
+          const { name, from, to, label } = entry;
+          const resolved = resolve(name);
+          if (!resolved) { reportError("unknown style name: " + name); continue; }
+
+          for (let i = from; i <= to; i++) {
+            const lineEl = lines[i - 1];
+            if (!lineEl) { reportError("line out of range: " + i); continue; }
+
+            const targets = [lineEl];
+            if (label) attachLabel(lineEl, label);
+
+            for (const el of targets) {
+              if (resolved.type === "class") {
+                el.classList.add(resolved.cls);
+                touchedClasses.add(resolved.cls);
+              } else {
+                const { props, classes } = expandInlineStyle(resolved.def);
+                for (const c of classes) {
+                  el.classList.add(c);
+                  touchedClasses.add(c);
+                }
+                const existing = elementProps.get(el) || {};
+                Object.assign(existing, props);
+                elementProps.set(el, existing);
+                for (const k of Object.keys(props)) touchedProps.add(k);
+              }
+              if (resolved.presence === "exit" || resolved.presence === "enter") {
+                // `cs-presence-enter` is the steady "open" state and provides the
+                // target value for transitions in both directions. It stays on the
+                // element across step transitions (see clearAll).
+                el.classList.add("cs-presence-enter");
+              }
+              if (resolved.presence === "exit") {
+                el.classList.add("cs-presence-exit");
+                touchedClasses.add("cs-presence-exit");
+              } else if (resolved.presence === "enter") {
+                el.classList.add("cs-presence-hidden");
+                touchedClasses.add("cs-presence-hidden");
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => el.classList.remove("cs-presence-hidden"));
+                });
+              }
+            }
+          }
+        }
+
+        for (const [el, props] of elementProps) {
+          for (const [k, v] of Object.entries(props)) {
+            el.style.setProperty(k, v);
+          }
+        }
+
+        return { classes: [...touchedClasses], props: [...touchedProps] };
+      }
+
+      function clearAll(lines, touched, container) {
+        for (const el of lines) {
+          if (touched.classes.length) el.classList.remove(...touched.classes);
+          for (const p of touched.props) el.style.removeProperty(p);
+        }
+        if (container) clearLabels(container);
+      }
+
+      // ---------------------------------------------------------------------------
+      // Application
+      // ---------------------------------------------------------------------------
+      function applyStatic(codeEl, step, resolve) {
+        const lines = getLineEls(codeEl);
+        if (step.transition) {
+          for (const line of lines) applyTransition(line, step.transition);
+        }
+        applyEntries(lines, step.entries, resolve);
+      }
+
+      function applyProgressive(preEl, codeEl, steps, resolve) {
+        const lines = getLineEls(codeEl);
+
+        const allTouched = { classes: new Set(), props: new Set() };
+        // Lines touched by any presence style. They get a permanent
+        // `cs-presence-enter` so the transition rule stays active in both
+        // directions; `cs-presence-exit` / `cs-presence-hidden` toggle on top.
+        const presenceLines = new Set();
+
+        for (const step of steps) {
+          for (const { name, from, to } of step.entries) {
+            const r = resolve(name);
+            if (!r) continue;
+            if (r.type === "class") allTouched.classes.add(r.cls);
+            else {
+              const { props, classes } = expandInlineStyle(r.def);
+              for (const c of classes) allTouched.classes.add(c);
+              for (const k of Object.keys(props)) allTouched.props.add(k);
+            }
+            if (r.presence === "exit") {
+              allTouched.classes.add("cs-presence-exit");
+              for (let i = from; i <= to; i++) presenceLines.add(i - 1);
+            } else if (r.presence === "enter") {
+              allTouched.classes.add("cs-presence-hidden");
+              for (let i = from; i <= to; i++) presenceLines.add(i - 1);
+            }
+          }
+        }
+
+        // Seed `cs-presence-enter` once on every presence-affected line; do NOT
+        // clear it between steps — it's the steady-state open marker.
+        for (const idx of presenceLines) {
+          if (lines[idx]) lines[idx].classList.add("cs-presence-enter");
+        }
+        const totalTouched = { classes: [...allTouched.classes], props: [...allTouched.props] };
+
+        const container = codeEl.closest("div.sourceCode");
+        const applyStep = (idx) => {
+          clearAll(lines, totalTouched, container);
+          const step = steps[idx];
+          if (!step) return;
+          if (step.transition) {
+            for (const line of lines) applyTransition(line, step.transition);
+          }
+          applyEntries(lines, step.entries, resolve);
+        };
+
+        applyStep(0);
+
+        for (let i = 1; i < steps.length; i++) {
+          const frag = document.createElement("span");
+          frag.className = "fragment cs-step";
+          frag.setAttribute("data-cs-step", String(i));
+          frag.style.display = "none";
+          preEl.appendChild(frag);
+        }
+
+        if (window.Reveal) {
+          const handler = (e) => {
+            if (!preEl.contains(e.fragment)) return;
+            const idx = parseInt(e.fragment.getAttribute("data-cs-step") || "0", 10);
+            if (e.type === "fragmentshown") applyStep(idx);
+            if (e.type === "fragmenthidden") applyStep(idx - 1);
+          };
+          window.Reveal.on("fragmentshown", handler);
+          window.Reveal.on("fragmenthidden", handler);
+        }
+      }
+
+      // ---------------------------------------------------------------------------
+      // Entry point
+      // ---------------------------------------------------------------------------
+      // Read an attribute that may appear with or without the `data-` prefix —
+      // Pandoc auto-prefixes custom code-block attributes when emitting HTML, but
+      // users may also author the prefixed form directly.
+      function readAttr(preEl, name) {
+        const wrapper =
+          preEl.closest("[" + name + "], [data-" + name + "]") || preEl;
+        return wrapper.getAttribute(name) || wrapper.getAttribute("data-" + name);
+      }
+
+      function getSpec(preEl) {
+        const spec = readAttr(preEl, "code-line-style");
+        if (spec) return spec;
+        const legacy = readAttr(preEl, "code-line-diff");
+        if (legacy) {
+          reportError("code-line-diff is deprecated, use code-line-style");
+          return legacy.replace(/([+\-!#@]):/g, (_, m) => {
+            return { "+": "add:", "-": "rem:", "!": "chg:", "#": "note:", "@": "hi:" }[m];
+          });
+        }
+        return null;
+      }
+
+      function getPresets(preEl) {
+        const raw = readAttr(preEl, "code-line-style-preset");
+        if (!raw) return ["diff", "emphasis"];
+        return raw.split(/[,\s]+/).filter(Boolean);
+      }
+
+      function getStaticMode(preEl) {
+        const raw = readAttr(preEl, "code-line-style-static");
+        return raw === "merged" ? "merged" : "last";
+      }
+
+      function process() {
+        const blocks = document.querySelectorAll("pre > code, div.sourceCode pre > code");
+        blocks.forEach((codeEl) => {
+          const preEl = codeEl.parentElement;
+          currentBlock = preEl.closest("div.sourceCode") || preEl;
+          const spec = getSpec(preEl);
+          if (!spec) { currentBlock = null; return; }
+          const { steps, inlineStyles, presets, transition } = parseSpec(spec);
+          if (steps.length === 0) { currentBlock = null; return; }
+          const presetNames = presets || getPresets(preEl);
+          const resolve = makeResolver(presetNames, inlineStyles);
+          if (transition) {
+            const codeEl2 = codeEl;
+            for (const line of getLineEls(codeEl2)) applyTransition(line, transition);
+          }
+
+          if (steps.length === 1) {
+            applyStatic(codeEl, steps[0], resolve);
+          } else if (window.Reveal) {
+            applyProgressive(preEl, codeEl, steps, resolve);
+          } else {
+            // No Reveal → no fragments. Pick a static collapse strategy.
+            const mode = getStaticMode(preEl);
+            if (mode === "merged") {
+              const merged = { entries: steps.flatMap(s => s.entries), transition: null };
+              applyStatic(codeEl, merged, resolve);
+            } else {
+              applyStatic(codeEl, steps[steps.length - 1], resolve);
+            }
+          }
+          currentBlock = null;
+        });
+      }
+
+      if (window.Reveal) {
+        if (window.Reveal.isReady && window.Reveal.isReady()) process();
+        else window.Reveal.on("ready", process);
+      } else {
+        document.addEventListener("DOMContentLoaded", process);
+      }
+    })();
+    </script>
     
 
 </body></html>
