@@ -8,7 +8,15 @@ import pandas as pd
 from vidigi.logging import EventLogger
 from vidigi.utils import create_event_position_df, EventPosition
 from vidigi.animation import animate_activity_log
-from vidigi.resources import VidigiStore  # NEW
+from vidigi.resources import VidigiStore
+
+# NEW imports
+from vidigi.process_mapping import (
+    add_sim_timestamp,
+    discover_dfg,
+    dfg_to_graphviz,
+    dfg_to_cytoscape,
+)
 
 
 class Patient:
@@ -36,11 +44,9 @@ class Param:
 
 
 class Model:
-    # NEW
-    # We're going to start tracking a run_number parameter
     def __init__(self, param, run_number):
         self.param = param
-        self.run_number = run_number  # NEW
+        self.run_number = run_number
         self.env = simpy.Environment()
         self.patient_counter = 0
         self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
@@ -54,8 +60,6 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        # NEW
-        # We can now pass our run_number to our logger
         self.logger = EventLogger(env=self.env, run_number=self.run_number)
 
     def generator_patient_arrivals(self):
@@ -114,13 +118,6 @@ class Model:
         return self.logger.to_dataframe()
 
 
-# NEW - but you've seen all this before.
-# It's *almost* identical to the content in session 2C!
-# We don't need to make any changes to it for the purposes
-# of getting the animation working - our changes will just
-# be in how we pass the event log to the animation
-# so we will make a little helper method at the end of this
-# class for that purpose
 class Trial:
     def __init__(self, param):
         self.param = param
@@ -131,9 +128,6 @@ class Trial:
 
     def run_trial(self):
         for replication_id in range(self.param.num_replications):
-            # NEW
-            # We now just pass our replication_id into the model
-            # Note that the replication_id will count from 0
             model_replication = Model(self.param, replication_id)
             model_replication.run_model()
             patient_df = model_replication.convert_entity_list_to_dataframe(
@@ -155,40 +149,21 @@ class Trial:
             "mean_q_time_nurse"
         ].quantile(0.9)
 
-    # NEW
-    # This bit really is new!
-    # We're going to make a small helper function to pull back the run
-    # we are interested in
-    # Remember - Python counts from 0
-    def get_run(self, run=0):
-        matching_replications = [
-            model
-            for model in self.list_of_simulation_replications
-            if model.run_number == run
-        ]
+        def get_run(self, run=0):
+            matching_replications = [
+                model
+                for model in self.list_of_simulation_replications
+                if model.run_number == run
+            ]
 
-        # Let's give ourselves a nicer error in case we accidentally ask for a run
-        # that doesn't exist
-        if len(matching_replications) == 0:
-            raise ValueError(f"No run found with run_number={run}")
+            if len(matching_replications) == 0:
+                raise ValueError(f"No run found with run_number={run}")
+            if len(matching_replications) != 1:
+                raise ValueError(
+                    f"Expected exactly one run with run_number={run}, found {len(matching_replications)}"
+                )
 
-        # We *should* only have one match - but we could make a mistake in
-        # assigning run numbers.
-        # It's worth getting into the habit of checking things like this!
-        if len(matching_replications) != 1:
-            raise ValueError(
-                f"Expected exactly one run with run_number={run}, found {len(matching_replications)}"
-            )
-
-        # Now that we're happy there's only one matching run, we can safely just pull back
-        # the first (and only) item in our list comprehension
-        return matching_replications[0]
-
-        # We *could* have just done
-        # `return self.list_of_simulation_replications[run]`
-        # and left it at that, but this is more robust in case
-        # we ever make our model do something fancy like running
-        # lots of runs simultaneously across our computer's cores
+            return matching_replications[0]
 
 
 class Animation:
@@ -222,8 +197,6 @@ class Animation:
         )
 
 
-# NEW (but again, you've seen this before in session 2C)
-# Rather than an individual run, we're just
 my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
 my_trial = Trial(my_params)
 my_trial.run_trial()
@@ -236,15 +209,39 @@ print(f"SD : {my_trial.trial_sd_q_time_nurse:.2f} minutes")
 print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
 print()
 
-# NEW
-# Now instead of just calling 'get_vidigi_event_log()' directly
-# on our model run, we just grab back our chosen run from the trial
-# first (remembering that Python counts from 0)
-# Because that's the *entire* model object, we still have access to
-# any of the methods or attributes of that model object, so we can now
-# grab back
-my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
-print(my_event_log.head(10))
 
-my_animation = Animation(my_params, my_event_log)
-my_animation.generate_animation()
+my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
+
+# NEW
+# We've removed the animation code as we don't need it for now
+
+# First, we take our event log and add a timestamp column to it, as it's required
+# so that it can display average durations accurately
+my_event_log_timestamp = add_sim_timestamp(
+    my_event_log, time_unit="minutes", sim_start="09:00:00"
+)
+# If we print this, we can see our new timestamp column
+print(my_event_log_timestamp.head(10))
+
+# Now we'll discover the pathways in the model
+nodes, edges = discover_dfg(
+    my_event_log_timestamp,
+    # Our 'case_col' will be 'entity_id' if we've used EventLogger
+    # This just means that each person is considered to be a separate
+    # journey
+    case_col="entity_id",
+)
+
+# Now we can create a static representation of flow through the process
+dfg_to_graphviz(nodes, edges, min_frequency=5)
+
+# An an interactive version
+dfg_to_cytoscape(
+    nodes,
+    edges,
+    min_frequency=5,
+    layout_name="dagre",
+    layout_orientation="LR",
+    spacing_factor=2,
+    width=1400,
+)
