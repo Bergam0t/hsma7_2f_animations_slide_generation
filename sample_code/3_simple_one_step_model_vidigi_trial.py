@@ -150,12 +150,10 @@ class Trial:
     # NEW
     # This bit really is new!
     # We're going to make a small helper function to pull back the run
-    # we are interested in (as if we have a helper, there's less chance
-    # we'll slip up and make an indexing error - where we forget that
-    # Python counts from 0, not 1 - later).
-    def get_run(self, run=1):
-        list_index = run - 1
-        return self.list_of_simulation_replications[list_index]
+    # we are interested in
+    # Remember - Python counts from 0
+    def get_run(self, run=0):
+        return self.list_of_simulation_replications[run]
 
 
 class Animation:
@@ -206,11 +204,11 @@ print()
 # NEW
 # Now instead of just calling 'get_vidigi_event_log()' directly
 # on our model run, we just grab back our chosen run from the trial
-# first
+# first (remembering that Python counts from 0)
 # Because that's the *entire* model object, we still have access to
 # any of the methods or attributes of that model object, so we can now
 # grab back
-my_event_log = my_trial.get_run(run=5).get_vidigi_event_log()
+my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
 print(my_event_log.head(10))
 
 my_animation = Animation(my_params, my_event_log)
