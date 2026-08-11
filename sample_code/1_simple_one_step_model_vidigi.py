@@ -106,8 +106,7 @@ class Model:
 
 # NEW #
 class Animation:
-    def __init__(self, params, event_log):
-        self.params = params
+    def __init__(self, event_log):
         self.event_log = event_log
 
         self.layout = create_event_position_df(
@@ -133,7 +132,6 @@ class Animation:
             event_log=self.event_log,
             event_position_df=self.layout,
             every_x_time_units=time_interval,
-            scenario=self.params,
         )
 
 
@@ -159,6 +157,6 @@ print(
 my_event_log = my_model.get_vidigi_event_log()
 print(my_event_log.head(10))
 
-my_animation = Animation(my_params, my_event_log)
+my_animation = Animation(my_event_log)
 my_animation.generate_animation()
 # END NEW #

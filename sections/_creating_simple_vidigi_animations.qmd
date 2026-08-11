@@ -258,8 +258,7 @@ We'll bind this to `self.layout`.
 
 ```{.python code-line-style="dim:1-5,focus:6-23" code-line-style-preset="emphasis"}
 class Animation:
-    def __init__(self, params, event_log):
-        self.params = params
+    def __init__(self, event_log):
         self.event_log = event_log
 
         self.layout = create_event_position_df(
@@ -288,7 +287,7 @@ Now, we just need a small function to call vidigi's animation creation logic.
 
 ```{.python code-line-style="dim:1-4,focus:5-11" code-line-style-preset="emphasis"}
 class Animation:
-    def __init__(self, params, event_log):
+    def __init__(self, event_log):
         ...
 
     def generate_animation(self, time_interval=1):
@@ -296,14 +295,13 @@ class Animation:
             event_log=self.event_log,
             event_position_df=self.layout,
             every_x_time_units=time_interval,
-            scenario=self.params,
         )
 ```
 
 
 ## Calling the animation
 
-```{.python code-line-style="dim:1-7,focus:8-12" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:1-7,focus:8-11" code-line-style-preset="emphasis"}
 my_params = Param()
 my_model = Model(my_params)
 my_model.run_model()
@@ -312,13 +310,29 @@ patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients
 my_model.calculate_run_results(patient_df)
 
 my_event_log = my_model.get_vidigi_event_log()
-print(my_event_log.head(10))
 
-my_animation = Animation(my_params, my_event_log)
+my_animation = Animation(my_event_log)
 my_animation.generate_animation()
 ```
 
 ## What does the event log look like?
 
+```{.python code-line-style="dim:1-7,focus:8-9" code-line-style-preset="emphasis"}
+my_params = Param()
+my_model = Model(my_params)
+my_model.run_model()
+
+patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
+my_model.calculate_run_results(patient_df)
+
+my_event_log = my_model.get_vidigi_event_log()
+my_event_log.head(10)
+```
+
 
 ## What does the animation look like?
+
+```{.python}
+my_animation = Animation(my_event_log)
+my_animation.generate_animation()
+```

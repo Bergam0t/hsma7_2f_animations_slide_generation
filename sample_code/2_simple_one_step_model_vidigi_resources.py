@@ -125,8 +125,9 @@ class Model:
 
 
 class Animation:
+    # NEW - We'll now also pass params to our Animation class
     def __init__(self, params, event_log):
-        self.params = params
+        self.params = params  # NEW
         self.event_log = event_log
 
         self.layout = create_event_position_df(
@@ -157,7 +158,7 @@ class Animation:
             event_log=self.event_log,
             event_position_df=self.layout,
             every_x_time_units=time_interval,
-            scenario=self.params,
+            scenario=self.params,  # NEW
         )
 
 
@@ -183,5 +184,6 @@ print(
 my_event_log = my_model.get_vidigi_event_log()
 print(my_event_log.head(10))
 
+# NEW - note we're now passing in our params here
 my_animation = Animation(my_params, my_event_log)
 my_animation.generate_animation()
