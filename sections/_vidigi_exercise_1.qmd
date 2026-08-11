@@ -1,29 +1,50 @@
 # Exercise 1
 
-## Vidigi Exercise 1
-
-You will be working with the model [TODO: model path] and the notebook [TODO: notebook path].
+## {.slide data-menu-title="Vidigi Exercise 1"}
 
 :::: {.columns}
 
-::: {.column width='50%'}
+::: {.column width='60%'}
+::: {style='font-size: 75%;'}
+You will be working with the model [TODO: model path] and the notebook [TODO: notebook path].
+:::
+:::
+
+::: {.column width='40%'}
+::: {.value-box icon="fa-solid fa-clock" icon-position="left" icon-size="2em"}
+45 minutes + 10 minute break
+:::
+:::
+
+::::
+
+
+:::: {.columns}
+
+::: {.column width='60%'}
+::: {style='font-size: 85%'}
 1. Add a logger
 2. Add the required logging steps
     - arrival
-    - queue
-    - resource use
+    - queues
+    - resource use [(and you could do everything as queues *first*, like we did in these slides, if you would prefer)]{style="color:lightgrey;font-size: 65%"}
     - departure
 3. Set up and generate the animation
-    - you have been provided with a starter template for the layout of your animation
-
+    - [you have been provided with a starter template for the layout]{style="color:lightgrey;font-size: 65%"}
+:::
 :::
 
-::: {.column width='50%'}
-### Extensions
 
+
+::: {.column width='40%'}
+::: {.fragment}
+::: {style='font-size: 70%; color: lightgrey'}
+### Extensions
 - Try increasing the arrival rate [TODO: To x]. Does the animation still look ok? Does it take longer to generate?
 - Try tweaking the EventPositions. Do you think a different layout might look better?
-- [TODO: Third extension]
+- Take a look at the documentation [here](https://hsma-tools.github.io/vidigi/reference/animation.animate_activity_log.html#vidigi.animation.animate_activity_log). Try changing some of the other parameters.
+:::
+:::
 :::
 
 ::::

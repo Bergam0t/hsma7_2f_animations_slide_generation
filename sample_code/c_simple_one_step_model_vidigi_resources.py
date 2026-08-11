@@ -126,9 +126,9 @@ class Model:
 
 class Animation:
     # NEW - We'll now also pass params to our Animation class
-    def __init__(self, params, event_log):
-        self.params = params  # NEW
+    def __init__(self, event_log, params):  # UPDATED
         self.event_log = event_log
+        self.params = params  # NEW
 
         self.layout = create_event_position_df(
             [
@@ -159,6 +159,8 @@ class Animation:
             event_position_df=self.layout,
             every_x_time_units=time_interval,
             scenario=self.params,  # NEW
+            custom_resource_icon="👩‍⚕️",  # NEW - OPTIONAL
+            resource_icon_size=32,  # NEW - OPTIONAL
         )
 
 
@@ -189,5 +191,5 @@ if __name__ == "main":
     print(my_event_log.head(10))
 
     # NEW - note we're now passing in our params here
-    my_animation = Animation(my_params, my_event_log)
+    my_animation = Animation(my_event_log, my_params)
     my_animation.generate_animation()

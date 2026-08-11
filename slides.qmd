@@ -74,6 +74,8 @@ filters:
 
 {{< include sections/_what_is_vidigi.qmd >}}
 
+
+
 {{< include sections/_elements_of_vidigi_simple.qmd >}}
 
 {{< include sections/_creating_simple_vidigi_animations.qmd >}}
@@ -82,8 +84,10 @@ filters:
 
 {{< include sections/_adding_resource_use_vidigi_animations.qmd >}}
 
-
 {{< include sections/_vidigi_exercise_1.qmd >}}
+
+
+
 
 {{< include sections/_vidigi_process_maps.qmd >}}
 
@@ -94,6 +98,9 @@ filters:
 {{< include sections/_advanced_animations_three_step.qmd >}}
 
 {{< include sections/_vidigi_exercise_2.qmd >}}
+
+
+
 
 {{< include sections/_animating_bigger_systems_and_longer_timescales.qmd >}}
 

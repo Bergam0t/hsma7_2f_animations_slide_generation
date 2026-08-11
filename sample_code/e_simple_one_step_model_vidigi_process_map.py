@@ -167,9 +167,9 @@ class Trial:
 
 
 class Animation:
-    def __init__(self, params, event_log):
-        self.params = params
+    def __init__(self, event_log, params):
         self.event_log = event_log
+        self.params = params
 
         self.layout = create_event_position_df(
             [

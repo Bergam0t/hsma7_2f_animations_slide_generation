@@ -1,50 +1,74 @@
 
-# Advanced Vidigi Elements - Resource Use
+# Advanced Vidigi Elements: Resources
+
+## Why is Resource Use Different to Queues?
+
+So far, we've used a queue for resource use
+
+And this works, but has a couple of downsides
+
+- People move through the resource use step like a queue rather than staying with a single resource
+- You can't see resources that **aren't** being used, so it's difficult to tell whether the system is underutilising resources
+
+(you can usually tell if it's *over* capacity because a queue will be building up!)
+
+
+## What do we change?
+
+We don't have to change too much
+
+1. We will swap in a *custom* resource class instead of Simpy.Resource
+1. We will capture the ID of the resource used
+1. We will swap the logging type for resource use events and store this resource ID
+1. We will pass our params class to our animation (so it knows how many resources there are) and our event position dataframe.
 
 ## Custom Resource Classes
 
+Vidigi provides two key custom resource classes
+
+:::: {.columns}
+
+::: {.column width='50%'}
+::: {.value-box align="center" value="VidigiStore"}
+Equivalent to `simpy.Resource`
+:::
+:::
+
+::: {.column width='50%'}
+::: {.value-box align="center" value="VidigiPriorityStore"}
+Equivalent to `simpy.PriorityResource`
+:::
+:::
+
+::::
+
+::: {.value-box icon="fa-solid fa-triangle-exclamation" icon-position="left" color="bg-red"}
+We don't want to use *VidigiResource*.
+
+This is a special class that Vidigi uses internally, and by itself it won't allow us to track the resource
+ID in the way we need to.
+:::
+
 ## Why do we need these?
 
-## Swapping in vidigi classes
+Let's imagine we have two nurses.
 
-Replace
+SimPy resources don't *really* have a concept of separate nurses behind the scenes.
 
-```python
-from simpy import Resource
-```
+<div style="display: flex; justify-content: center; align-items: center; height: 60vh">
 
-with
+<img src="../diagrams/SimpyResource.drawio.svg" style="height: 60vh;">
 
-```python
-from vidigi.resources import VidigiStore as Resource
-```
+</div>
 
+## The VidigiStore approach
 
+In contrast, a VidigiStore is filled with individual nurses, each with their own ID.
 
-::: {.fragment}
-<hr>
-OR
-<hr>
-:::
+<div style="display: flex; justify-content: center; align-items: center; height: 60vh">
 
-::: {.fragment}
+<img src="../diagrams/VidigiStore.drawio.svg" style="height: 60vh;">
 
-Replace
+</div>
 
-```python
-from simpy import Resource
-```
-
-with
-
-```python
-from vidigi.resources import VidigiStore
-```
-
-and do a find and replace for
-
-`Resource` in your code, changing it to `VidigiStore`
-
-:::
-
-## Recording
+If vidigi knows the ID of a resource, it ensures that people are assigned to the right resource in the animation for the whole time they are using it.

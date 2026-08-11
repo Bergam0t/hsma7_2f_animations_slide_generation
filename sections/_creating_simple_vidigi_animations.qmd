@@ -1,5 +1,18 @@
 # Your First Vidigi Animation - a Walkthrough
 
+## New Imports
+
+First, we need a few new imports at the top of our file.
+
+```{.python code-line-style="dim:1-3,focus:4-6" code-line-style-preset="emphasis"}
+import simpy
+from sim_tools.distributions import Exponential, Lognormal
+import pandas as pd
+from vidigi.logging import EventLogger  # NEW
+from vidigi.utils import create_event_position_df, EventPosition  # NEW
+from vidigi.animation import animate_activity_log  # NEW
+```
+
 ## Adding a Logging Class
 
 The first thing we need to do is set up our logging class.
@@ -224,10 +237,9 @@ EventPosition(
 
 ## `create_event_position_df`
 
-::: {style="font-size: 75%;"}
+::: {style="font-size: 65%;"}
 
-We pass a `list` of all our EventPosition objects.
-
+We pass a `list` of all our EventPosition objects to the function `create_event_position_df`.
 Remember - a Python list uses `[]` with each item separated by a `,`
 :::
 
@@ -243,14 +255,18 @@ create_event_position_df(
         EventPosition(
             event="being_seen_by_nurse", x=200, y=150, label="Being Seen By Nurse"
         ),
-        # We don't need to visualise the 'nurse_treatment_ends' step
-        # as the timing will be identical to the depart step
         EventPosition(
             event="depart", x=200, y=50, label="Exit"
         )
     ]
 )
 ```
+::: {style="font-size: 65%;"}
+::: {.fragment}
+We don't need to visualise the 'nurse_treatment_ends' step as the timing will be identical to the depart step.
+:::
+:::
+
 
 ## The full Grid in situ
 
@@ -361,3 +377,40 @@ fig = animate_activity_log(
 
 HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
 ```
+
+
+
+## BONUS: `if __name__ == 'main'`
+
+If you head to the folder in sample_code, you may notice a funny line:
+
+```{.python code-line-style="dim:1-8,focus:9,dim:10-13" code-line-style-preset="emphasis"}
+class Animation:
+    def __init__(self, event_log):
+        ...
+
+    def generate_animation(self, time_interval=1):
+        return animate_activity_log(event_log=self.event_log,
+            event_position_df=self.layout, every_x_time_units=time_interval)
+
+if __name__ == "main":
+    my_params = Param()
+    my_model = Model(my_params)
+    my_model.run_model()
+    ...
+```
+
+## BONUS: `if __name__ == 'main'` - explanation
+
+`if __name__ == 'main':` simply means [**'only run the code in this block if you are running the original file'**]{style="color:yellow"}
+
+When you run the file (script) in the terminal or the interactive window, the code in this block will run (execute).
+
+::: {.fragment}
+HOWEVER, if you import pieces of that code into another file, it *won't* run the bit in the `if __name__ == 'main':` block.
+:::
+
+
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
+This is really useful if we want to reuse our classes somewhere else, like in a web app, so we'll be getting in the habit of doing this.
+:::
