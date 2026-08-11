@@ -162,28 +162,32 @@ class Animation:
         )
 
 
-# NEW
-# We'll override the number of nurses so we can more clearly see what's going on
-my_params = Param(num_nurses=2)
+if __name__ == "main":
+    # NEW
+    # We'll override the number of nurses so we can more clearly see what's going on
+    my_params = Param(num_nurses=2)
 
-my_model = Model(my_params)
-my_model.run_model()
+    my_model = Model(my_params)
+    my_model.run_model()
 
-patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
-my_model.calculate_run_results(patient_df)
+    patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
+    my_model.calculate_run_results(patient_df)
 
-print(
-    f"Mean queuing time for the nurse was {my_model.mean_q_time_nurse:.2f}", "minutes"
-)
-print(f"SD queuing time for the nurse was {my_model.sd_q_time_nurse:.2f}", "minutes")
-print(
-    "90th percentile queuing time for the nurse was",
-    f"{my_model.perc_90_q_time_nurse:.2f} minutes",
-)
+    print(
+        f"Mean queuing time for the nurse was {my_model.mean_q_time_nurse:.2f}",
+        "minutes",
+    )
+    print(
+        f"SD queuing time for the nurse was {my_model.sd_q_time_nurse:.2f}", "minutes"
+    )
+    print(
+        "90th percentile queuing time for the nurse was",
+        f"{my_model.perc_90_q_time_nurse:.2f} minutes",
+    )
 
-my_event_log = my_model.get_vidigi_event_log()
-print(my_event_log.head(10))
+    my_event_log = my_model.get_vidigi_event_log()
+    print(my_event_log.head(10))
 
-# NEW - note we're now passing in our params here
-my_animation = Animation(my_params, my_event_log)
-my_animation.generate_animation()
+    # NEW - note we're now passing in our params here
+    my_animation = Animation(my_params, my_event_log)
+    my_animation.generate_animation()

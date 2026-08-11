@@ -5,9 +5,6 @@ This is the one-step model from the second simpy session (2B)
 import simpy
 from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
-from vidigi.logging import EventLogger  # NEW
-from vidigi.utils import create_event_position_df, EventPosition  # NEW
-from vidigi.animation import animate_activity_log  # NEW
 
 
 class Patient:
@@ -50,8 +47,6 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        self.logger = EventLogger(env=self.env)  # NEW
-
     def generator_patient_arrivals(self):
         while True:
             self.patient_counter += 1
@@ -62,29 +57,14 @@ class Model:
             yield self.env.timeout(sampled_inter)
 
     def attend_clinic(self, patient):
-        self.logger.log_arrival(entity_id=patient.id)  # NEW
-
         start_q_nurse = self.env.now
-
-        self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")  # NEW
 
         with self.nurse.request() as req:
             yield req
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
-
-            self.logger.log_queue(
-                entity_id=patient.id, event="being_seen_by_nurse"
-            )  # NEW
-
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-
-            self.logger.log_queue(
-                entity_id=patient.id, event="nurse_treatment_ends"
-            )  # NEW
-
-        self.logger.log_departure(entity_id=patient.id)  # NEW
 
     def run_model(self):
         self.env.process(self.generator_patient_arrivals())
@@ -99,43 +79,6 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
-    # NEW
-    def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
-
-
-# NEW #
-class Animation:
-    def __init__(self, event_log):
-        self.event_log = event_log
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                ),
-                # We don't need to visualise the 'nurse_treatment_ends' step as the timing will
-                # be identical to the depart step
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def generate_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-        )
-
-
-# END NEW #
 
 my_params = Param()
 my_model = Model(my_params)
@@ -152,15 +95,3 @@ print(
     "90th percentile queuing time for the nurse was",
     f"{my_model.perc_90_q_time_nurse:.2f} minutes",
 )
-
-# NEW #
-my_event_log = my_model.get_vidigi_event_log()
-print(my_event_log.head(10))
-
-my_animation = Animation(my_event_log)
-my_animation.generate_animation()
-
-# Optionally, we could output these to files
-# my_event_log.to_csv("simplest_event_log.csv", index=False)
-# my_animation.generate_animation().write_html("simplest_animation.html")
-# END NEW #

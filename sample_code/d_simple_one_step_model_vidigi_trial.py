@@ -222,29 +222,30 @@ class Animation:
         )
 
 
-# NEW (but again, you've seen this before in session 2C)
-# Rather than an individual run, we're just
-my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
-my_trial = Trial(my_params)
-my_trial.run_trial()
-my_trial.calculate_trial_results()
-print("TRIAL RESULTS")
-print("-----------------------")
-print("Queuing Time for the Nurse")
-print(f"Mean : {my_trial.trial_mean_q_time_nurse:.2f} minutes")
-print(f"SD : {my_trial.trial_sd_q_time_nurse:.2f} minutes")
-print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
-print()
+if __name__ == "main":
+    # NEW (but again, you've seen this before in session 2C)
+    # Rather than an individual run, we're just
+    my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
+    my_trial = Trial(my_params)
+    my_trial.run_trial()
+    my_trial.calculate_trial_results()
+    print("TRIAL RESULTS")
+    print("-----------------------")
+    print("Queuing Time for the Nurse")
+    print(f"Mean : {my_trial.trial_mean_q_time_nurse:.2f} minutes")
+    print(f"SD : {my_trial.trial_sd_q_time_nurse:.2f} minutes")
+    print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
+    print()
 
-# NEW
-# Now instead of just calling 'get_vidigi_event_log()' directly
-# on our model run, we just grab back our chosen run from the trial
-# first (remembering that Python counts from 0)
-# Because that's the *entire* model object, we still have access to
-# any of the methods or attributes of that model object, so we can now
-# grab back
-my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
-print(my_event_log.head(10))
+    # NEW
+    # Now instead of just calling 'get_vidigi_event_log()' directly
+    # on our model run, we just grab back our chosen run from the trial
+    # first (remembering that Python counts from 0)
+    # Because that's the *entire* model object, we still have access to
+    # any of the methods or attributes of that model object, so we can now
+    # grab back
+    my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
+    print(my_event_log.head(10))
 
-my_animation = Animation(my_params, my_event_log)
-my_animation.generate_animation()
+    my_animation = Animation(my_params, my_event_log)
+    my_animation.generate_animation()

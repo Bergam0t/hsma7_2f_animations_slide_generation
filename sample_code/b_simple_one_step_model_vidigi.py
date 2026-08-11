@@ -137,26 +137,42 @@ class Animation:
 
 # END NEW #
 
-my_params = Param()
-my_model = Model(my_params)
-my_model.run_model()
 
-patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
-my_model.calculate_run_results(patient_df)
+# NEW
+# The special line
+# if __name__ == "main"
+# tells Python to only run the bit below if you're running the full script
+# in the terminal or interactive window
+# This just makes our file more robust if in future we wanted to reuse our classes
+# elsewhere, and it's good practice to do so
+if __name__ == "main":
+    my_params = Param()
+    my_model = Model(my_params)
+    my_model.run_model()
 
-print(
-    f"Mean queuing time for the nurse was {my_model.mean_q_time_nurse:.2f}", "minutes"
-)
-print(f"SD queuing time for the nurse was {my_model.sd_q_time_nurse:.2f}", "minutes")
-print(
-    "90th percentile queuing time for the nurse was",
-    f"{my_model.perc_90_q_time_nurse:.2f} minutes",
-)
+    patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
+    my_model.calculate_run_results(patient_df)
 
-# NEW #
-my_event_log = my_model.get_vidigi_event_log()
-print(my_event_log.head(10))
+    print(
+        f"Mean queuing time for the nurse was {my_model.mean_q_time_nurse:.2f}",
+        "minutes",
+    )
+    print(
+        f"SD queuing time for the nurse was {my_model.sd_q_time_nurse:.2f}", "minutes"
+    )
+    print(
+        "90th percentile queuing time for the nurse was",
+        f"{my_model.perc_90_q_time_nurse:.2f} minutes",
+    )
 
-my_animation = Animation(my_event_log)
-my_animation.generate_animation()
-# END NEW #
+    # NEW #
+    my_event_log = my_model.get_vidigi_event_log()
+    print(my_event_log.head(10))
+
+    my_animation = Animation(my_event_log)
+    my_animation.generate_animation()
+
+    # Optionally, we could output these to files
+    # my_event_log.to_csv("simplest_event_log.csv", index=False)
+    # my_animation.generate_animation().write_html("simplest_animation.html")
+    # END NEW #

@@ -5,10 +5,9 @@ This is the one-step model from the second simpy session (2B)
 import simpy
 from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
-from vidigi.logging import EventLogger
-from vidigi.utils import create_event_position_df, EventPosition
-from vidigi.animation import animate_activity_log
-from vidigi.resources import VidigiStore  # NEW
+from vidigi.logging import EventLogger  # NEW
+from vidigi.utils import create_event_position_df, EventPosition  # NEW
+from vidigi.animation import animate_activity_log  # NEW
 
 
 class Patient:
@@ -40,11 +39,7 @@ class Model:
         self.param = param
         self.env = simpy.Environment()
         self.patient_counter = 0
-        # NEW
-        # We change simpy.Resource to VidigiStore
-        # and we change 'capacity' to 'num_resources' (as capacity has its own
-        # special meaning in vidigi's resources)
-        self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
+        self.nurse = simpy.Resource(self.env, capacity=self.param.num_nurses)
         self.patient_inter_dist = Exponential(mean=self.param.mean_patient_inter)
         self.nurse_consult_time_dist = Lognormal(
             mean=self.param.mean_nurse_consult_time,
@@ -55,7 +50,7 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        self.logger = EventLogger(env=self.env)
+        self.logger = EventLogger(env=self.env)  # NEW
 
     def generator_patient_arrivals(self):
         while True:
@@ -67,45 +62,29 @@ class Model:
             yield self.env.timeout(sampled_inter)
 
     def attend_clinic(self, patient):
-        self.logger.log_arrival(entity_id=patient.id)
+        self.logger.log_arrival(entity_id=patient.id)  # NEW
 
         start_q_nurse = self.env.now
 
-        self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
+        self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")  # NEW
 
         with self.nurse.request() as req:
-            # NEW
-            # We need to assign the result of this yield to a variable
-            # We can call it anything, but make sure you don't name it
-            # the exact same thing as your resource!
-            nurse_obtained = yield req
-
+            yield req
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
 
-            # NEW
-            # We swap our queue event here for a resource_use_start event
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                # We can then get the ID of the nurse and use this to
-                # track visually which nurse is assigned to which patient
-                resource_id=nurse_obtained.id_attribute,  # NEW
-            )
+            self.logger.log_queue(
+                entity_id=patient.id, event="being_seen_by_nurse"
+            )  # NEW
 
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
 
-            # NEW
-            # We swap our queue event here for a resource_use_end event
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                # We pass the nurse's ID again
-                resource_id=nurse_obtained.id_attribute,  # NEW
-            )
+            self.logger.log_queue(
+                entity_id=patient.id, event="nurse_treatment_ends"
+            )  # NEW
 
-        self.logger.log_departure(entity_id=patient.id)
+        self.logger.log_departure(entity_id=patient.id)  # NEW
 
     def run_model(self):
         self.env.process(self.generator_patient_arrivals())
@@ -120,14 +99,14 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
+    # NEW
     def get_vidigi_event_log(self):
         return self.logger.to_dataframe()
 
 
+# NEW #
 class Animation:
-    # NEW - We'll now also pass params to our Animation class
-    def __init__(self, params, event_log):
-        self.params = params  # NEW
+    def __init__(self, event_log):
         self.event_log = event_log
 
         self.layout = create_event_position_df(
@@ -141,14 +120,9 @@ class Animation:
                     x=200,
                     y=150,
                     label="Being Seen By Nurse",
-                    # NEW
-                    # We now just need to pass in the resource to visualise
-                    # This will be looked up from our Params class, so we need
-                    # to make sure the name exactly matches how it's written there
-                    resource="num_nurses",
                 ),
-                # We **still** don't need to visualise the 'nurse_treatment_ends' step as
-                # the timing will be identical to the depart step
+                # We don't need to visualise the 'nurse_treatment_ends' step as the timing will
+                # be identical to the depart step
                 EventPosition(event="depart", x=200, y=50, label="Exit"),
             ]
         )
@@ -158,32 +132,47 @@ class Animation:
             event_log=self.event_log,
             event_position_df=self.layout,
             every_x_time_units=time_interval,
-            scenario=self.params,  # NEW
         )
 
 
+# END NEW #
+
+
 # NEW
-# We'll override the number of nurses so we can more clearly see what's going on
-my_params = Param(num_nurses=2)
+# The special line
+# if __name__ == "main"
+# tells Python to only run the bit below if you're running the full script
+# in the terminal or interactive window
+# This just makes our file more robust if in future we wanted to reuse our classes
+# elsewhere, and it's good practice to do so
+if __name__ == "main":
+    my_params = Param()
+    my_model = Model(my_params)
+    my_model.run_model()
 
-my_model = Model(my_params)
-my_model.run_model()
+    patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
+    my_model.calculate_run_results(patient_df)
 
-patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
-my_model.calculate_run_results(patient_df)
+    print(
+        f"Mean queuing time for the nurse was {my_model.mean_q_time_nurse:.2f}",
+        "minutes",
+    )
+    print(
+        f"SD queuing time for the nurse was {my_model.sd_q_time_nurse:.2f}", "minutes"
+    )
+    print(
+        "90th percentile queuing time for the nurse was",
+        f"{my_model.perc_90_q_time_nurse:.2f} minutes",
+    )
 
-print(
-    f"Mean queuing time for the nurse was {my_model.mean_q_time_nurse:.2f}", "minutes"
-)
-print(f"SD queuing time for the nurse was {my_model.sd_q_time_nurse:.2f}", "minutes")
-print(
-    "90th percentile queuing time for the nurse was",
-    f"{my_model.perc_90_q_time_nurse:.2f} minutes",
-)
+    # NEW #
+    my_event_log = my_model.get_vidigi_event_log()
+    print(my_event_log.head(10))
 
-my_event_log = my_model.get_vidigi_event_log()
-print(my_event_log.head(10))
+    my_animation = Animation(my_event_log)
+    my_animation.generate_animation()
 
-# NEW - note we're now passing in our params here
-my_animation = Animation(my_params, my_event_log)
-my_animation.generate_animation()
+    # Optionally, we could output these to files
+    # my_event_log.to_csv("simplest_event_log.csv", index=False)
+    # my_animation.generate_animation().write_html("simplest_animation.html")
+    # END NEW #
