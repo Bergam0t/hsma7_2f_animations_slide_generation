@@ -122,14 +122,22 @@ class Model:
 
     def attend_first_apt(self, patient):
         start_q_first_apt = self.env.now
-        self.logger.log_queue(entity_id=patient.id, event="start_queue_first_appt")
+        self.logger.log_queue(
+            entity_id=patient.id,
+            event="start_queue_first_appt",
+            visit_number=patient.current_apt_id,
+        )
 
         yield self.daily_slots.get(1)
 
         # print (f"Patient {patient.id} attending FIRST APPOINTMENT")
 
         end_q_first_apt = self.env.now
-        self.logger.log_queue(entity_id=patient.id, event="have_first_appt")  # NEW
+        self.logger.log_queue(
+            entity_id=patient.id,
+            event="have_first_appt",
+            visit_number=patient.current_apt_id,
+        )  # NEW
 
         if self.env.now > self.param.warm_up_period:
             patient.q_time_first_apt = end_q_first_apt - start_q_first_apt
@@ -144,7 +152,9 @@ class Model:
     def attend_fu_apt(self, patient):
         start_q_fu_apt = self.env.now
         self.logger.log_queue(
-            entity_id=patient.id, event=f"start_queue_fu_appt_{patient.current_apt_id}"
+            entity_id=patient.id,
+            event=f"start_queue_fu_appt_{patient.current_apt_id}",
+            visit_number=patient.current_apt_id,
         )
 
         yield self.daily_slots.get(1)
@@ -156,7 +166,9 @@ class Model:
 
         end_q_fu_apt = self.env.now
         self.logger.log_queue(
-            entity_id=patient.id, event=f"have_fu_appt_{patient.current_apt_id}"
+            entity_id=patient.id,
+            event=f"have_fu_appt_{patient.current_apt_id}",
+            visit_number=patient.current_apt_id,
         )
 
         if self.env.now > self.param.warm_up_period:
@@ -437,28 +449,90 @@ class Animation:
         self.event_log = event_log
         self.params = params
 
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+        # The governor model logs a "start_queue_..."/"have_..." pair for the
+        # first appointment, then repeats that same pair - suffixed with the
+        # visit number (patient.current_apt_id) - for every follow-up
+        # appointment. There's no hard cap on how many follow-up appointments
+        # a patient can have (prob_next_apt_dict keeps a non-zero probability
+        # of another visit forever), so we generate rows for a generous range
+        # of visit numbers beyond the highest key in prob_next_apt_dict rather
+        # than hardcoding an exact list.
+        #
+        # Layout: one row per appointment (first appointment, then each
+        # follow-up visit), with the "waiting" queue on the left ~65% of the
+        # canvas and the "attending" spot on the right ~35% - see
+        # vidigi's example_17_resourceless_larger_queues, which also shows
+        # that with queues this large you need to cap step_snapshot_max low
+        # and lean on step_snapshot_limit_gauges rather than trying to fit
+        # every waiting patient on screen.
+        self.canvas_width = 1400
+        waiting_x = 300
+        attending_x = 900
+        row_height = 100
+        first_row_y = 1000
+
+        max_fu_visit_number = int(self.event_log["visit_number"].max())
+        print(max_fu_visit_number)
+
+        event_positions = [
+            EventPosition(
+                event="arrival", x=0, y=int(first_row_y + row_height), label="Entrance"
+            ),
+            EventPosition(
+                event="start_queue_first_appt",
+                x=int(waiting_x),
+                y=int(first_row_y),
+                label="Waiting for First Appointment",
+            ),
+            EventPosition(
+                event="have_first_appt",
+                x=int(attending_x),
+                y=int(first_row_y),
+                label="Attending First Appointment",
+            ),
+        ]
+
+        for visit_number in range(1, max_fu_visit_number + 1):
+            row_y = first_row_y - visit_number * row_height
+
+            event_positions.append(
                 EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
+                    event=f"start_queue_fu_appt_{visit_number}",
+                    x=int(waiting_x),
+                    y=int(row_y),
+                    label=f"Waiting for Follow-Up Appointment {visit_number}",
+                )
+            )
+            event_positions.append(
                 EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                    resource="num_nurses",
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
+                    event=f"have_fu_appt_{visit_number}",
+                    x=int(attending_x),
+                    y=int(row_y),
+                    label=f"Attending Follow-Up Appointment {visit_number}",
+                )
+            )
+
+        last_row_y = first_row_y - max_fu_visit_number * row_height
+        self.canvas_top = first_row_y + (2 * row_height)
+        self.canvas_bottom = max(last_row_y - row_height, 0)
+
+        event_positions.append(
+            EventPosition(event="depart", x=0, y=int(self.canvas_bottom), label="Exit")
         )
 
+        self.layout = create_event_position_df(event_positions)
+
     def build_animation(self, time_interval=1):
+        # Aggressively cap how many individual icons are drawn per queue -
+        # with queues this large, showing every waiting patient just produces
+        # unreadable stacks of icons and overlapping "+ N more" text.
+        step_snapshot_max = 10
+
         reshaped_df = reshape_for_animations(
             event_log=self.event_log,
             every_x_time_units=time_interval,
             limit_duration=self.params.sim_duration,
+            step_snapshot_max=step_snapshot_max,
         )
 
         # Filter to account for the warm-up
@@ -469,13 +543,27 @@ class Animation:
         animation_df = generate_animation_df(
             full_entity_df=reshaped_df,
             event_position_df=self.layout,
+            step_snapshot_max=step_snapshot_max,
+            # Keep each queue on a single row (matches step_snapshot_max, so
+            # no in-row wrapping) rather than spilling into extra sub-rows.
+            wrap_queues_at=25,
+            gap_between_entities=8,
+            gap_between_queue_rows=15,
+            # Swap the '+ N more' overflow text for a gauge once a queue
+            # exceeds step_snapshot_max, instead of dense unreadable text.
+            step_snapshot_limit_gauges=True,
         )
 
         return generate_animation(
             full_entity_df_plus_pos=animation_df,
             event_position_df=self.layout,
-            scenario=self.params,
             simulation_time_unit="days",  # NEW
+            entity_icon_size=8,
+            text_size=12,
+            plotly_width=self.canvas_width,
+            plotly_height=self.canvas_top - self.canvas_bottom + 100,
+            override_x_max=self.canvas_width,
+            override_y_max=self.canvas_top,
         )
 
 
@@ -581,3 +669,9 @@ print(base_case_event_log.head(10))
 
 my_process_map = ProcessMap(base_case_event_log, base_case_params)
 my_process_map.build_process_map(interactive=False)
+
+my_animation = Animation(base_case_event_log, base_case_params)
+# Because we're running it for longer, let's do a frame every two
+# minutes to keep it generating quickly
+fig = my_animation.build_animation(time_interval=2)  # UPDATED
+fig.show()
