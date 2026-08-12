@@ -144,6 +144,12 @@ class Model:
 
         yield self.env.timeout(1)
 
+        self.logger.log_queue(
+            entity_id=patient.id,
+            event=f"finish_fu_appt_{patient.current_apt_id}",
+            visit_number=patient.current_apt_id,
+        )
+
         yield self.daily_slots.put(1)
 
     def delay_until_apt_due(self, patient):
@@ -177,6 +183,12 @@ class Model:
             )
 
         yield self.env.timeout(1)
+
+        self.logger.log_queue(
+            entity_id=patient.id,
+            event=f"finish_fu_appt_{patient.current_apt_id}",
+            visit_number=patient.current_apt_id,
+        )
 
         yield self.daily_slots.put(1)
 
