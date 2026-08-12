@@ -175,7 +175,7 @@ class Animation:
             ]
         )
 
-    def generate_animation(self, time_interval=1):
+    def build_animation(self, time_interval=1):
         return animate_activity_log(
             event_log=self.event_log,
             event_position_df=self.layout,
@@ -200,7 +200,10 @@ if __name__ == "__main__":
     my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
 
     # NEW
-    # We've removed the animation code as we don't need it for now
+    # We've commented out the animation code as we don't need it for now
+    # my_animation = Animation(my_event_log, my_params)
+    # fig = my_animation.build_animation()
+    # fig.show()
 
     # First, we take our event log and add a timestamp column to it, as it's required
     # so that it can display average durations accurately
