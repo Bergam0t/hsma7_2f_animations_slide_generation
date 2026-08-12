@@ -17,6 +17,7 @@ from vidigi.process_mapping import (
     dfg_to_graphviz,
     dfg_to_cytoscape,
 )
+from IPython.display import display
 
 
 class Patient:
@@ -197,7 +198,7 @@ class Animation:
         )
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
     my_trial = Trial(my_params)
     my_trial.run_trial()
@@ -233,10 +234,11 @@ if __name__ == "main":
     )
 
     # Now we can create a static representation of flow through the process
-    dfg_to_graphviz(nodes, edges, min_frequency=5)
+    graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+    display(graphviz_graph)
 
     # An an interactive version
-    dfg_to_cytoscape(
+    cytoscape_widget = dfg_to_cytoscape(
         nodes,
         edges,
         min_frequency=5,
@@ -245,3 +247,4 @@ if __name__ == "main":
         spacing_factor=2,
         width=1400,
     )
+    display(cytoscape_widget)

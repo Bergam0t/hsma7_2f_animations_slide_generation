@@ -393,7 +393,7 @@ class Animation:
         return animate_activity_log(event_log=self.event_log,
             event_position_df=self.layout, every_x_time_units=time_interval)
 
-if __name__ == "main":
+if __name__ == "__main__":
     my_params = Param()
     my_model = Model(my_params)
     my_model.run_model()
