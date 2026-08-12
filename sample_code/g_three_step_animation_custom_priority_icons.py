@@ -562,7 +562,7 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
+    my_event_log = my_trial.trial_logger.get_log_by_run(run=0, as_df=True)
     print(my_event_log.head(10))
 
     my_animation = Animation(my_event_log, my_params)
