@@ -473,15 +473,22 @@ class Animation:
         reshaped_df = reshape_for_animations(
             event_log=self.event_log,
             every_x_time_units=time_interval,
+            # Remember - sim_duration includes the warm-up time
             limit_duration=self.params.sim_duration,
         )
+
+        # NEW
+        # It's best to wait until this point rather than filtering earlier
+        # We definitely shouldn't filter before the reshape_for_animations step
+        reshaped_df = reshaped_df[
+            (reshaped_df["snapshot_time"] > self.params.warm_up_period)
+        ]
 
         animation_df = generate_animation_df(
             full_entity_df=reshaped_df,
             event_position_df=self.layout,
         )
 
-        # Assign our custom priority icons
         animation_df = animation_df.assign(
             icon=animation_df.apply(self.show_priority_icon, axis=1)
         )
@@ -500,6 +507,16 @@ class ProcessMap:
 
     def build_process_map(self, interactive=True, priority="all"):
         filtered_event_log = self.event_log.copy()
+
+        print(f"Original length: {len(filtered_event_log)}")
+        # NEW
+        # We will filter at this point so that we only include events
+        # that occurred after the warm-up
+        # Notice here we use time, not snapshot_time
+        filtered_event_log = filtered_event_log[
+            filtered_event_log["time"] > self.params.warm_up_period
+        ]
+        print(f"Length after filtering: {len(filtered_event_log)}")
 
         if priority != "all":
             filtered_event_log = filtered_event_log[
@@ -538,7 +555,7 @@ class ProcessMap:
                 nodes,
                 edges,
                 min_frequency=5,
-                title=f"Priority: {priority}",  # NEW
+                title=f"Priority: {priority} - Warm-up Excluded",  # NEW
             )
             display(graphviz_graph)
 
@@ -546,7 +563,7 @@ class ProcessMap:
 if __name__ == "__main__":
     my_params = Param(
         patient_iat_csv="nspp_example_dataset.csv",
-        warm_up_period=0,
+        warm_up_period=1500,  # UPDATED so we do have a warm-up
         num_replications=3,
         num_nurses=3,
         num_nurses_unav=0,  # Switch off nurse obstruction for this example

@@ -175,13 +175,56 @@ class Animation:
             ]
         )
 
-    def generate_animation(self, time_interval=1):
+    def build_animation(self, time_interval=1):
         return animate_activity_log(
             event_log=self.event_log,
             event_position_df=self.layout,
             every_x_time_units=time_interval,
             scenario=self.params,
         )
+
+
+class ProcessMap:
+    def __init__(self, event_log, params):
+        self.event_log = event_log
+        self.params = params
+
+    def build_process_map(self, interactive=True):
+        # First, we take our event log and add a timestamp column to it, as it's required
+        # so that it can display average durations accurately
+        my_event_log_timestamp = add_sim_timestamp(
+            self.event_log, time_unit="minutes", sim_start="09:00:00"
+        ).copy()
+
+        # If we print this, we can see our new timestamp column
+        print(my_event_log_timestamp.head(10))
+
+        # Now we'll discover the pathways in the model
+        nodes, edges = discover_dfg(
+            my_event_log_timestamp,
+            # Our 'case_col' will be 'entity_id' if we've used EventLogger
+            # This just means that each person is considered to be a separate
+            # journey
+            case_col="entity_id",
+        )
+
+        if interactive:
+            # An an interactive version
+            cytoscape_widget = dfg_to_cytoscape(
+                nodes,
+                edges,
+                min_frequency=5,
+                layout_name="dagre",
+                layout_orientation="LR",
+                spacing_factor=2,
+                width=1400,
+            )
+            display(cytoscape_widget)
+
+        else:
+            # Now we can create a static representation of flow through the process
+            graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+            display(graphviz_graph)
 
 
 if __name__ == "__main__":
@@ -200,37 +243,11 @@ if __name__ == "__main__":
     my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
 
     # NEW
-    # We've removed the animation code as we don't need it for now
+    # We've commented out the animation code as we don't need it for now
+    # my_animation = Animation(my_event_log, my_params)
+    # fig = my_animation.build_animation()
+    # fig.show()
 
-    # First, we take our event log and add a timestamp column to it, as it's required
-    # so that it can display average durations accurately
-    my_event_log_timestamp = add_sim_timestamp(
-        my_event_log, time_unit="minutes", sim_start="09:00:00"
-    )
-    # If we print this, we can see our new timestamp column
-    print(my_event_log_timestamp.head(10))
-
-    # Now we'll discover the pathways in the model
-    nodes, edges = discover_dfg(
-        my_event_log_timestamp,
-        # Our 'case_col' will be 'entity_id' if we've used EventLogger
-        # This just means that each person is considered to be a separate
-        # journey
-        case_col="entity_id",
-    )
-
-    # Now we can create a static representation of flow through the process
-    graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
-    display(graphviz_graph)
-
-    # An an interactive version
-    cytoscape_widget = dfg_to_cytoscape(
-        nodes,
-        edges,
-        min_frequency=5,
-        layout_name="dagre",
-        layout_orientation="LR",
-        spacing_factor=2,
-        width=1400,
-    )
-    display(cytoscape_widget)
+    my_process_map = ProcessMap(my_event_log, my_params)
+    my_process_map.build_process_map(interactive=True)
+    my_process_map.build_process_map(interactive=False)

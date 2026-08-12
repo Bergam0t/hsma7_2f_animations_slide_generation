@@ -179,7 +179,7 @@ class Animation:
             ]
         )
 
-    def generate_animation(self, time_interval=1):
+    def build_animation(self, time_interval=1):
         return animate_activity_log(
             event_log=self.event_log,
             event_position_df=self.layout,
@@ -211,5 +211,5 @@ if __name__ == "__main__":
     print(my_event_log.head(10))
 
     my_animation = Animation(my_event_log, my_params)
-    fig = my_animation.generate_animation()
+    fig = my_animation.build_animation()
     fig.show()

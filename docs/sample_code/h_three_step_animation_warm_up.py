@@ -481,10 +481,16 @@ class Animation:
             event_position_df=self.layout,
         )
 
-        # Assign our custom priority icons
         animation_df = animation_df.assign(
             icon=animation_df.apply(self.show_priority_icon, axis=1)
         )
+
+        # NEW
+        # It's best to wait until this point rather than filtering earlier
+        # We definitely shouldn't filter before the reshape_for_animations step
+        animation_df = animation_df[
+            animation_df["snapshot_time"] > self.params.warm_up_period
+        ]
 
         return generate_animation(
             full_entity_df_plus_pos=animation_df,
@@ -500,6 +506,11 @@ class ProcessMap:
 
     def build_process_map(self, interactive=True, priority="all"):
         filtered_event_log = self.event_log.copy()
+
+        # NEW
+        filtered_event_log = filtered_event_log[
+            filtered_event_log["snapshot_time"] > self.params.warm_up_period
+        ]
 
         if priority != "all":
             filtered_event_log = filtered_event_log[
@@ -546,7 +557,7 @@ class ProcessMap:
 if __name__ == "__main__":
     my_params = Param(
         patient_iat_csv="nspp_example_dataset.csv",
-        warm_up_period=0,
+        warm_up_period=1500,  # UPDATED so we do have a warm-up
         num_replications=3,
         num_nurses=3,
         num_nurses_unav=0,  # Switch off nurse obstruction for this example
