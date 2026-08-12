@@ -1,0 +1,5 @@
+# Exercise 3
+
+## {.slide data-menu-title="Vidigi Exercise 3"}
+
+Longer-term animation with the governor model?
