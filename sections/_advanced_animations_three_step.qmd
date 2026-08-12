@@ -3,12 +3,12 @@
 
 :::: {.columns}
 
-::: {.column width='50%'}
+::: {.column width='60%'}
 Vidigi's `animate_activity_log()` function that we've been using so far is actually three functions in a trenchcoat!
 :::
 
-::: {.column width='50%'}
-![](../assets/3_functions_in_a_trenchcoat_chatgpt.png)
+::: {.column width='40%'}
+![](../assets/3_functions_in_a_trenchcoat_chatgpt.png){height=300}
 :::
 
 ::::
@@ -18,7 +18,7 @@ Vidigi's `animate_activity_log()` function that we've been using so far is actua
 :::: {.columns}
 
 ::: {.column width='33%'}
-::: {.value-box value="reshape_for_animations()" icon="fa-solid fa-clock" fragment="true" icon-position="left"}
+::: {.value-box value="reshape_for_animations()" fragment="true" icon-position="left"}
 This function looks over the logs and creates a minute-by-minute breakdown of where everyone currently in the system is at that moment in time.
 
 (or over whatever time interval you specify)

@@ -1,3 +1,12 @@
 {
-    "python.defaultInterpreterPath": "c:\\hsma7\\des\\hsma7_2f_animations_slide_generation\\.venv\\Scripts\\python.exe"
+    "python.defaultInterpreterPath": "c:\\hsma7\\des\\hsma7_2f_animations_slide_generation\\.venv\\Scripts\\python.exe",
+    "files.readonlyInclude": {
+        "docs/**": true
+    },
+    // "files.exclude": {
+    //     "docs/sections": true
+    // },
+    // "search.exclude": {
+    //     "docs/sections": true
+    // }
 }

@@ -405,7 +405,6 @@ But sometimes you just want to change the default list, or just want every entit
 :::
 
 
-
 ## The Revised Animation - Custom Entity Emojis
 
 ```{python}

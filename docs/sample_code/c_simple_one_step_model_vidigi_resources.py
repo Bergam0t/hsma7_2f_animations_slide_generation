@@ -164,7 +164,7 @@ class Animation:
         )
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     # NEW
     # We'll override the number of nurses so we can more clearly see what's going on
     my_params = Param(num_nurses=2)
@@ -192,4 +192,5 @@ if __name__ == "main":
 
     # NEW - note we're now passing in our params here
     my_animation = Animation(my_event_log, my_params)
-    my_animation.generate_animation()
+    fig = my_animation.generate_animation()
+    fig.show()

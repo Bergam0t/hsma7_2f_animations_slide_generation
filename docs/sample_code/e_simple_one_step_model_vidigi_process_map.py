@@ -5,7 +5,7 @@ This is the one-step model from the second simpy session (2B)
 import simpy
 from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
-from vidigi.logging import EventLogger
+from vidigi.logging import EventLogger, TrialLogger
 from vidigi.utils import create_event_position_df, EventPosition
 from vidigi.animation import animate_activity_log
 from vidigi.resources import VidigiStore
@@ -17,6 +17,7 @@ from vidigi.process_mapping import (
     dfg_to_graphviz,
     dfg_to_cytoscape,
 )
+from IPython.display import display
 
 
 class Patient:
@@ -125,6 +126,7 @@ class Trial:
         self.trial_mean_q_time_nurse = pd.NA
         self.trial_sd_q_time_nurse = pd.NA
         self.trial_perc_90_q_time_nurse = pd.NA
+        self.trial_logger = TrialLogger()
 
     def run_trial(self):
         for replication_id in range(self.param.num_replications):
@@ -135,6 +137,7 @@ class Trial:
             )
             model_replication.calculate_run_results(patient_df)
             self.list_of_simulation_replications.append(model_replication)
+            self.trial_logger.add_log(model_replication.logger)
 
     def calculate_trial_results(self):
         self.replication_df = pd.DataFrame(
@@ -148,22 +151,6 @@ class Trial:
         self.trial_perc_90_q_time_nurse = self.replication_df[
             "mean_q_time_nurse"
         ].quantile(0.9)
-
-        def get_run(self, run=0):
-            matching_replications = [
-                model
-                for model in self.list_of_simulation_replications
-                if model.run_number == run
-            ]
-
-            if len(matching_replications) == 0:
-                raise ValueError(f"No run found with run_number={run}")
-            if len(matching_replications) != 1:
-                raise ValueError(
-                    f"Expected exactly one run with run_number={run}, found {len(matching_replications)}"
-                )
-
-            return matching_replications[0]
 
 
 class Animation:
@@ -197,7 +184,7 @@ class Animation:
         )
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
     my_trial = Trial(my_params)
     my_trial.run_trial()
@@ -210,7 +197,7 @@ if __name__ == "main":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
+    my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
 
     # NEW
     # We've removed the animation code as we don't need it for now
@@ -233,10 +220,11 @@ if __name__ == "main":
     )
 
     # Now we can create a static representation of flow through the process
-    dfg_to_graphviz(nodes, edges, min_frequency=5)
+    graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+    display(graphviz_graph)
 
     # An an interactive version
-    dfg_to_cytoscape(
+    cytoscape_widget = dfg_to_cytoscape(
         nodes,
         edges,
         min_frequency=5,
@@ -245,3 +233,4 @@ if __name__ == "main":
         spacing_factor=2,
         width=1400,
     )
+    display(cytoscape_widget)

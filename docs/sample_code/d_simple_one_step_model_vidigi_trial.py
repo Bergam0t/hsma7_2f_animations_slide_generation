@@ -5,10 +5,10 @@ This is the one-step model from the second simpy session (2B)
 import simpy
 from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
-from vidigi.logging import EventLogger
+from vidigi.logging import EventLogger, TrialLogger  # UPDATED
 from vidigi.utils import create_event_position_df, EventPosition
 from vidigi.animation import animate_activity_log
-from vidigi.resources import VidigiStore  # NEW
+from vidigi.resources import VidigiStore
 
 
 class Patient:
@@ -38,7 +38,7 @@ class Param:
 class Model:
     # NEW
     # We're going to start tracking a run_number parameter
-    def __init__(self, param, run_number):
+    def __init__(self, param, run_number):  # UPDATED
         self.param = param
         self.run_number = run_number  # NEW
         self.env = simpy.Environment()
@@ -54,9 +54,8 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        # NEW
         # We can now pass our run_number to our logger
-        self.logger = EventLogger(env=self.env, run_number=self.run_number)
+        self.logger = EventLogger(env=self.env, run_number=self.run_number)  # UPDATED
 
     def generator_patient_arrivals(self):
         while True:
@@ -128,6 +127,7 @@ class Trial:
         self.trial_mean_q_time_nurse = pd.NA
         self.trial_sd_q_time_nurse = pd.NA
         self.trial_perc_90_q_time_nurse = pd.NA
+        self.trial_logger = TrialLogger()  # NEW
 
     def run_trial(self):
         for replication_id in range(self.param.num_replications):
@@ -141,6 +141,7 @@ class Trial:
             )
             model_replication.calculate_run_results(patient_df)
             self.list_of_simulation_replications.append(model_replication)
+            self.trial_logger.add_log(model_replication.logger)  # NEW
 
     def calculate_trial_results(self):
         self.replication_df = pd.DataFrame(
@@ -154,41 +155,6 @@ class Trial:
         self.trial_perc_90_q_time_nurse = self.replication_df[
             "mean_q_time_nurse"
         ].quantile(0.9)
-
-    # NEW
-    # This bit really is new!
-    # We're going to make a small helper function to pull back the run
-    # we are interested in
-    # Remember - Python counts from 0
-    def get_run(self, run=0):
-        matching_replications = [
-            model
-            for model in self.list_of_simulation_replications
-            if model.run_number == run
-        ]
-
-        # Let's give ourselves a nicer error in case we accidentally ask for a run
-        # that doesn't exist
-        if len(matching_replications) == 0:
-            raise ValueError(f"No run found with run_number={run}")
-
-        # We *should* only have one match - but we could make a mistake in
-        # assigning run numbers.
-        # It's worth getting into the habit of checking things like this!
-        if len(matching_replications) != 1:
-            raise ValueError(
-                f"Expected exactly one run with run_number={run}, found {len(matching_replications)}"
-            )
-
-        # Now that we're happy there's only one matching run, we can safely just pull back
-        # the first (and only) item in our list comprehension
-        return matching_replications[0]
-
-        # We *could* have just done
-        # `return self.list_of_simulation_replications[run]`
-        # and left it at that, but this is more robust in case
-        # we ever make our model do something fancy like running
-        # lots of runs simultaneously across our computer's cores
 
 
 class Animation:
@@ -222,7 +188,7 @@ class Animation:
         )
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     # NEW (but again, you've seen this before in session 2C)
     # Rather than an individual run, we're just
     my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
@@ -240,12 +206,10 @@ if __name__ == "main":
     # NEW
     # Now instead of just calling 'get_vidigi_event_log()' directly
     # on our model run, we just grab back our chosen run from the trial
-    # first (remembering that Python counts from 0)
-    # Because that's the *entire* model object, we still have access to
-    # any of the methods or attributes of that model object, so we can now
-    # grab back
-    my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
+    # logger (remembering that Python counts from 0)
+    my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
     print(my_event_log.head(10))
 
     my_animation = Animation(my_event_log, my_params)
-    my_animation.generate_animation()
+    fig = my_animation.generate_animation()
+    fig.show()

@@ -76,7 +76,7 @@ itables.options.lengthMenu = [10]
 itables.options.layout["topStart"] = None
 display(HTML("<style>.dt-container { font-size: 20pt; }</style>"))
 
-from sample_code.e_simple_one_step_model_vidigi_process_map import Param, Model
+from sample_code.e_simple_one_step_model_vidigi_process_map import Param, Trial
 from vidigi.animation import animate_activity_log
 from vidigi.process_mapping import (
     add_sim_timestamp,
@@ -90,7 +90,7 @@ my_trial = Trial(my_params)
 my_trial.run_trial()
 my_trial.calculate_trial_results()
 
-my_event_log = my_trial.get_run(run=2).get_vidigi_event_log()
+my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
 
 my_event_log_timestamp = add_sim_timestamp(
         my_event_log, time_unit="minutes", sim_start="09:00:00"

@@ -145,7 +145,7 @@ class Animation:
 # in the terminal or interactive window
 # This just makes our file more robust if in future we wanted to reuse our classes
 # elsewhere, and it's good practice to do so
-if __name__ == "main":
+if __name__ == "__main__":
     my_params = Param()
     my_model = Model(my_params)
     my_model.run_model()
@@ -170,7 +170,8 @@ if __name__ == "main":
     print(my_event_log.head(10))
 
     my_animation = Animation(my_event_log)
-    my_animation.generate_animation()
+    fig = my_animation.generate_animation()
+    fig.show()
 
     # Optionally, we could output these to files
     # my_event_log.to_csv("simplest_event_log.csv", index=False)

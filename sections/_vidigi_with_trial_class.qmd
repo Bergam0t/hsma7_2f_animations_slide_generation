@@ -140,13 +140,25 @@ my_event_log = my_model.get_vidigi_event_log()
 my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
 ```
 
-::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
+<br>
+
+::: {.value-box icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
 Now we can regenerate the animation for different runs by just changing what we pass to that `run` parameter!
 :::
 
-
 ```{python}
+#| eval: true
+#| echo: false
+#| label: initiate-trial-example
 from sample_code.d_simple_one_step_model_vidigi_trial import Param, Trial
+
+my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10, num_replications=20)
+my_trial = Trial(my_params)
+my_trial.run_trial()
+my_trial.calculate_trial_results()
+
+import plotly.io as pio
+pio.renderers.default = "notebook"
 ```
 
 
@@ -159,9 +171,67 @@ from sample_code.d_simple_one_step_model_vidigi_trial import Param, Trial
 ## Average durations
 
 ```{python}
-trial_logs.get_event_duration_stat(
-    first_event="TRAUMA_treatment_wait_begins",
-    second_event="TRAUMA_treatment_begins",
-    what="mean", exclude_incomplete=True
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-duration_stat
+my_trial.trial_logger.get_event_duration_stat(
+    first_event="nurse_wait_begins",
+    second_event="being_seen_by_nurse",
+    what="mean",
+    exclude_incomplete=True
     )
+```
+
+## Duration Barplot
+
+First, we define our 'pairs' of events and give them some nicer names.
+
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-pairs
+event_pairs = [
+        {"first_event": "nurse_wait_begins",
+         "second_event":"being_seen_by_nurse",
+         "label": "Nurse Wait Length"},
+         {"first_event": "being_seen_by_nurse",
+         "second_event":"nurse_treatment_ends",
+         "label": "Nurse Treatment Length"},
+         {"first_event": "arrival",
+         "second_event":"depart",
+         "label": "Full Journey Duration"},
+]
+```
+
+::: {style='font-size: 65%;'}
+Note that we're finally getting a chance to use that "nurse_treatment_ends" activity!
+
+(While it's still identically timed to *depart* here, it is more intuitive to make use of it)
+:::
+
+
+
+## Duration Barplot - Output
+
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-duration-barplot
+my_trial.trial_logger.plot_metric_bar(
+    event_pairs, what="mean",
+    title= "Mean step durations",
+    width=1000, height=400)
+```
+
+## Queue length
+
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-queue-length
+my_trial.trial_logger.plot_queue_size(
+    ["nurse_wait_begins"],
+    limit_duration=my_params.sim_duration,
+    every_x_time_units=30, title="Nurse Queue Length",
+    width=1000, height=400)
 ```
