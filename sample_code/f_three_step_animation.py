@@ -7,17 +7,9 @@ from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
 from vidigi.logging import EventLogger, TrialLogger
 from vidigi.utils import create_event_position_df, EventPosition
-from vidigi.animation import animate_activity_log
+from vidigi.prep import reshape_for_animations, generate_animation_df  # NEW
+from vidigi.animation import generate_animation  # UPDATED
 from vidigi.resources import VidigiStore
-
-# NEW imports
-from vidigi.process_mapping import (
-    add_sim_timestamp,
-    discover_dfg,
-    dfg_to_graphviz,
-    dfg_to_cytoscape,
-)
-from IPython.display import display
 
 
 class Patient:
@@ -45,9 +37,11 @@ class Param:
 
 
 class Model:
-    def __init__(self, param, run_number):
+    # NEW
+    # We're going to start tracking a run_number parameter
+    def __init__(self, param, run_number):  # UPDATED
         self.param = param
-        self.run_number = run_number
+        self.run_number = run_number  # NEW
         self.env = simpy.Environment()
         self.patient_counter = 0
         self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
@@ -61,7 +55,8 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        self.logger = EventLogger(env=self.env, run_number=self.run_number)
+        # We can now pass our run_number to our logger
+        self.logger = EventLogger(env=self.env, run_number=self.run_number)  # UPDATED
 
     def generator_patient_arrivals(self):
         while True:
@@ -119,6 +114,13 @@ class Model:
         return self.logger.to_dataframe()
 
 
+# NEW - but you've seen all this before.
+# It's *almost* identical to the content in session 2C!
+# We don't need to make any changes to it for the purposes
+# of getting the animation working - our changes will just
+# be in how we pass the event log to the animation
+# so we will make a little helper method at the end of this
+# class for that purpose
 class Trial:
     def __init__(self, param):
         self.param = param
@@ -126,10 +128,13 @@ class Trial:
         self.trial_mean_q_time_nurse = pd.NA
         self.trial_sd_q_time_nurse = pd.NA
         self.trial_perc_90_q_time_nurse = pd.NA
-        self.trial_logger = TrialLogger()
+        self.trial_logger = TrialLogger()  # NEW
 
     def run_trial(self):
         for replication_id in range(self.param.num_replications):
+            # NEW
+            # We now just pass our replication_id into the model
+            # Note that the replication_id will count from 0
             model_replication = Model(self.param, replication_id)
             model_replication.run_model()
             patient_df = model_replication.convert_entity_list_to_dataframe(
@@ -137,7 +142,7 @@ class Trial:
             )
             model_replication.calculate_run_results(patient_df)
             self.list_of_simulation_replications.append(model_replication)
-            self.trial_logger.add_log(model_replication.logger)
+            self.trial_logger.add_log(model_replication.logger)  # NEW
 
     def calculate_trial_results(self):
         self.replication_df = pd.DataFrame(
@@ -175,56 +180,26 @@ class Animation:
             ]
         )
 
+    # UPDATED
     def build_animation(self, time_interval=1):
-        return animate_activity_log(
+        reshaped_df = reshape_for_animations(
             event_log=self.event_log,
-            event_position_df=self.layout,
             every_x_time_units=time_interval,
+            limit_duration=self.params.sim_duration,
+        )
+
+        animation_df = generate_animation_df(
+            full_entity_df=reshaped_df,
+            event_position_df=self.layout,
+        )
+
+        return generate_animation(
+            full_entity_df_plus_pos=animation_df,
+            event_position_df=self.layout,
             scenario=self.params,
         )
 
-
-class ProcessMap:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
-        self.params = params
-
-    def build_process_map(self, interactive=True):
-        # First, we take our event log and add a timestamp column to it, as it's required
-        # so that it can display average durations accurately
-        my_event_log_timestamp = add_sim_timestamp(
-            self.event_log, time_unit="minutes", sim_start="09:00:00"
-        ).copy()
-
-        # If we print this, we can see our new timestamp column
-        print(my_event_log_timestamp.head(10))
-
-        # Now we'll discover the pathways in the model
-        nodes, edges = discover_dfg(
-            my_event_log_timestamp,
-            # Our 'case_col' will be 'entity_id' if we've used EventLogger
-            # This just means that each person is considered to be a separate
-            # journey
-            case_col="entity_id",
-        )
-
-        if interactive:
-            # An an interactive version
-            cytoscape_widget = dfg_to_cytoscape(
-                nodes,
-                edges,
-                min_frequency=5,
-                layout_name="dagre",
-                layout_orientation="LR",
-                spacing_factor=2,
-                width=1400,
-            )
-            display(cytoscape_widget)
-
-        else:
-            # Now we can create a static representation of flow through the process
-            graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
-            display(graphviz_graph)
+    # END UPDATED CODE
 
 
 if __name__ == "__main__":
@@ -241,13 +216,8 @@ if __name__ == "__main__":
     print()
 
     my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
+    print(my_event_log.head(10))
 
-    # NEW
-    # We've commented out the animation code as we don't need it for now
-    # my_animation = Animation(my_event_log, my_params)
-    # fig = my_animation.build_animation()
-    # fig.show()
-
-    my_process_map = ProcessMap(my_event_log, my_params)
-    my_process_map.build_process_map(interactive=True)
-    my_process_map.build_process_map(interactive=False)
+    my_animation = Animation(my_event_log, my_params)
+    fig = my_animation.build_animation()
+    fig.show()
