@@ -478,14 +478,13 @@ class Animation:
         # and lean on step_snapshot_limit_gauges rather than trying to fit
         # every waiting patient on screen.
         self.canvas_width = 1400
-        waiting_x = 300
-        attending_x = 900
+        self.canvas_height = 1400
+        waiting_x = 350
+        attending_x = 950
         row_height = 100
-        first_row_y = 1000
+        first_row_y = 1200
 
-        max_fu_visit_number = int(self.event_log["visit_number"].max())
-        print(max_fu_visit_number)
-
+        # Set up the fixed event positions first
         event_positions = [
             EventPosition(
                 event="arrival", x=0, y=int(first_row_y + row_height), label="Entrance"
@@ -504,6 +503,11 @@ class Animation:
             ),
         ]
 
+        # Find out the maximum number of follow-ups anyone had
+        max_fu_visit_number = int(self.event_log["visit_number"].max())
+        # print(max_fu_visit_number)
+
+        # Generate the max number of lines required
         for visit_number in range(1, max_fu_visit_number + 1):
             row_y = first_row_y - visit_number * row_height
 
@@ -524,12 +528,8 @@ class Animation:
                 )
             )
 
-        last_row_y = first_row_y - max_fu_visit_number * row_height
-        self.canvas_top = first_row_y + (2 * row_height)
-        self.canvas_bottom = max(last_row_y - row_height, 0)
-
         event_positions.append(
-            EventPosition(event="depart", x=0, y=int(self.canvas_bottom), label="Exit")
+            EventPosition(event="depart", x=900, y=100, label="Exit")
         )
 
         self.layout = create_event_position_df(event_positions)
@@ -538,7 +538,7 @@ class Animation:
         # Aggressively cap how many individual icons are drawn per queue -
         # with queues this large, showing every waiting patient just produces
         # unreadable stacks of icons and overlapping "+ N more" text.
-        step_snapshot_max = 10
+        step_snapshot_max = 20
 
         reshaped_df = reshape_for_animations(
             event_log=self.event_log,
@@ -558,9 +558,9 @@ class Animation:
             step_snapshot_max=step_snapshot_max,
             # Keep each queue on a single row (matches step_snapshot_max, so
             # no in-row wrapping) rather than spilling into extra sub-rows.
-            wrap_queues_at=25,
-            gap_between_entities=8,
-            gap_between_queue_rows=15,
+            wrap_queues_at=20,
+            gap_between_entities=15,
+            gap_between_queue_rows=25,
             # Swap the '+ N more' overflow text for a gauge once a queue
             # exceeds step_snapshot_max, instead of dense unreadable text.
             step_snapshot_limit_gauges=True,
@@ -572,10 +572,12 @@ class Animation:
             simulation_time_unit="days",  # NEW
             entity_icon_size=8,
             text_size=12,
-            plotly_width=self.canvas_width,
-            plotly_height=self.canvas_top - self.canvas_bottom + 100,
+            plotly_width=900,
+            plotly_height=900,
             override_x_max=self.canvas_width,
-            override_y_max=self.canvas_top,
+            override_y_max=self.canvas_height,
+            frame_transition_duration=0,
+            time_display_units="simulation_day_clock",
         )
 
 
@@ -593,11 +595,11 @@ class ProcessMap:
             filtered_event_log["time"] > self.params.warm_up_period
         ]
 
-        # # NEW
-        # # Let's remove the 'have' events
-        # filtered_event_log = filtered_event_log[
-        #     ~filtered_event_log["event"].str.contains("have")
-        # ]
+        # NEW
+        # Let's filter to just the 'have' events
+        filtered_event_log = filtered_event_log[
+            filtered_event_log["event"].str.contains("have|arrival|depart")
+        ]
 
         filtered_event_log_timestamp = add_sim_timestamp(
             filtered_event_log,

@@ -37,11 +37,9 @@ class Param:
 
 
 class Model:
-    # NEW
-    # We're going to start tracking a run_number parameter
     def __init__(self, param, run_number):  # UPDATED
         self.param = param
-        self.run_number = run_number  # NEW
+        self.run_number = run_number
         self.env = simpy.Environment()
         self.patient_counter = 0
         self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
@@ -114,13 +112,6 @@ class Model:
         return self.logger.to_dataframe()
 
 
-# NEW - but you've seen all this before.
-# It's *almost* identical to the content in session 2C!
-# We don't need to make any changes to it for the purposes
-# of getting the animation working - our changes will just
-# be in how we pass the event log to the animation
-# so we will make a little helper method at the end of this
-# class for that purpose
 class Trial:
     def __init__(self, param):
         self.param = param
@@ -128,13 +119,10 @@ class Trial:
         self.trial_mean_q_time_nurse = pd.NA
         self.trial_sd_q_time_nurse = pd.NA
         self.trial_perc_90_q_time_nurse = pd.NA
-        self.trial_logger = TrialLogger()  # NEW
+        self.trial_logger = TrialLogger()
 
     def run_trial(self):
         for replication_id in range(self.param.num_replications):
-            # NEW
-            # We now just pass our replication_id into the model
-            # Note that the replication_id will count from 0
             model_replication = Model(self.param, replication_id)
             model_replication.run_model()
             patient_df = model_replication.convert_entity_list_to_dataframe(
@@ -142,7 +130,7 @@ class Trial:
             )
             model_replication.calculate_run_results(patient_df)
             self.list_of_simulation_replications.append(model_replication)
-            self.trial_logger.add_log(model_replication.logger)  # NEW
+            self.trial_logger.add_log(model_replication.logger)
 
     def calculate_trial_results(self):
         self.replication_df = pd.DataFrame(

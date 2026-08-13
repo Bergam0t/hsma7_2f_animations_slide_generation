@@ -2,4 +2,45 @@
 
 ## {.slide data-menu-title="Vidigi Exercise 3"}
 
-Longer-term animation with the governor model?
+:::: {.columns}
+
+::: {.column width='60%'}
+::: {style='font-size: 75%;'}
+You will be working with the model [TODO: model path] and the notebook [TODO: notebook path].
+
+This model already has the logging steps set up, as well as a simple one-step animation.
+:::
+:::
+
+::: {.column width='40%'}
+::: {.value-box icon="fa-solid fa-clock" icon-position="left" icon-size="2em"}
+45 minutes + 10 minute break
+:::
+:::
+
+::::
+
+
+
+:::: {.columns}
+
+::: {.column width='60%'}
+::: {style='font-size: 85%'}
+1. Switch to using the three-step animation process
+1. Customise the icons so that high-priority patients are displayed differently
+1. Try adding some additional information to your patients. What about their wait time, or something else you think would be useful to include?
+
+:::
+:::
+
+::: {.column width='40%'}
+::: {.fragment}
+::: {style='font-size: 70%; color: lightgrey'}
+### Extensions
+- [TODO: ext 1]
+- [TODO: ext 2]
+:::
+:::
+:::
+
+::::

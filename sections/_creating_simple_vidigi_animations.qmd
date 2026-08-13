@@ -19,6 +19,8 @@ The first thing we need to do is set up our logging class.
 
 We will add this when initialising our `Model` class.
 
+::: {.codewindow .python}
+sample_code/b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-15,focus:16" code-line-style-preset="emphasis"}
 class Model:
     def __init__(self, param):
@@ -37,6 +39,7 @@ class Model:
         self.perc_90_q_time_nurse = pd.NA
         self.logger = EventLogger(env=self.env)  # NEW
 ```
+:::
 
 ## Adding Logging Steps - Arrivals
 

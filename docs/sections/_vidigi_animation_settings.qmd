@@ -1,0 +1,11 @@
+# Additional customisation for your vidigi animations
+
+## Time Interval
+
+## Play Speed
+
+## Queue Wrapping
+
+## Entity Spacing
+
+##

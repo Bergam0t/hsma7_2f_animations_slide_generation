@@ -206,10 +206,11 @@ event_pairs = [
 ::: {style='font-size: 65%;'}
 Note that we're finally getting a chance to use that "nurse_treatment_ends" activity!
 
-(While it's still identically timed to *depart* here, it is more intuitive to make use of it)
+While it's still identically timed to *depart* here
+
+- it is more intuitive to make use of it
+- it avoids issues if we add more steps to our process down the line
 :::
-
-
 
 ## Duration Barplot - Output
 

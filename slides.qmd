@@ -61,6 +61,7 @@ revealjs-plugins:
   - pointer
   - codefocus
   # - a11y
+  - codewindow
 filters:
   - stlite # modified stlite extension
   - reveal-header
@@ -86,7 +87,7 @@ filters:
 
 {{< include sections/_vidigi_exercise_1.qmd >}}
 
-
+{{ include sections/_vidigi_animation_settings.qmd }}
 
 {{< include sections/_vidigi_with_trial_class.qmd >}}
 
@@ -94,11 +95,14 @@ filters:
 
 {{< include sections/_using_and_creating_custom_backgrounds.qmd >}}
 
-{{< include sections/_advanced_animations_three_step.qmd >}}
 
 {{< include sections/_vidigi_exercise_2.qmd >}}
 
+{{< include sections/_advanced_animations_three_step.qmd >}}
+
+
+{{< include sections/_vidigi_exercise_3.qmd >}}
 
 {{< include sections/_animating_bigger_systems_and_longer_timescales.qmd >}}
 
-{{< include sections/_vidigi_exercise_3.qmd >}}
+{{< include sections/_wrapping_up.qmd >}}
