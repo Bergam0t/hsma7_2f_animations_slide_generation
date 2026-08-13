@@ -4,6 +4,8 @@
 
 First, we need a few new imports at the top of our file.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-3,focus:4-6" code-line-style-preset="emphasis"}
 import simpy
 from sim_tools.distributions import Exponential, Lognormal
@@ -12,6 +14,7 @@ from vidigi.logging import EventLogger  # NEW
 from vidigi.utils import create_event_position_df, EventPosition  # NEW
 from vidigi.animation import animate_activity_log  # NEW
 ```
+:::
 
 ## Adding a Logging Class
 
@@ -19,7 +22,7 @@ The first thing we need to do is set up our logging class.
 
 We will add this when initialising our `Model` class.
 
-::: {.codewindow .python .codewindow-dark}
+::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-15,focus:16" code-line-style-preset="emphasis"}
 class Model:
@@ -49,12 +52,19 @@ We will place all of the logging steps in the `.attend_clinic()` method.
 
 Let's first add an arrival logging step!
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)  # NEW
 ```
+:::
 
+::: {style='font-size: 80%;'}
 Because we already gave our logger access to the SimPy env, it handles recording the time the event happened! So the only parameter we need to give our logger is an identifier for this patient, which they already record.
+
+:::
+
 
 ## Adding Logging Steps - Queuing
 
@@ -62,6 +72,8 @@ We now record a **queuing** step with `.log_queue()`
 
 This time, we also need to decide on a name for our event. This can be anything we like, though it's good practice to use `snake_case` (i.e. lowercase with underscores instead of spaces).
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-5,focus:6,dim:7-11" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)
@@ -75,11 +87,14 @@ def attend_clinic(self, patient):
         end_q_nurse = self.env.now
         ...
 ```
+:::
 
 ## The simple way to record activity use
 
 We're going to start with the simplest way of logging that someone is being seen by the nurse - also treating it as a `queue` in vidigi's language.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-7,focus:8,dim:9-12,focus:13" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     ...
@@ -95,6 +110,7 @@ def attend_clinic(self, patient):
 
         self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")  # NEW
 ```
+:::
 
 ## But it's not a queue?!
 
@@ -104,10 +120,13 @@ Later, we'll look at vidigi's more advanced ways of tracking resource use, but t
 
 Finally, every patient needs one departure event.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)  # NEW
 ```
+:::
 
 <br>
 
@@ -124,6 +143,8 @@ Things get messy if they don't!
 
 Let's recap the changes we made.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1,focus:2,dim:3-5,focus:6,dim:7-12,focus:13,dim:14-17,focus:18,dim:19,focus:20" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)  # NEW
@@ -146,6 +167,7 @@ def attend_clinic(self, patient):
 
     self.logger.log_departure(entity_id=patient.id)  # NEW
 ```
+:::
 
 ## Accessing our event log
 
@@ -153,12 +175,13 @@ We'll want to grab out our event log as a pandas dataframe.
 
 It's neat to set up a little helper method in our `Model` class to do that.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python}
 def get_vidigi_event_log(self):
     return self.logger.to_dataframe()
 ```
-
-<br>
+:::
 
 Vidigi provides the `to_dataframe()` method for our convenience. This will look at the EventLogger object, find where it stores the event logs, and convert it into this format for us.
 
@@ -170,12 +193,15 @@ Our models contain some key classes: `Params`, `Patient`, `Model`
 
 We're now going to define a brand new class called `Animation`.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python}
 class Animation:
     def __init__(self, params, event_log):
         self.params = params
         self.event_log = event_log
 ```
+:::
 
 ## Setting up a Layout Grid
 
@@ -184,6 +210,8 @@ The next thing we'll define - still in our init method - is a layout grid.
 :::: {.columns}
 
 ::: {.column width='40%'}
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python}
 EventPosition(
     event="nurse_wait_begins",
@@ -192,6 +220,7 @@ EventPosition(
     label="Waiting for Nurse"
     )
 ```
+:::
 :::
 
 ::: {.column width='5%'}
@@ -224,19 +253,25 @@ For each event we want in our animation, we create an `EventPosition` object and
 
 Behind the scenes, EventLogger always gives these the same event name if you use `.log_arrival()` and `.log_departure()`.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python}
 EventPosition(
     event="arrival", x=0, y=350, label="Entrance"
 )
 ```
+:::
 
 <br>
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python}
 EventPosition(
     event="depart", x=200, y=50, label="Exit"
 )
 ```
+:::
 
 ## `create_event_position_df`
 
@@ -246,6 +281,8 @@ We pass a `list` of all our EventPosition objects to the function `create_event_
 Remember - a Python list uses `[]` with each item separated by a `,`
 :::
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python}
 create_event_position_df(
     [
@@ -264,6 +301,8 @@ create_event_position_df(
     ]
 )
 ```
+:::
+
 ::: {style="font-size: 65%;"}
 ::: {.fragment}
 We don't need to visualise the 'nurse_treatment_ends' step as the timing will be identical to the depart step.
@@ -275,6 +314,8 @@ We don't need to visualise the 'nurse_treatment_ends' step as the timing will be
 
 We'll bind this to `self.layout`.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-5,focus:6-23" code-line-style-preset="emphasis"}
 class Animation:
     def __init__(self, event_log):
@@ -299,11 +340,14 @@ class Animation:
             ]
         )
 ```
+:::
 
 ## Generating the Animation
 
 Now, we just need a small function to call vidigi's animation creation logic.
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-4,focus:5-11" code-line-style-preset="emphasis"}
 class Animation:
     def __init__(self, event_log):
@@ -316,10 +360,12 @@ class Animation:
             every_x_time_units=time_interval,
         )
 ```
-
+:::
 
 ## Calling the animation
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-7,focus:8-11" code-line-style-preset="emphasis"}
 my_params = Param()
 my_model = Model(my_params)
@@ -333,6 +379,7 @@ my_event_log = my_model.get_vidigi_event_log()
 my_animation = Animation(my_event_log)
 my_animation.build_animation()
 ```
+:::
 
 ## The event log
 
@@ -387,6 +434,8 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
 
 If you head to the folder in sample_code, you may notice a funny line:
 
+::: {.codewindow .python}
+b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-8,focus:9,dim:10-13" code-line-style-preset="emphasis"}
 class Animation:
     def __init__(self, event_log):
@@ -402,6 +451,7 @@ if __name__ == "__main__":
     my_model.run_model()
     ...
 ```
+:::
 
 ## BONUS: `if __name__ == 'main'` - explanation
 

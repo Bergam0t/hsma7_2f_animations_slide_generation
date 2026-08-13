@@ -268,14 +268,11 @@ iframe.stlite {
 // }
 
 .reveal {
-  --codewindow-bg: #fdf6e3;
-  --codewindow-header-bg: #eee8d5;
-  --codewindow-tab-bg: #d9d2ba;
-  --codewindow-tab-active-bg: #fdf6e3;
-  --codewindow-color: #073642;
-  --codewindow-shadow-color: #93a1a1;
+  --codewindow-bg: #1e293b;
+  --codewindow-header-bg: #0f172a;
+  --codewindow-tab-bg: #334155;
+  --codewindow-color: #e2e8f0;
 }
-
 // codewindow builds its window chrome (traffic lights + file tab) as a bare
 // `div.header`, but the reveal-header extension unconditionally hides every
 // `div.header` on the page at init -- see
@@ -289,6 +286,28 @@ iframe.stlite {
   display: flex !important;
 }
 
+// codewindow sets `.codewindow { font-size: 0.45em }` and then forces the inner
+// pre / .sourceCode to `font-size: unset` so they inherit it, which lands code
+// at 0.45 * 40px root = 18px. Quarto's own revealjs default is
+// `.reveal pre { font-size: .55em }` = 22px, hence code windows reading ~18%
+// small. 0.55em matches Quarto exactly; drop to 0.5em (20px) for a gentler bump.
+// This scales the whole window, file tab and language icon included -- if the
+// 30px title bar feels cramped, raise --codewindow-header-height alongside it.
+.reveal .codewindow {
+  font-size: 0.50em;
+}
+
+// The file tab just inherits the window's font-size, so the filename renders at
+// the same size as the code. Scale it down relative to the window: 0.8em here
+// is 0.8 * 0.5 = 0.4em of the root, i.e. 16px against the code's 20px.
+// Covers the multi-tab layout (.header .tabs .file) as well as the single tab.
+// The language icon is sized `height: 1em`, so it shrinks in step and the tab
+// stays proportioned -- give the svg its own font-size if you want it to hold
+// its current size.
+.reveal .codewindow > .header .file {
+  font-size: 0.8em;
+}
+
 // .codewindow-dark doesn't redefine --codewindow-tab-active-bg, so the active
 // file tab falls back to the light value set on .reveal above while
 // --codewindow-color flips to near-white -- roughly 1.06:1 contrast, i.e. an
@@ -297,14 +316,16 @@ iframe.stlite {
   --codewindow-tab-active-bg: #1e293b;
 }
 
-// OPTIONAL -- uncomment to try. Quarto shifts numbered line spans left by 4em
-// to make room for the line-number gutter (`pre.numberSource code > span
-// { left: -4em }`); code-line-style then paints its focus/dim band on that same
-// span at width:100%, so the band inherits the shift and ends 4em short on the
-// right. This widens the band to cover the gutter too. Judge it visually --
-// it affects every numbered code block in the deck, not just code windows.
-// NOTE - because I'm already shrinking this window somewhat, I've overriden the 4em
-// to 1.5em
-.reveal div.sourceCode pre.numberSource > code > span {
-  width: calc(100% + 1.5em);
+// Stop code blocks growing a spurious horizontal scrollbar.
+// code-line-style turns each line into `display:inline-block; width:100%` with
+// `padding-left:.35em` and a 3px left border. This deck has no universal
+// `box-sizing:border-box`, so those add ON TOP of the 100% and every line ends
+// up ~3px wider than its container -- and both `div.sourceCode` and
+// `.reveal pre code` are `overflow:auto`, so that's enough to trigger a
+// scrollbar even on a two-line block. border-box folds the padding and border
+// back inside the 100%, so the line ends flush and nothing overflows.
+// (Quarto's `pre.numberSource code > span { left: -4em }` is a paint-time
+// relative offset and never contributed to scroll overflow -- only width did.)
+.reveal div.sourceCode pre > code > span {
+  box-sizing: border-box;
 }
