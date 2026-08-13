@@ -26,6 +26,7 @@ This model already has the logging steps set up, as well as a simple one-step an
 
 ::: {.column width='60%'}
 ::: {style='font-size: 85%'}
+1. Modify
 1. Modify the code to account for the presence of the `Trial` class
     1. Generate an animation for each run of the model. Do they differ significantly?
 1. Explore the EventLogger and TrialLogger visualisations

@@ -266,3 +266,45 @@ iframe.stlite {
 //   color: rgba(255, 255, 255, 0.85) !important;
 //   /*font-weight: 600;*/
 // }
+
+.reveal {
+  --codewindow-bg: #fdf6e3;
+  --codewindow-header-bg: #eee8d5;
+  --codewindow-tab-bg: #d9d2ba;
+  --codewindow-tab-active-bg: #fdf6e3;
+  --codewindow-color: #073642;
+  --codewindow-shadow-color: #93a1a1;
+}
+
+// codewindow builds its window chrome (traffic lights + file tab) as a bare
+// `div.header`, but the reveal-header extension unconditionally hides every
+// `div.header` on the page at init -- see
+// _extensions/shafayetShafee/reveal-header/resources/js/add_header.js, where it
+// suppresses the `::: {.header}` slide-body divs used to override per-slide
+// header text. It runs after codewindow, so it stamps an inline display:none on
+// the code window's title bar and the whole bar vanishes.
+// A scoped !important beats the inline style. Keep it scoped to
+// `.codewindow > .header` so genuine reveal-header override divs stay hidden.
+.reveal .codewindow > .header {
+  display: flex !important;
+}
+
+// .codewindow-dark doesn't redefine --codewindow-tab-active-bg, so the active
+// file tab falls back to the light value set on .reveal above while
+// --codewindow-color flips to near-white -- roughly 1.06:1 contrast, i.e. an
+// invisible file name. Give the dark preset a matching tab colour.
+.reveal .codewindow.codewindow-dark {
+  --codewindow-tab-active-bg: #1e293b;
+}
+
+// OPTIONAL -- uncomment to try. Quarto shifts numbered line spans left by 4em
+// to make room for the line-number gutter (`pre.numberSource code > span
+// { left: -4em }`); code-line-style then paints its focus/dim band on that same
+// span at width:100%, so the band inherits the shift and ends 4em short on the
+// right. This widens the band to cover the gutter too. Judge it visually --
+// it affects every numbered code block in the deck, not just code windows.
+// NOTE - because I'm already shrinking this window somewhat, I've overriden the 4em
+// to 1.5em
+.reveal div.sourceCode pre.numberSource > code > span {
+  width: calc(100% + 1.5em);
+}

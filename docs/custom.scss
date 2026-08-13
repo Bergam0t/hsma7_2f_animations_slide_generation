@@ -6,6 +6,12 @@ $link-color: #42affa;
 
 /*-- scss:rules --*/
 
+.reveal .backgrounds {
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+}
+
 .reveal .slide blockquote {
   border-left: 3px solid $text-muted;
   padding-left: 0.5em;
@@ -21,15 +27,15 @@ $link-color: #42affa;
   line-height: 0.9em;
   letter-spacing: 0.02em;
   text-shadow: none;
- }
+}
 
- .reveal h1 {
-   margin: 0px 20px 20px 20px;
-   color: #ffffff;
-   line-height: 0.9em;
-   letter-spacing: 0.02em;
-   text-shadow: -1px -1px 4px black;
-  }
+.reveal h1 {
+  margin: 0px 20px 20px 20px;
+  color: #ffffff;
+  line-height: 0.9em;
+  letter-spacing: 0.02em;
+  text-shadow: -1px -1px 4px black;
+}
 
 p {
     margin: 0px 20px 20px 20px !important;
@@ -52,58 +58,253 @@ body {
     filter: brightness(10) saturate(0);
 }
 
-// /* Style top-level slide sections */
-// .reveal .slides > section {
-//   background-color: rgba(56, 56, 56, 0.7);
-//   max-width: 100%; /* Prevent accidental overflow */
-//   margin: 20px auto;
-//   padding: 1em 0.5em 1.5em 0.5em; /* top, right, bottom, left */
-//   border-radius: 12px;
-//   box-sizing: border-box;
-//   color: white;
-//   display: block;
-//   word-wrap: break-word;
-//   overflow-wrap: break-word;
-// }
-
-// Create a grey box
-/* Remove extra padding from the slides container */
+// Create a grey box using a pseudo-element (doesn't interfere with bg)
 .reveal .slides {
   padding: 0 !important;
-  /* Style top-level slide sections */
-  background-color: rgba(56, 56, 56, 0.7);
-  margin: 0px 20px 20px 20px;
-  padding: 0px 20px 0px 20px; /* top, right, bottom, left */
   border-radius: 12px;
   box-sizing: border-box;
-  display: block;
   word-wrap: break-word;
   overflow-wrap: break-word;
-
-  /* Overspill effect */
-  transform: scaleX(1.1); /* 10% wider */
+  transform: scaleX(1.1);
   transform-origin: center;
+
+  /* Remove the background from here */
+  background-color: transparent;
 }
 
-/* Nested slide sections (if any) — remove padding but keep content */
-.reveal .slides section > section {
-  background: none;
-  padding: 10px 20px 20px 20px;
-  margin: 0;
-  border: none;
+// Default: content starts at the top for regular slides
+.reveal .slides > section {
+  /* background-color: rgba(56, 56, 56, 0.8); */
+  border-radius: 12px;
+  padding: 20px;
+  box-sizing: border-box;
+  /* min-height: 85vh; */
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
-.sourceCode {
-  width: 95% !important;
-  max-width: 95% !important;
+// Title slide — target by id
+.reveal .slides > section#title-slide {
+  background-color: rgba(56, 56, 56, 0.8);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
-.cell-output {
-  width: 95% !important;
-  max-width: 95% !important;
+// Restore alignment for title slide children
+.reveal .slides > section#title-slide h1,
+.reveal .slides > section#title-slide .quarto-title-authors,
+.reveal .slides > section#title-slide .quarto-title-author,
+.reveal .slides > section#title-slide .quarto-title-author-name,
+.reveal .slides > section#title-slide p {
+  text-align: center;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
+
+// Grey box only on the stack wrapper (content slides)
+.reveal .slides > section.stack {
+  background-color: rgba(56, 56, 56, 0.8);
+  border-radius: 12px;
+}
+
+// Limit the width of the elements within the slides so they don't come too close to
+// the edge of the grey background box (or overhang)
+// .sourceCode {
+//   width: 95% !important;
+//   max-width: 95% !important;
+// }
+
+// .cell-output {
+//   width: 95% !important;
+//   max-width: 95% !important;
+// }
+
+.reveal .slides > section.stack > section.slide {
+  box-sizing: border-box;
+  /*  width: 100% !important; */
+  padding-right: 60px !important;
+}
+
+
 
 iframe.stlite {
     width: 1px;
     min-width: 95% !important;
+}
+
+.value-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  row-gap: 1.5rem;
+}
+
+/* Collapse to a single column on small screens */
+@media (max-width: 600px) {
+  .value-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+// Slides with no grey box
+// .reveal .slides section.no-box,
+// .reveal .slides > section.no-box,
+// .reveal .slides > section.stack > section.no-box {
+//   background-color: transparent !important;
+//   border-radius: 0 !important;
+//   box-shadow: none !important;
+// }
+
+// Slides with no grey box
+.reveal .slides > section.stack:has(> section.no-box) {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.reveal .slides > section.stack:has(> section.no-box) > section:not(.no-box) {
+  background-color: rgba(56, 56, 56, 0.8) !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+  padding: 20px !important;
+  padding-right: 60px !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+}
+
+// # header slide should be centred vertically
+.reveal .slides > section.stack:has(> section.no-box) > section:first-child {
+  justify-content: center !important;
+}
+
+/* Ensure column containers stretch to full width inside flex-slides */
+.reveal .slides section.stack:has(> section.no-box) section > .columns {
+  width: 100% !important;
+  flex-grow: 1; /* Allows the columns to fill vertical space if needed */
+}
+
+.bg-amber { background-color:rgb(211, 123, 0) ; }
+
+.bg-light-grey { background-color:rgb(197, 197, 197) ; }
+
+.bg-light-blue { background-color:rgb(106, 189, 192) ; }
+
+
+.centred-grid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  gap: 1rem;
+  width: 100%;
+
+  .fragment {
+    width: 60%;
+  }
+}
+
+// /* 1. Reset list to be stable */
+// .reveal .focus-list ul,
+// .reveal .focus-list ol {
+//   list-style-type: none !important;
+//   padding-left: 1em !important;
+//   position: relative;
+// }
+
+// /* 2. The Fragment Container */
+// .reveal .focus-list .fragment {
+//   display: block;
+//   width: 100%;
+//   visibility: hidden;
+//   opacity: 1 !important;
+//   position: relative;
+//   transition: all 0.4s ease;
+// }
+
+// .reveal .focus-list .fragment.visible {
+//   visibility: visible;
+// }
+
+// /* 3. The Bullet */
+// .reveal .focus-list .fragment::before {
+//   content: "•";
+//   position: absolute;
+//   left: -0.8em;
+//   color: inherit;
+// }
+
+// /* 4. THE DARK THEME FIX: Light Alpha Dimming */
+// .reveal .focus-list .fragment.visible {
+//   /* Use a transparent white so it sits 'on top' of the dark bg */
+//   color: rgba(255, 255, 255, 0.3) !important;
+//   /*font-weight: 400;*/
+// }
+
+// /* 5. Highlight the Current Item */
+// .reveal .focus-list .fragment.current-fragment {
+//   color: #ffffff !important; /* A bright, 'Neon' blue looks great on dark themes */
+//   /*font-weight: 700;*/
+//   /* Optional: adds a glow to the active line */
+//   /*text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);*/
+// }
+
+// /* 6. Keep Parents Bright */
+// .reveal .focus-list .fragment.current-fragment-ancestor {
+//   color: rgba(255, 255, 255, 0.85) !important;
+//   /*font-weight: 600;*/
+// }
+
+.reveal {
+  --codewindow-bg: #fdf6e3;
+  --codewindow-header-bg: #eee8d5;
+  --codewindow-tab-bg: #d9d2ba;
+  --codewindow-tab-active-bg: #fdf6e3;
+  --codewindow-color: #073642;
+  --codewindow-shadow-color: #93a1a1;
+}
+
+// codewindow builds its window chrome (traffic lights + file tab) as a bare
+// `div.header`, but the reveal-header extension unconditionally hides every
+// `div.header` on the page at init -- see
+// _extensions/shafayetShafee/reveal-header/resources/js/add_header.js, where it
+// suppresses the `::: {.header}` slide-body divs used to override per-slide
+// header text. It runs after codewindow, so it stamps an inline display:none on
+// the code window's title bar and the whole bar vanishes.
+// A scoped !important beats the inline style. Keep it scoped to
+// `.codewindow > .header` so genuine reveal-header override divs stay hidden.
+.reveal .codewindow > .header {
+  display: flex !important;
+}
+
+// .codewindow-dark doesn't redefine --codewindow-tab-active-bg, so the active
+// file tab falls back to the light value set on .reveal above while
+// --codewindow-color flips to near-white -- roughly 1.06:1 contrast, i.e. an
+// invisible file name. Give the dark preset a matching tab colour.
+.reveal .codewindow.codewindow-dark {
+  --codewindow-tab-active-bg: #1e293b;
+}
+
+// OPTIONAL -- uncomment to try. Quarto shifts numbered line spans left by 4em
+// to make room for the line-number gutter (`pre.numberSource code > span
+// { left: -4em }`); code-line-style then paints its focus/dim band on that same
+// span at width:100%, so the band inherits the shift and ends 4em short on the
+// right. This widens the band to cover the gutter too. Judge it visually --
+// it affects every numbered code block in the deck, not just code windows.
+// NOTE - because I'm already shrinking this window somewhat, I've overriden the 4em
+// to 1.5em
+.reveal div.sourceCode pre.numberSource > code > span {
+  width: calc(100% + 1.5em);
 }
