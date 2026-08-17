@@ -9,4 +9,20 @@
 
 
 
+
+## Vidigi customisation - `override_x_max` and `override_y_max`
+
+
+## Vidigi customiation - `plotly_width` and `plotly_height`
+
+
+## The difference between 'override_[x/y]_max' and `plotly_[width/height]`
+
+
+## Vidigi customisation - `setup_mode`
+
+
+## Vidigi customisation - `display_stage_labels`
+
+
 ## Tips for aligning your queues and your background

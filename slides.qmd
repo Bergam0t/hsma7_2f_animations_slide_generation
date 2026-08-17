@@ -87,7 +87,7 @@ filters:
 
 {{< include sections/_vidigi_exercise_1.qmd >}}
 
-{{ include sections/_vidigi_animation_settings.qmd }}
+{{< include sections/_vidigi_animation_settings.qmd >}}
 
 {{< include sections/_vidigi_with_trial_class.qmd >}}
 

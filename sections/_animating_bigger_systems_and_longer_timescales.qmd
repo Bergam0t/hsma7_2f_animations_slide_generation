@@ -1,1 +1,46 @@
 # Animating Bigger Systems and Longer Timescales
+
+## Is vidigi up to the job?
+
+::: {style='font-size: 85%;'}
+
+Vidigi excels at creating animations for relatively short-term systems (working in minutes or hours) with a maximum of a few hundred entities in the system at any one time:
+
+e.g
+
+- emergency departments
+- walk-in clinics
+- wards / collections of wards
+
+
+::: {.fragment}
+
+But that doesn't mean it can't be used for longer term systems that work in days or weeks, and have hundreds or even thousands of entities in the system at once.
+
+e.g
+
+- elective surgery waiting lists
+- diagnosis and treatment pathways
+
+
+:::
+
+:::
+
+
+##
+
+
+
+## Vidigi customisation - `simulation_time_unit`
+
+## Vidigi customisation - `time_display_units`
+
+
+##  Vidigi customisation - `start_date` and `start_time`
+
+
+## Vidigi customisation - `simulation_time_unit`
+
+
+## Vidigi customisation - `step_snapshot_limit_gauges`

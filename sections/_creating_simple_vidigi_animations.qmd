@@ -386,6 +386,7 @@ my_animation.build_animation()
 ```{python}
 #| eval: true
 #| echo: false
+#| label: output-simple-event-log
 
 import itables
 import pandas as pd
@@ -406,6 +407,7 @@ df
 ```{python}
 #| eval: true
 #| echo: false
+#| label: first-simple-animation
 
 from sample_code.b_simple_one_step_model_vidigi import Param, Model, Animation
 from vidigi.animation import animate_activity_log
