@@ -288,8 +288,6 @@ if __name__ == "__main__":
 
     my_animation = Animation(my_event_log)  # NEW
 
-    my_animation.build_animation()  # NEW
+    fig = my_animation.build_animation()  # NEW
 
-    fig = my_animation.build_animation()
-
-    fig.show()
+    fig.show()  # NEW

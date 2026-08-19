@@ -193,13 +193,11 @@ def attend_clinic(self, patient):
 
 ## 4. Pass our params class to our animation class...
 
-```{.python}
+```{.python code-line-style="dim:1,focus:2,dim:3,focus:4" code-line-style-preset="emphasis"}
 class Animation:
     def __init__(self, event_log, params):  # UPDATED
         self.event_log = event_log
         self.params = params  # NEW
-
-
 ```
 
 And, when we call it later
@@ -235,7 +233,7 @@ We **still** don't need to visualise the 'nurse_treatment_ends' step!
 
 <br>
 
-```{.python code-line-style="dim:1-8,focus:9,dim:10-11" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:1,dim:2-8,focus:9,dim:10-11" code-line-style-preset="emphasis"}
 class Param:
   def __init__(
       self, ...
@@ -256,7 +254,7 @@ class Param:
 
 
 
-## 4c. ... and our animation method
+## 4c. ... and our animation method...
 
 ```{.python code-line-style="dim:1-5,focus:6,dim:7" code-line-style-preset="emphasis"}
 def build_animation(self, time_interval=1):
@@ -268,6 +266,13 @@ def build_animation(self, time_interval=1):
     )
 ```
 
+
+
+## 4d. ... and when we create our instance of the animation class
+
+```{.python}
+my_animation = Animation(my_event_log, my_params)
+```
 
 
 ## The event log
