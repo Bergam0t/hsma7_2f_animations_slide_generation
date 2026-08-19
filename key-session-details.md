@@ -28,7 +28,7 @@ By the end of this session, students should be able to
 
 The students are analysts, clinicians and managers in the UK National Health Service. Their prior experience with programming before joining the course will vary from none to extensive.
 
-Students on the course have received training in Python and discrete event simulation principles and coding with SimPy and Tom Monk's package sim-tools prior to this point.
+Students on the course have received training in Python and discrete event simulation principles and coding with SimPy and Tom Monks' package sim-tools prior to this point.
 
 ## Position in flow of module
 
@@ -40,8 +40,8 @@ Module 1 introduces Python across 30 hours of training.
 
 This session is 2F.
 
-2A: Introduction to Discrete Event Simulation (concepts, no programming)
-2B: Introduction to SimPy (Generator Functions, Object Oriented Programming and SimPy Basics)
-2C: SimPy Part 2 (Replications, Reproducibility and Multiple Activities)
-2D: SimPy Part 3 (Warm Up, Time Dependent Distributions and Resource Unavailability)
-2E: SimPy Part 4 (Priority Queuing, Resource Utilisation, Reneging and Governor Models)
+2A: Introduction to Discrete Event Simulation (concepts, no programming) - 6 hours
+2B: Introduction to SimPy (Generator Functions, Object Oriented Programming and SimPy Basics) - 6 hours
+2C: SimPy Part 2 (Replications, Reproducibility and Multiple Activities) - 6 hours
+2D: SimPy Part 3 (Warm Up, Time Dependent Distributions and Resource Unavailability) - 6 hours
+2E: SimPy Part 4 (Priority Queuing, Resource Utilisation, Reneging and Governor Models) - 6 hours

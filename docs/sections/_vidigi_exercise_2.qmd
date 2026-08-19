@@ -26,7 +26,6 @@ This model already has the logging steps set up, as well as a simple one-step an
 
 ::: {.column width='60%'}
 ::: {style='font-size: 85%'}
-1. Modify
 1. Modify the code to account for the presence of the `Trial` class
     1. Generate an animation for each run of the model. Do they differ significantly?
 1. Explore the EventLogger and TrialLogger visualisations
@@ -39,7 +38,8 @@ This model already has the logging steps set up, as well as a simple one-step an
 ::: {.fragment}
 ::: {style='font-size: 70%; color: lightgrey'}
 ### Extensions
-- Create a custom background in draw.io (or your preferred software) and apply it to your animation
+- TODO: 1
+- TODO: 2
 :::
 :::
 :::

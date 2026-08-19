@@ -1,6 +1,19 @@
 # Creating and using custom backgrounds
 
-## Custom background example
+## From this...
+
+Custom backgrounds can go a long way to making your animation feel more polished and interpretable.
+
+
+
+## To this!
+
+
+
+## Or this...
+
+
+## To this!
 
 
 

@@ -1,0 +1,157 @@
+
+
+# Statistics and Plots from TrialLogger and EventLogger
+
+##
+
+`TrialLogger` and `EventLogger` both have a range of built-in useful helper functions and plots.
+
+
+
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green" title="Why use these rather than making my own plots?"}
+There's nothing to stop you still making your own plots - and I'd actively encourage it!
+
+But vidigi's plots have the benefit of being part of a tested ecosystem.
+
+They will also hopefully save you time!
+:::
+
+## TrialLogger - Average durations
+
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-duration_stat
+my_trial.trial_logger.get_event_duration_stat(
+    first_event="nurse_wait_begins",
+    second_event="being_seen_by_nurse",
+    what="mean",
+    exclude_incomplete=True
+    )
+```
+
+## TrialLogger - Duration Barplot
+
+First, we define our 'pairs' of events and give them some nicer names.
+
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-pairs
+event_pairs = [
+        {"first_event": "nurse_wait_begins",
+         "second_event":"being_seen_by_nurse",
+         "label": "Nurse Wait Length"},
+         {"first_event": "being_seen_by_nurse",
+         "second_event":"nurse_treatment_ends",
+         "label": "Nurse Treatment Length"},
+         {"first_event": "arrival",
+         "second_event":"depart",
+         "label": "Full Journey Duration"},
+]
+```
+
+::: {style='font-size: 65%;'}
+Note that we're finally getting a chance to use that "nurse_treatment_ends" activity!
+
+While it's still identically timed to *depart* here
+
+- it is more intuitive to make use of it
+- it avoids issues if we add more steps to our process down the line
+:::
+
+## TrialLogger - Duration Barplot - Output
+
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-duration-barplot
+my_trial.trial_logger.plot_metric_bar(
+    event_pairs, what="mean",
+    title= "Mean step durations",
+    width=1000, height=400)
+```
+
+## TrialLogger - Queue length
+
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-queue-length
+my_trial.trial_logger.plot_queue_size(
+    ["nurse_wait_begins"],
+    limit_duration=my_params.sim_duration,
+    every_x_time_units=30, title="Nurse Queue Length",
+    width=1000, height=400)
+```
+
+
+## Modifying these plots
+
+Vidigi uses 'Plotly' throughout for its plots - which you've already had some experience with.
+
+The Plotly objects it returns can be further modified if there is something you don't like about them or if they don't provide all of the options you need.
+
+To do this, we first need to assign the plot to a variable so we can keep accessing it.
+
+```{.python code-line-style="focus:1,dim:2-6" code-line-style-preset="emphasis"}
+fig = my_trial.trial_logger.plot_queue_size(
+    ["nurse_wait_begins"],
+    limit_duration=my_params.sim_duration,
+    every_x_time_units=30, title="Nurse Queue Length",
+    width=1000, height=400
+    )
+```
+
+
+## Modifying these plots (continued)
+
+::: {style='font-size: 80%;'}
+```{.python code-line-style="dim:1-3,focus:4-5,dim:6-7,focus:8,dim:9-10,focus:11,dim:12,focus:13" code-line-style-preset="emphasis"}
+fig = my_trial.trial_logger.plot_queue_size(...)
+
+# We can update something that already exists like the axis labels
+fig.update_xaxes(title_text="Simulation time (minutes)")
+fig.update_yaxes(title_text="People waiting")
+
+# Adjust the layout - here we are reducing the margins
+fig.update_layout(margin=dict(l=20,r=20,t=40,b=20))
+
+# Or add something completely new, like a horizontal reference line
+fig.add_hline(y=10, line_dash="dash", annotation_position="top left", annotation_text="Target max queue length")
+
+fig # Depending on where we're using the plot, we will need to call the variable to make it display
+```
+:::
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: trial-logger-queue-length-edited
+fig = my_trial.trial_logger.plot_queue_size(
+    ["nurse_wait_begins"], limit_duration=my_params.sim_duration,
+    every_x_time_units=30, title="Nurse Queue Length",
+    width=1000, height=350)
+
+# Change the axis labels
+fig.update_xaxes(title_text="Simulation time (minutes)")
+fig.update_yaxes(title_text="People waiting")
+
+# Add a horizontal reference line
+fig.add_hline(
+    y=10, line_dash="dash",
+    annotation_text="Target max queue length",
+    annotation_position="top left"
+)
+
+fig.update_layout(
+margin=dict(
+        l=20,   # left
+        r=20,   # right
+        t=40,   # top
+        b=20    # bottom
+    )
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+```

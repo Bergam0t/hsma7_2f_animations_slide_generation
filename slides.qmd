@@ -71,6 +71,7 @@ filters:
   - code-line-style
 ---
 
+
 {{< include sections/_intro_to_animations.qmd >}}
 
 {{< include sections/_what_is_vidigi.qmd >}}
@@ -87,21 +88,29 @@ filters:
 
 {{< include sections/_vidigi_exercise_1.qmd >}}
 
+
+
+
 {{< include sections/_vidigi_animation_settings.qmd >}}
 
 {{< include sections/_vidigi_with_trial_class.qmd >}}
 
+{{< include sections/_trial_logger_event_logger_visualisations.qmd >}}
+
 {{< include sections/_vidigi_process_maps.qmd >}}
-
-{{< include sections/_using_and_creating_custom_backgrounds.qmd >}}
-
 
 {{< include sections/_vidigi_exercise_2.qmd >}}
 
+
+
+{{< include sections/_using_and_creating_custom_backgrounds.qmd >}}
+
 {{< include sections/_advanced_animations_three_step.qmd >}}
 
-
 {{< include sections/_vidigi_exercise_3.qmd >}}
+
+
+
 
 {{< include sections/_animating_bigger_systems_and_longer_timescales.qmd >}}
 

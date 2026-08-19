@@ -34,13 +34,98 @@ e.g
 
 ## Vidigi customisation - `simulation_time_unit`
 
+Vidigi can be passed a simulation where any time unit is used. By default, it will assume that the time unit is minutes.
+
+However, if our simulation is in a different time unit, we'll want to tweak this.
+
+Possible values are `simulation_time_unit=`
+
+- 'seconds'
+- 'minutes'
+- 'hours'
+- 'days'
+- 'weeks'
+- 'years'
+
+
 ## Vidigi customisation - `time_display_units`
 
+`time_display_units` handles how the time next to our play button and scrub bar appear. By default, it just counts the time units, starting at zero, but that's not the most intuitive for stakeholders.
+
+:::: {.columns}
+
+::: {.column width='50%'}
+```{.python}
+animate_activity_log(..., time_display_units="dhm")
+```
+:::
+
+::: {.column width='50%'}
+![](assets\2026-08-18-08-00-10.png)
+:::
+
+::::
+
+
+:::: {.columns}
+
+::: {.column width='50%'}
+```{.python}
+animate_activity_log(..., time_display_units="day_clock")
+```
+:::
+
+::: {.column width='50%'}
+![](assets\2026-08-18-08-01-00.png)
+:::
+
+::::
+
+
+:::: {.columns}
+
+::: {.column width='50%'}
+And all of these accept the suffix `_ampm`, changing the display from 24 hour to 12 hour clock.
+:::
+
+::: {.column width='50%'}
+
+![](assets\2026-08-18-08-02-07.png)
+
+:::
+
+::::
+
+
+## All options - `time_display_units`
+
+- ‘dhms’ : Day Month Year + HH:MM:SS (e.g., “06 June 2025 14:23:45”)
+- ‘dhms_ampm’ : Same as ‘dhms’, but in 12-hour format with AM/PM (e.g., “06 June 2025 02:23:45 PM”) - ‘dhm’ : Day Month Year + HH:MM (e.g., “06 June 2025 14:23”)
+- ‘dhm_ampm’ : 12-hour format with AM/PM - (e.g., “06 June 2025 02:23 PM”)
+- ‘dh’ : Day Month Year + HH (e.g., “06 June 2025 14”)
+- ‘dh_ampm’ : 12-hour format with AM/PM (e.g., “06 June 2025 02 PM”)
+- ‘d’ : Full weekday and date (e.g., “Friday 06 June 2025”)
+- ‘m’ : Month and year (e.g., “June 2025”)
+- ‘y’ : Year only (e.g., “2025”)
+- ‘day_clock’ or ‘simulation_day_clock’ : Show simulation-relative day and time (e.g., “Simulation Day 3 14:15”)
+- ‘day_clock_ampm’ or ‘simulation_day_clock_ampm’ : Same as above, but time is shown in 12-hour clock with AM/PM (e.g., “Simulation Day 3 02:15 PM”)
+
+Alternatively, you can supply a custom strftime (https://strftime.org/) format string (e.g., ‘%Y-%m-%d %H’) to control the display manually.
 
 ##  Vidigi customisation - `start_date` and `start_time`
 
+If you don't define a start date and time, vidigi will choose midnight 6 months from the day the animation is created.
 
-## Vidigi customisation - `simulation_time_unit`
+However, we might instead want to pass a specific date and/or a specific time (e.g. if we know our simulation is for a clinic that opens at 8am, we don't want it showing up as midnight)
+
+```{.python}
+animate_activity_log(
+    ...,
+    time_display_units="dhm",
+    start_date = "2028-05-04" # Must use the format 'YYYY-MM-DD'
+    start_time = "08:00:00"  # Must use the format 'HH:MM:SS'
+    )
+```
 
 
 ## Vidigi customisation - `step_snapshot_limit_gauges`

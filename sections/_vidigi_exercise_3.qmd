@@ -28,8 +28,6 @@ This model already has the logging steps set up, as well as a simple one-step an
 ::: {style='font-size: 85%'}
 1. Switch to using the three-step animation process
 1. Customise the icons so that high-priority patients are displayed differently
-1. Try adding some additional information to your patients. What about their wait time, or something else you think would be useful to include?
-
 :::
 :::
 
@@ -37,8 +35,8 @@ This model already has the logging steps set up, as well as a simple one-step an
 ::: {.fragment}
 ::: {style='font-size: 70%; color: lightgrey'}
 ### Extensions
-- [TODO: ext 1]
-- [TODO: ext 2]
+- Create a custom background in draw.io (or your preferred software) and apply it to your animation
+- Try adding some additional information to your patients. What about their wait time, or something else you think would be useful to include?
 :::
 :::
 :::

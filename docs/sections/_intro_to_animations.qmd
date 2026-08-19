@@ -14,19 +14,19 @@
 :::: {.columns}
 
 ::: {.column width='33%'}
-::: {.value-box icon="fa-solid fa-lightbulb" fragment="fade-in"}
+::: {.value-box icon="fa-solid fa-lightbulb" fragment="fade-in" align="center"}
 Helps non-technical users understand what's going on
 :::
 :::
 
 ::: {.column width='33%'}
-::: {.value-box icon="fa-solid fa-bullhorn" fragment="fade-in"}
+::: {.value-box icon="fa-solid fa-bullhorn" fragment="fade-in" align="center"}
 Helps get people excited about your model
 :::
 :::
 
 ::: {.column width='33%'}
-::: {.value-box icon="fa-solid fa-bug" fragment="fade-in"}
+::: {.value-box icon="fa-solid fa-bug" fragment="fade-in" align="center"}
 Helps with debugging
 :::
 

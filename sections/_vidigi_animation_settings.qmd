@@ -95,7 +95,7 @@ my_model = Model(my_params)
 my_model.run_model()
 
 my_event_log = my_model.get_vidigi_event_log()
-my_animation = Animation(my_event_log)
+my_animation = Animation(my_event_log, my_params)
 
 # Time the animation generation
 start_time_1 = time.perf_counter()
@@ -207,13 +207,13 @@ Vidigi has two key parameters dictating how fast your animation runs:
 ```{python}
 #| eval: true
 #| echo: false
-#| label: frame-duration-demo
+#| label: frame-duration-demo-short
 
 fig = animate_activity_log(
     event_log=my_animation.event_log,
     event_position_df=my_animation.layout,
     scenario=my_params,
-    limit_duration=60
+    limit_duration=60,
     every_x_time_units=1,
     plotly_height=600,
     plotly_width=1100,
@@ -227,13 +227,13 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
 ```{python}
 #| eval: true
 #| echo: false
-#| label: frame-duration-demo
+#| label: frame-duration-demo-long
 
 fig = animate_activity_log(
     event_log=my_animation.event_log,
     event_position_df=my_animation.layout,
     scenario=my_params,
-    limit_duration=60
+    limit_duration=60,
     every_x_time_units=1,
     plotly_height=600,
     plotly_width=1100,
@@ -250,16 +250,17 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
 ```{python}
 #| eval: true
 #| echo: false
-#| label: frame-duration-demo
+#| label: frame-transition-demo-long
 
 fig = animate_activity_log(
     event_log=my_animation.event_log,
     event_position_df=my_animation.layout,
     scenario=my_params,
-    limit_duration=60
+    limit_duration=60,
     every_x_time_units=1,
     plotly_height=600,
     plotly_width=1100,
+    frame_duration=200,
     frame_transition_duration=1000
 )
 HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
@@ -271,13 +272,13 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
 ```{python}
 #| eval: true
 #| echo: false
-#| label: frame-duration-demo
+#| label: frame-transition-demo-short-zero
 
 fig = animate_activity_log(
     event_log=my_animation.event_log,
     event_position_df=my_animation.layout,
     scenario=my_params,
-    limit_duration=60
+    limit_duration=60,
     every_x_time_units=1,
     plotly_height=600,
     plotly_width=1100,
