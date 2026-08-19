@@ -159,33 +159,33 @@ class Model:
         )
 
 
-base_case_params = Param()
-base_case_model = Model(base_case_params, replication_id=1)
-base_case_model.run_model()
+if __name__ == "__main__":
+    base_case_params = Param()
+    base_case_model = Model(base_case_params, replication_id=1)
+    base_case_model.run_model()
 
-patient_df = base_case_model.convert_entity_list_to_dataframe(
-    base_case_model.list_of_patients
-)
-base_case_model.calculate_run_results(patient_df)
+    patient_df = base_case_model.convert_entity_list_to_dataframe(
+        base_case_model.list_of_patients
+    )
+    base_case_model.calculate_run_results(patient_df)
 
-print("BASE CASE SINGLE RUN RESULTS")
-print("-----------------------")
+    print("BASE CASE SINGLE RUN RESULTS")
+    print("-----------------------")
 
-print("Queuing Time for Registration")
-print(f"Mean : {base_case_model.mean_q_time_registration:.2f} minutes")
-print(f"SD : {base_case_model.sd_q_time_registration:.2f} minutes")
-print(f"90th Perc : {base_case_model.perc_90_q_time_registration:.2f}", "minutes")
-print()
+    print("Queuing Time for Registration")
+    print(f"Mean : {base_case_model.mean_q_time_registration:.2f} minutes")
+    print(f"SD : {base_case_model.sd_q_time_registration:.2f} minutes")
+    print(f"90th Perc : {base_case_model.perc_90_q_time_registration:.2f}", "minutes")
+    print()
 
-print("Queuing Time for the Nurse")
-print(f"Mean : {base_case_model.mean_q_time_nurse:.2f} minutes")
-print(f"SD : {base_case_model.sd_q_time_nurse:.2f} minutes")
-print(f"90th Perc : {base_case_model.perc_90_q_time_nurse:.2f} minutes")
-print()
+    print("Queuing Time for the Nurse")
+    print(f"Mean : {base_case_model.mean_q_time_nurse:.2f} minutes")
+    print(f"SD : {base_case_model.sd_q_time_nurse:.2f} minutes")
+    print(f"90th Perc : {base_case_model.perc_90_q_time_nurse:.2f} minutes")
+    print()
 
-
-print("Queuing Time for the Specialist")
-print(f"Mean : {base_case_model.mean_q_time_specialist:.2f} minutes")
-print(f"SD : {base_case_model.sd_q_time_specialist:.2f} minutes")
-print(f"90th Perc : {base_case_model.perc_90_q_time_specialist:.2f} ", "minutes")
-print()
+    print("Queuing Time for the Specialist")
+    print(f"Mean : {base_case_model.mean_q_time_specialist:.2f} minutes")
+    print(f"SD : {base_case_model.sd_q_time_specialist:.2f} minutes")
+    print(f"90th Perc : {base_case_model.perc_90_q_time_specialist:.2f} ", "minutes")
+    print()

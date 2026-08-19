@@ -65,9 +65,9 @@ SimPy resources don't *really* have a concept of separate nurses behind the scen
 
 In contrast, a VidigiStore is filled with individual nurses, each with their own ID.
 
-<div style="display: flex; justify-content: center; align-items: center; height: 60vh">
+<div style="display: flex; justify-content: center; align-items: center; height: 50vh">
 
-<img src="../diagrams/VidigiStore.drawio.svg" style="height: 60vh;">
+<img src="../diagrams/VidigiStore.drawio.svg" style="height: 50vh;">
 
 </div>
 

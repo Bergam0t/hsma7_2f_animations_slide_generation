@@ -24,7 +24,7 @@ We will add this when initialising our `Model` class.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-15,focus:16" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:1-2,dim:3-15,focus:16" code-line-style-preset="emphasis"}
 class Model:
     def __init__(self, param):
         self.param = param
@@ -124,7 +124,7 @@ Finally, every patient needs one departure event.
 b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
-    self.logger.log_arrival(entity_id=patient.id)  # NEW
+    self.logger.log_departure(entity_id=patient.id)  # NEW
 ```
 :::
 
@@ -177,9 +177,13 @@ It's neat to set up a little helper method in our `Model` class to do that.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python}
-def get_vidigi_event_log(self):
-    return self.logger.to_dataframe()
+```{.python code-line-style="focus:1,dim:2-4,focus:5-6" code-line-style-preset="emphasis"}
+class Model:
+    def __init__():
+    ...
+
+    def get_vidigi_event_log(self):
+        return self.logger.to_dataframe()
 ```
 :::
 
@@ -197,8 +201,7 @@ We're now going to define a brand new class called `Animation`.
 b_simple_one_step_model_vidigi.py
 ```{.python}
 class Animation:
-    def __init__(self, params, event_log):
-        self.params = params
+    def __init__(self, event_log):
         self.event_log = event_log
 ```
 :::
@@ -316,7 +319,7 @@ We'll bind this to `self.layout`.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-5,focus:6-23" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:1-2,dim:3-4,focus:5-20" code-line-style-preset="emphasis"}
 class Animation:
     def __init__(self, event_log):
         self.event_log = event_log
@@ -332,8 +335,6 @@ class Animation:
                 EventPosition(
                     event="being_seen_by_nurse", x=200, y=150, label="Being Seen By Nurse"
                 ),
-                # We don't need to visualise the 'nurse_treatment_ends' step
-                # as the timing will be identical to the depart step
                 EventPosition(
                     event="depart", x=200, y=50, label="Exit"
                 )
@@ -366,7 +367,7 @@ class Animation:
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-7,focus:8-11" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:1-7,focus:8-12" code-line-style-preset="emphasis"}
 my_params = Param()
 my_model = Model(my_params)
 my_model.run_model()
@@ -377,7 +378,8 @@ my_model.calculate_run_results(patient_df)
 my_event_log = my_model.get_vidigi_event_log()
 
 my_animation = Animation(my_event_log)
-my_animation.build_animation()
+fig = my_animation.build_animation()
+fig.show()
 ```
 :::
 

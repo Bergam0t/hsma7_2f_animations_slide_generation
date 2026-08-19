@@ -24,7 +24,7 @@ We will add this when initialising our `Model` class.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-15,focus:16" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:1-2,dim:3-15,focus:16" code-line-style-preset="emphasis"}
 class Model:
     def __init__(self, param):
         self.param = param
@@ -124,7 +124,7 @@ Finally, every patient needs one departure event.
 b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
-    self.logger.log_arrival(entity_id=patient.id)  # NEW
+    self.logger.log_departure(entity_id=patient.id)  # NEW
 ```
 :::
 
@@ -177,9 +177,13 @@ It's neat to set up a little helper method in our `Model` class to do that.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python}
-def get_vidigi_event_log(self):
-    return self.logger.to_dataframe()
+```{.python code-line-style="focus:1,dim:2-4,focus:5-6" code-line-style-preset="emphasis"}
+class Model:
+    def __init__():
+    ...
+
+    def get_vidigi_event_log(self):
+        return self.logger.to_dataframe()
 ```
 :::
 

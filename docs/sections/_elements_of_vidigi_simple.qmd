@@ -1,4 +1,4 @@
-# Key Steps in a Vidigi Animation
+# Key Parts of Vidigi
 
 ## What do you need?
 
@@ -24,9 +24,6 @@ Set your animation parameters and generate your animation
 
 ::::
 
-
-
-# Key Parts of Vidigi
 
 ## EventLogger
 

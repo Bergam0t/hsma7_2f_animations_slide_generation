@@ -24,12 +24,13 @@ You will be working with the model [TODO: model path] and the notebook [TODO: no
 ::: {.column width='60%'}
 ::: {style='font-size: 85%'}
 1. Add a logger
-2. Add the required logging steps
+1. Add the required logging steps
     - arrival
-    - queues
-    - resource use [(and you could do everything as queues *first*, like we did in these slides, if you would prefer)]{style="color:lightgrey;font-size: 65%"}
+    - queues [(I'd recommend just using queues, not resource use, to start with)]{style="color:lightgrey;font-size: 65%"}
     - departure
-3. Set up and generate the animation
+1. Add a method to get the event log from your Model as a dataframe
+1. Print the first 20 rows of your event log
+1. Set up and generate the animation
     - [you have been provided with a starter template for the layout]{style="color:lightgrey;font-size: 65%"}
 :::
 :::
@@ -40,9 +41,9 @@ You will be working with the model [TODO: model path] and the notebook [TODO: no
 ::: {.fragment}
 ::: {style='font-size: 70%; color: lightgrey'}
 ### Extensions
+- Go back through and convert appropriate queues to resource use
 - Try increasing the arrival rate [TODO: To x]. Does the animation still look ok? Does it take longer to generate?
 - Try tweaking the EventPositions. Do you think a different layout might look better?
-- Take a look at the documentation [here](https://hsma-tools.github.io/vidigi/reference/animation.animate_activity_log.html#vidigi.animation.animate_activity_log). Try changing some of the other parameters.
 :::
 :::
 :::

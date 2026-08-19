@@ -26,11 +26,11 @@ You will be working with the model [TODO: model path] and the notebook [TODO: no
 1. Add a logger
 2. Add the required logging steps
     - arrival
-    - queues
-    - resource use [(and you could do everything as queues *first*, like we did in these slides, if you would prefer)]{style="color:lightgrey;font-size: 65%"}
+    - queues [(I'd recommend just using queues, not resource use, to start with)]{style="color:lightgrey;font-size: 65%"}
     - departure
 3. Set up and generate the animation
     - [you have been provided with a starter template for the layout]{style="color:lightgrey;font-size: 65%"}
+4. Go back through and convert appropriate queues to resource use
 :::
 :::
 
