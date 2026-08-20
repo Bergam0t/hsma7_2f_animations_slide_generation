@@ -38,9 +38,9 @@ class Param:
 class Model:
     # NEW
     # We're going to start tracking a run_number parameter
-    def __init__(self, param, run_number):  # UPDATED
+    def __init__(self, param, replication_id):  # UPDATED
         self.param = param
-        self.run_number = run_number  # NEW
+        self.replication_id = replication_id  # NEW
         self.env = simpy.Environment()
         self.patient_counter = 0
         self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
@@ -55,7 +55,9 @@ class Model:
         self.perc_90_q_time_nurse = pd.NA
 
         # We can now pass our run_number to our logger
-        self.logger = EventLogger(env=self.env, run_number=self.run_number)  # UPDATED
+        self.logger = EventLogger(
+            env=self.env, run_number=self.replication_id
+        )  # UPDATED
 
     def generator_patient_arrivals(self):
         while True:

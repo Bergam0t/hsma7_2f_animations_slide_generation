@@ -64,17 +64,18 @@ animate_activity_log(
 )
 ```
 
+::: {style='font-size: 75%;'}
+<br>
+:::
 
-::: {.fragment}
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
 **Why not always just use a time unit of 1?**
 
-::: {style='font-size: 75%;'}
 The time interval has a big impact on the time it takes for an animation to generate.
 
 It directly influences how big the underlying dataframe is, as well as the number of frames of animation data that need to be stored.
 :::
 
-:::
 
 
 
@@ -188,6 +189,9 @@ fig = animate_activity_log(
 
 ```
 
+::: {style='font-size: 75%;'}
+<br>
+:::
 
 ::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
 We'll talk a bit later about how to manage warm-up when you are creating animations - and this same feature could help you show a snippet from somewhere in the middle of the animation instead of the start.

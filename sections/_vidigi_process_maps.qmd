@@ -12,42 +12,62 @@ This looks at pre-existing processes - for example, a referrals process - where 
 
 ## An example process map
 
-We can see an example process map here. This is a type of graph called a [**Directly Follows Graph (DFG)**]{style="color:yellow"}
+:::: {.columns}
 
-![](assets\2026-08-11-16-35-14.png){.lightbox}
+::: {.column width='30%'}
+We can see an example process map here.
 
+This is a type of graph called a [**Directly Follows Graph (DFG)**]{style="color:yellow"}
+:::
+
+::: {.column width='70%'}
+![](assets\2026-08-11-16-35-14.png){height=650 .lightbox}
+:::
+
+::::
 
 ## Past vs potential future
 
+::: {style='font-size: 75%;'}
 Now, there's no reason why we can't apply the same approach to simulated logs!
 
 In fact, it can be extremely helpful - particularly for debugging as our simulation gets more complex and has different groups of patients who should be experiencing different events at different rates.
+:::
 
+:::: {.columns}
 
-::: {.panel-tabset}
+::: {.column width='33%'}
+![](../assets/2026-08-11-16-36-43.png){height=400 .lightbox}
+:::
 
-## Tab 1
-
-![](../assets/2026-08-11-16-36-23.png){.lightbox}
-
-## Tab 2
-
-![](../assets/2026-08-11-16-36-43.png){.lightbox}
-
+::: {.column width='33%'}
+Here, we use it to confirm that patients who are thrombolysed in our model never follow a certain path.
 :::
 
 
+::: {.column width='33%'}
+![](../assets/2026-08-11-16-36-23.png){height=400 .lightbox}
+:::
+
+
+::::
+
+
 ## Process Mining with Vidigi
+
+Vidigi provides various helper functions for process mining. The four key steps are as follows:
 
 1. New imports
 1. Add timestamps to our event log
 1. Discover the nodes and edges of our directly follows graph [(easier than it sounds - 1 line of code!)]{style="color:lightgrey"}
 1. Generate the visualisation
 
-## Process Miniming Imports
+## Process Mining Imports
 
-We'll add some new imports.
+We'll add some new vidigi imports.
 
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
 ```{.python}
 from vidigi.process_mapping import (
     add_sim_timestamp,
@@ -56,24 +76,91 @@ from vidigi.process_mapping import (
     dfg_to_cytoscape,
 )
 ```
+:::
+
+And a new import that helps the resulting graph display.
+
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
+```{.python}
+from IPython.display import display
+```
+:::
+
+## Creating the new class
+
+Much like our `Animation` class, it is neater if we make a new class for the process map.
+
+Like before, we'll pass in our event log and our parameters.
+
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
+```{.python}
+class ProcessMap:
+    def __init__(self, event_log, params):
+        self.event_log = event_log
+        self.params = params
+
+    def build_process_map(self, interactive=True):
+        ...
+```
+:::
+
+## Adding a process mapping method to our class
+
+We'll also define a method: `build_process_map`.
+
+Vidigi provides two main functions for process mapping - a static (non-interactive) one, and an interactive one. We'll make it easy to switch between the two by setting up the parameter `interactive`, which we'll set to default to `False`.
+
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
+```{.python}
+class ProcessMap:
+    def __init__(self, event_log, params):
+        self.event_log = event_log
+        self.params = params
+
+    def build_process_map(self, interactive=False):
+        ...
+```
+:::
 
 ## Adding a timestamp
 
 Unlike vidigi animations, which just work with time 'units', the process mining side needs a more absolute representation of time, so we will convert the time in units for each event to a clock time.
 
-```{.python}
-my_event_log_timestamp = add_sim_timestamp(
-        my_event_log,
-        time_unit="minutes",
-        sim_start="09:00:00"
-    )
-```
+:::: {.columns}
 
-::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
+::: {.column width='75%'}
+
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
+```{.python code-line-style="focus:1,dim:2-4,focus:5-10" code-line-style-preset="emphasis"}
+class ProcessMap:
+    def __init__(self, event_log, params):
+        ...
+
+    def build_process_map(self, interactive=False):
+        my_event_log_timestamp = add_sim_timestamp(
+                my_event_log,
+                time_unit="minutes",
+                sim_start="09:00:00"
+            )
+```
+:::
+
+:::
+
+::: {.column width='25%'}
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green" font-size="0.8rem" width="95%"}
 It doesn't *really* matter what time we use here as it won't ever be displayed in the process mining outputs. It's more about giving vidigi a reference point.
 
 However, if time does make sense in your simulation - like you have a clinic that opens at 8am every day - then it makes sense to make that the time you pass in!
 :::
+:::
+
+::::
+
 
 ## Adding a timestamp - Example Output
 
@@ -122,20 +209,25 @@ Now we need to find our nodes and edges, which we use the `discover_dfg()` funct
 
 Remember: DFG = directly follows graph
 
-```{.python}
-nodes, edges = discover_dfg(
-    my_event_log_timestamp,
-    case_col="entity_id",
-)
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
+```{.python code-line-style="focus:1,dim:2-4,focus:5,dim:6-11,focus:12" code-line-style-preset="emphasis"}
+class ProcessMap:
+    def __init__(self, event_log, params):
+        ...
+
+    def build_process_map(self, interactive=False):
+        my_event_log_timestamp = add_sim_timestamp(
+                my_event_log,
+                time_unit="minutes",
+                sim_start="09:00:00"
+            )
+
+        nodes, edges = discover_dfg(my_event_log_timestamp)
 ```
+:::
 
-Our 'case_col' will be 'entity_id' if we've used EventLogger as this is the default name it gives to our entity column, as we saw on the previous page when looking at our event log.
-
-This just means that each person is considered to be a separate journey
-
-[TODO: make this the default in vidigi? Or is it already?]
-
-## Nodes and Edges
+## Nodes
 
 ```{python}
 #| eval: true
@@ -150,11 +242,6 @@ nodes, edges = discover_dfg(
     )
 ```
 
-:::: {.columns}
-
-::: {.column width='50%'}
-### Nodes
-
 Nodes are the steps
 
 ```{python}
@@ -163,10 +250,8 @@ Nodes are the steps
 #| label: dfg-nodes
 nodes
 ```
-:::
 
-::: {.column width='50%'}
-### Edges
+## Edges
 
 Edges are the flows between nodes
 
@@ -176,29 +261,92 @@ Edges are the flows between nodes
 #| label: dfg-edges
 edges
 ```
-:::
-
-::::
-
 
 ## Generating the process map (DFG)
 
 We can now take our nodes and edges to create a static process map...
 
+:::: {.columns}
+
+::: {.column width='95%'}
 ```{python}
 #| eval: true
 #| echo: true
 #| label: dfg-static
 dfg_to_graphviz(nodes, edges)
 ```
+:::
+
+::: {.column width='20%'}
+
+:::
+
+::::
+
+
 
 ## Generating the process map (DFG) - interactive
 
 ... or an interactive one!
 
-```{python}
-#| eval: true
-#| echo: true
-#| label: dfg-interactive
+
+```{.python}
 dfg_to_cytoscape(nodes, edges)
 ```
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: dfg-interactive
+from IPython.display import display
+display(dfg_to_cytoscape(nodes, edges))
+```
+
+
+## Incorporating this into our class
+
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
+```{.python code-line-style="focus:1,dim:2-4,focus:5,dim:6-11,focus:12-22" code-line-style-preset="emphasis"}
+class ProcessMap:
+    def __init__(self, event_log, params):
+        ...
+
+    def build_process_map(self, interactive=False):
+        my_event_log_timestamp = add_sim_timestamp(
+                my_event_log, time_unit="minutes", sim_start="09:00:00"
+            )
+
+        nodes, edges = discover_dfg(my_event_log_timestamp)
+
+        if interactive:
+            cytoscape_widget = dfg_to_cytoscape(
+                nodes, edges,
+                min_frequency=5, spacing_factor=2,
+                width=1400,
+            )
+            display(cytoscape_widget)
+
+        else:
+            graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+            display(graphviz_graph)
+```
+:::
+
+## Calling our new process map class and method
+
+::: {.codewindow .python}
+e_simple_one_step_model_vidigi_process_map.py
+```{.python code-line-style="focus:1,dim:2-7,focus:8-10" code-line-style-preset="emphasis"}
+if __name__ == "__main__":
+    my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
+    my_trial = Trial(my_params)
+    my_trial.run_trial()
+    my_trial.calculate_trial_results()
+    my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
+
+    my_process_map = ProcessMap(my_event_log, my_params)
+    my_process_map.build_process_map(interactive=False)
+    my_process_map.build_process_map(interactive=True)
+```
+:::

@@ -45,9 +45,9 @@ class Param:
 
 
 class Model:
-    def __init__(self, param, run_number):
+    def __init__(self, param, replication_id):
         self.param = param
-        self.run_number = run_number
+        self.replication_id = replication_id
         self.env = simpy.Environment()
         self.patient_counter = 0
         self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
@@ -61,7 +61,7 @@ class Model:
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
 
-        self.logger = EventLogger(env=self.env, run_number=self.run_number)
+        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
 
     def generator_patient_arrivals(self):
         while True:
