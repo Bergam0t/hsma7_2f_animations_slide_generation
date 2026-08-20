@@ -42,7 +42,7 @@ whenever we want to use it, but the vidigi documentation uses the convention det
 :::: {.columns}
 
 ::: {.column width='10%'}
-::: {style='font-size: 65%;'}
+::: {style='font-size: 55%;'}
 **Before**
 :::
 :::
@@ -66,7 +66,7 @@ class Model:
 :::: {.columns}
 
 ::: {.column width='10%'}
-::: {style='font-size: 65%;'}
+::: {style='font-size: 55%;'}
 **After**
 :::
 :::
@@ -196,6 +196,7 @@ Just before the end of the indented nurse block, we do this to record in our eve
 
 ::: {.column width='40%'}
 **Before**
+
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
 ```{.python}
@@ -205,10 +206,12 @@ self.logger.log_queue(
 )
 ```
 :::
+
 :::
 
 ::: {.column width='60%'}
 **After**
+
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
 ```{.python code-line-style="focus:1,dim:2-3,focus:4,dim:5" code-line-style-preset="emphasis"}
@@ -219,6 +222,7 @@ self.logger.log_resource_use_end( # UPDATED
 )
 ```
 :::
+
 :::
 
 ::::
@@ -305,8 +309,6 @@ We **still** don't need to visualise the 'nurse_treatment_ends' step!
 :::
 
 ::: {.column width='65%'}
-
-<br>
 
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
@@ -410,7 +412,7 @@ fig = animate_activity_log(
     scenario=my_params
 )
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 
@@ -469,7 +471,7 @@ fig = animate_activity_log(
     entity_icon_size=40
 )
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 
@@ -513,5 +515,5 @@ fig = animate_activity_log(
     custom_entity_icon_list=["🤢", "🤒", "🤧", "😷"]
 )
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```

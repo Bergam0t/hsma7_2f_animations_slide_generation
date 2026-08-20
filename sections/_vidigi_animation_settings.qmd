@@ -112,7 +112,7 @@ fig = animate_activity_log(
 
 animation_time_1 = time.perf_counter() - start_time_1
 
-html_fig_1 = fig.to_html(full_html=False, include_plotlyjs="cdn")
+html_fig_1 = fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False)
 
 size_kb_1 = len(html_fig_1.encode("utf-8")) / 1024
 
@@ -138,7 +138,7 @@ fig = animate_activity_log(
 
 animation_time_2 = time.perf_counter() - start_time_2
 
-html_fig_2 = fig.to_html(full_html=False, include_plotlyjs="cdn")
+html_fig_2 = fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False)
 
 size_kb_2 = len(html_fig_2.encode("utf-8")) / 1024
 
@@ -223,7 +223,7 @@ fig = animate_activity_log(
     plotly_width=1100,
     frame_duration=100
 )
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 ## Frame Duration - 1000
@@ -243,7 +243,7 @@ fig = animate_activity_log(
     plotly_width=1100,
     frame_duration=1000
 )
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 
@@ -267,7 +267,7 @@ fig = animate_activity_log(
     frame_duration=200,
     frame_transition_duration=1000
 )
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 ## Frame Transition Duration - 0
@@ -288,7 +288,7 @@ fig = animate_activity_log(
     plotly_width=1100,
     frame_transition_duration=0
 )
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 ## Queue Wrapping

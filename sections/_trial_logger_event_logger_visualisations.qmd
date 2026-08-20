@@ -252,5 +252,5 @@ margin=dict(
     )
 )
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```

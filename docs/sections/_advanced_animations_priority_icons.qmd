@@ -113,6 +113,7 @@ from vidigi.animation import animate_activity_log
 my_params = Param(num_nurses=2,
     patient_iat_csv="../sample_code/nspp_example_dataset.csv",
     num_nurses_unav=0,  # Switch off nurse obstruction for this example
+    warm_up_period=0
     )
 my_model = Model(my_params, replication_id=1)
 my_model.run_model()
@@ -155,7 +156,7 @@ fig = generate_animation(
 )
 
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 
@@ -185,7 +186,9 @@ class Animation:
 
 ## Applying our custom function
 
-```{.python code-line-style="focus:1,dim:2-3,focus:4,dim:5-14focus:15-17,dim:18-23" code-line-style-preset="emphasis"}
+::: {.codewindow .python}
+g_three_step_animation_custom_priority_icons.py
+```{.python code-line-style="focus:1,dim:2-3,focus:4,dim:5-14,focus:15-17,dim:18-23" code-line-style-preset="emphasis"}
 class Animation:
     ...
 
@@ -193,12 +196,12 @@ class Animation:
         reshaped_df = reshape_for_animations(
             event_log=self.event_log,
             every_x_time_units=time_interval,
-            limit_duration=self.params.sim_duration,
+            limit_duration=self.params.sim_duration
         )
 
         animation_df = generate_animation_df(
             full_entity_df=reshaped_df,
-            event_position_df=self.layout,
+            event_position_df=self.layout
         )
 
         animation_df = animation_df.assign(
@@ -208,9 +211,10 @@ class Animation:
         return generate_animation(
             full_entity_df_plus_pos=animation_df,
             event_position_df=self.layout,
-            scenario=self.params,
+            scenario=self.params
         )
 ```
+:::
 
 ## Rerunning the animation
 
@@ -225,10 +229,9 @@ fig = animate_activity_log(
     event_log=my_animation.event_log,
     event_position_df=my_animation.layout,
     every_x_time_units=1,
-    plotly_height=600,
+    plotly_height=500,
     plotly_width=1180
 )
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
-```
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```

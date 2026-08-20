@@ -13,7 +13,7 @@ format:
     # embed-resources: true # comment in/out as appropriate
     chalkboard: true
     output-file: index.html # ensures picked up by github hosting
-    view-distance: 100
+    view-distance: 3
     height: 800 # default height and width ensure consistent behaviour on different screens
     width: 1250 # would recommend leaving this and height value as they are
     preview-links: true
@@ -50,7 +50,8 @@ format:
     include-in-header:
       file: resources/header.html
     include-after-body:
-      file: resources/cytoscape-widget-fix.html
+      - file: resources/cytoscape-widget-fix.html
+      - file: resources/plotly-animation-gate.html
     revealjs-a11y:
       high-contrast: false
       alt-text-warnings: true

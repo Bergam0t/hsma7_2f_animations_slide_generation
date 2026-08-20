@@ -113,6 +113,7 @@ from vidigi.animation import animate_activity_log
 my_params = Param(num_nurses=2,
     patient_iat_csv="../sample_code/nspp_example_dataset.csv",
     num_nurses_unav=0,  # Switch off nurse obstruction for this example
+    warm_up_period=0
     )
 my_model = Model(my_params, replication_id=1)
 my_model.run_model()
@@ -155,7 +156,7 @@ fig = generate_animation(
 )
 
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 
@@ -232,5 +233,5 @@ fig = animate_activity_log(
     plotly_width=1180
 )
 
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn"))
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
