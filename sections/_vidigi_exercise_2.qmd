@@ -13,7 +13,7 @@ This is the model from the previous exercise, but with the Trial class added in.
 :::
 
 ::: {.column width='30%'}
-::: {.value-box icon="fa-solid fa-clock" icon-position="left" icon-size="2em" min-height="60px"}
+::: {.value-box icon="fa-solid fa-clock" icon-position="left" icon-size="2em" min-height="60px" font-size="0.8rem"}
 45 minutes <br>+ 10 minute break
 :::
 :::

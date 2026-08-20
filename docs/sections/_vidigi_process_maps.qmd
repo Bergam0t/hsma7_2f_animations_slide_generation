@@ -129,6 +129,10 @@ class ProcessMap:
 
 Unlike vidigi animations, which just work with time 'units', the process mining side needs a more absolute representation of time, so we will convert the time in units for each event to a clock time.
 
+:::: {.columns}
+
+::: {.column width='75%'}
+
 ::: {.codewindow .python}
 e_simple_one_step_model_vidigi_process_map.py
 ```{.python code-line-style="focus:1,dim:2-4,focus:5-10" code-line-style-preset="emphasis"}
@@ -145,11 +149,18 @@ class ProcessMap:
 ```
 :::
 
+:::
+
+::: {.column width='25%'}
 ::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green" font-size="0.8rem" width="95%"}
 It doesn't *really* matter what time we use here as it won't ever be displayed in the process mining outputs. It's more about giving vidigi a reference point.
 
 However, if time does make sense in your simulation - like you have a clinic that opens at 8am every day - then it makes sense to make that the time you pass in!
 :::
+:::
+
+::::
+
 
 ## Adding a timestamp - Example Output
 
@@ -257,7 +268,7 @@ We can now take our nodes and edges to create a static process map...
 
 :::: {.columns}
 
-::: {.column width='80%'}
+::: {.column width='95%'}
 ```{python}
 #| eval: true
 #| echo: true

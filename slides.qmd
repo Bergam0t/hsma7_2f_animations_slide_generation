@@ -49,6 +49,8 @@ format:
       scale: 1
     include-in-header:
       file: resources/header.html
+    include-after-body:
+      file: resources/cytoscape-widget-fix.html
     revealjs-a11y:
       high-contrast: false
       alt-text-warnings: true

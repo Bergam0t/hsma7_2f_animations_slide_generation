@@ -13,17 +13,17 @@ Vidigi's `animate_activity_log()` function that we've been using so far is actua
 :::
 
 ::: {.column width='70%'}
-::: {.value-box value="reshape_for_animations()" fragment="true" icon="fa-solid fa-clock" icon-position="left"  icon-size="1.5em" padding="1rem"}
+::: {.value-box value="reshape_for_animations()" fragment="true" icon="fa-solid fa-clock" icon-position="left"  icon-size="1.5em" padding="1rem" font-size="0.8rem" width="95%"}
 This function looks over the logs and creates a minute-by-minute breakdown (or over whatever time interval you specify) of where everyone currently in the system is at that moment in time.
 :::
 
-::: {.value-box value="generate_animation_df()" icon="fa-solid fa-route" fragment="true" icon-position="left" icon-size="1.5em" padding="1rem"}
+::: {.value-box value="generate_animation_df()" icon="fa-solid fa-route" fragment="true" icon-position="left" icon-size="1.5em" padding="1rem" font-size="0.8rem" width="95%"}
 This function assigns everyone their consistent icon that they will have throughout the animation
 
 It also works out their physical position in the animation at each time point, assigning them coordinates that match their position in a queue or the resource they are using
 :::
 
-::: {.value-box value="generate_animation()" icon="fa-solid fa-clapperboard" fragment="true" icon-position="left"  icon-size="1.5em" padding="1rem"}
+::: {.value-box value="generate_animation()" icon="fa-solid fa-clapperboard" fragment="true" icon-position="left"  icon-size="1.5em" padding="1rem" font-size="0.8rem" width="95%"}
 This is the final step that calls on Plotly to turn it into an animation
 :::
 :::
@@ -47,7 +47,7 @@ Things like
 
 ## Example - Icons by patient priority
 
-![](../assets/patient_priority_example.gif)
+![](../assets/patient_priority_example.gif){height=600 .lightbox}
 
 
 ::: {style='font-size: 35%;'}
@@ -56,7 +56,7 @@ See the full code [in the vidigi documentation by clicking here](https://hsma-to
 
 ## Example - Adding patient waits or LOS
 
-![](../assets/bed_model_los_example.gif)
+![](../assets/bed_model_los_example.gif){height=600 .lightbox}
 
 ::: {style='font-size: 35%;'}
 See the full code [in the vidigi documentation by clicking here](https://hsma-tools.github.io/vidigi/examples/example_13_additional_synchronised_traces_method_1/synchronised_traces.html).
@@ -64,7 +64,7 @@ See the full code [in the vidigi documentation by clicking here](https://hsma-to
 
 ## Example - More custom info
 
-![](../assets/example_complex_extra_info.gif)
+![](../assets/example_complex_extra_info.gif){height=600 .lightbox}
 
 ::: {style='font-size: 35%;'}
 See the full code [in the vidigi documentation by clicking here](https://hsma-tools.github.io/vidigi/examples/example_15_gas_station_refuelling/gas_station.html).
@@ -72,7 +72,7 @@ See the full code [in the vidigi documentation by clicking here](https://hsma-to
 
 ## Example - Custom pathing
 
-![](../assets/custom_pathing_example.gif)
+![](../assets/custom_pathing_example.gif){height=600 .lightbox}
 
 ::: {style='font-size: 35%;'}
 See the full code [in the vidigi documentation by clicking here](https://hsma-tools.github.io/vidigi/examples/example_16_packing_robot/packing_robot.html).
@@ -80,7 +80,7 @@ See the full code [in the vidigi documentation by clicking here](https://hsma-to
 
 ## Example - moving resources
 
-![](../assets/moving_resource_example.gif)
+![](../assets/moving_resource_example.gif){height=600 .lightbox}
 
 ::: {style='font-size: 35%;'}
 See the full code [in the vidigi documentation by clicking here](https://hsma-tools.github.io/vidigi/examples/example_19_moving_resource/moving_resource.html).
