@@ -131,7 +131,7 @@ Unlike vidigi animations, which just work with time 'units', the process mining 
 
 :::: {.columns}
 
-::: {.column width='75%'}
+::: {.column width='70%'}
 
 ::: {.codewindow .python}
 e_simple_one_step_model_vidigi_process_map.py
@@ -151,8 +151,8 @@ class ProcessMap:
 
 :::
 
-::: {.column width='25%'}
-::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green" font-size="0.8rem" width="95%"}
+::: {.column width='30%'}
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="top" align="center" color="bg-green" font-size="0.8rem" width="95%" icon-size="1rem"}
 It doesn't *really* matter what time we use here as it won't ever be displayed in the process mining outputs. It's more about giving vidigi a reference point.
 
 However, if time does make sense in your simulation - like you have a clinic that opens at 8am every day - then it makes sense to make that the time you pass in!
@@ -277,7 +277,7 @@ dfg_to_graphviz(nodes, edges)
 ```
 :::
 
-::: {.column width='20%'}
+::: {.column width='5%'}
 
 :::
 
@@ -299,7 +299,10 @@ dfg_to_cytoscape(nodes, edges)
 #| echo: false
 #| label: dfg-interactive
 from IPython.display import display
-display(dfg_to_cytoscape(nodes, edges))
+
+cytoscape_output = dfg_to_cytoscape(nodes, edges, width=1100, height=500)
+
+display(cytoscape_output)
 ```
 
 

@@ -341,3 +341,18 @@ iframe.stlite {
 .reveal div.sourceCode pre > code > span {
   box-sizing: border-box;
 }
+
+// live-runtime.css (from the live-revealjs extension, used elsewhere in this
+// deck for webR live-coding) sets `div.cell-output-display canvas
+// { background-color: #fff }` so webR's base-R plots read on the dark theme.
+// vidigi's dfg_to_cytoscape() output is also a canvas inside a
+// div.cell-output-display, but ipycytoscape stacks THREE canvas layers
+// (selection-box, drag, node/edge content) and relies on the top two staying
+// transparent so the node/edge layer underneath shows through. The blanket
+// white background opacifies all three, so the always-empty top layer
+// permanently hides the graph. This selector is more specific
+// (div.cell-output-display .custom-widget canvas vs.
+// div.cell-output-display canvas), so it wins regardless of load order.
+.reveal div.cell-output-display .custom-widget canvas {
+  background-color: transparent;
+}

@@ -18,6 +18,7 @@ project:
   # your source files, data folders, __pycache__, lockfiles and multi-MB
   # Jupyter intermediates, and GitHub Pages publishes the lot.
   post-render:
+    - _docs_vendor_widget_assets.py
     - _docs_cleanup.py
 
 # Everything in output-dir NOT listed here is deleted after each render.

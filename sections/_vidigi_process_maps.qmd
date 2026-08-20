@@ -277,7 +277,7 @@ dfg_to_graphviz(nodes, edges)
 ```
 :::
 
-::: {.column width='20%'}
+::: {.column width='5%'}
 
 :::
 
@@ -299,7 +299,10 @@ dfg_to_cytoscape(nodes, edges)
 #| echo: false
 #| label: dfg-interactive
 from IPython.display import display
-display(dfg_to_cytoscape(nodes, edges))
+
+cytoscape_output = dfg_to_cytoscape(nodes, edges, width=1100, height=500)
+
+display(cytoscape_output)
 ```
 
 
