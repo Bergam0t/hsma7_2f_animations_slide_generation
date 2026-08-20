@@ -138,10 +138,10 @@ class Model:
             time_should_go = next_departure_time
             time_to_return = time_should_go + self.param.nurse_unav_time
 
-            print(
-                f"{self.param.num_nurses_unav} nurses should go at",
-                f"{time_should_go:.2f}",
-            )
+            # print(
+            #     f"{self.param.num_nurses_unav} nurses should go at",
+            #     f"{time_should_go:.2f}",
+            # )
 
             for removal_candidate in range(self.param.num_nurses_unav):
                 self.env.process(self.remove_one_nurse(time_to_return))

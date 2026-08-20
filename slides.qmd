@@ -109,6 +109,8 @@ filters:
 
 {{< include sections/_advanced_animations_three_step.qmd >}}
 
+{{< include sections/_advanced_animations_priority_icons.qmd >}}
+
 {{< include sections/_vidigi_exercise_3.qmd >}}
 
 
