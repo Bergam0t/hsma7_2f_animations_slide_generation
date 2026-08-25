@@ -1,10 +1,14 @@
-# A package for animations
+# How do we create animations?
+
+
+::: {.fragment}
+![](../assets/vidigi_logo.png)
+:::
+
 
 ## What is vidigi?
 
-
 Vidigi is a package for creating animations of open-source discrete event simulations (like the ones you've been building in SimPy).
-
 
 ![](../assets/vidigi_multistep_demo.gif)
 
@@ -17,13 +21,13 @@ We've built it from the ground up with the intention of helping visualise health
 
 So if anything isn't working, or if there is a feature you need that doesn't exist, the chances are we can sort that for you!
 
-You and your projects can help shape the package!
+**You and your projects can help shape the package.**
 
 ## Extra Benefits of vidigi
 
 ::: {.focus-list}
 - Works in common web application frameworks (which we'll introduce you to next week!)
-- Also works in Quarto
+- Also works in Quarto reports (which we'll introduce you to next module)
 - Or can output as a standalone file
 - Generates animations quickly enough to allow users to regenerate an animation after changing parameters
 - Supports custom icons
@@ -44,4 +48,4 @@ You can try her app out at [non-elective-flow-simulation-coch.streamlit.app](htt
 
 ## John Williams - Stroke Bed Unit Modelling
 
-![]()
+![](../assets/stroke_model.gif)

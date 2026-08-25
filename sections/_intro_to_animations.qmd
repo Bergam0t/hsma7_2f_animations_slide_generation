@@ -1,13 +1,16 @@
 
 # Introduction
 
-## If a picture is worth a thousand words..
+## If a picture is worth a thousand words...
 
+::: {.fragment}
 
+... then an animation might be worth a lot more!
 
-## What does a DES animation look like?
+![](../assets/simple_sample.gif)
 
-![]()
+:::
+
 
 ## Benefits of animations
 
@@ -27,6 +30,3 @@ Helps with debugging
 :::
 
 ::::
-
-
-## Animations and web apps

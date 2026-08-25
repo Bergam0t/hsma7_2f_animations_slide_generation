@@ -189,3 +189,16 @@ if __name__ == "__main__":
     print(f"SD : {base_case_model.sd_q_time_specialist:.2f} minutes")
     print(f"90th Perc : {base_case_model.perc_90_q_time_specialist:.2f} ", "minutes")
     print()
+
+    ################################
+    # Suggested event positions
+    ################################
+
+    # Arrival: x = 0, y = 850
+    # Waiting for receptionist: x = 200, y = 800
+    # Being seen by receptionist: x = 200, y = 700
+    # Waiting for nurse: x = 200, y = 550
+    # Being seen by nurse: x = 200, y = 450
+    # Waiting for specialist: x = 75, y = 300
+    # Being seen by specialist: x = 75 , y = 200
+    # Leaving: x = 200, y = 50

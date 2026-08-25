@@ -6,13 +6,13 @@
 
 ::: {.column width='60%'}
 ::: {style='font-size: 75%;'}
-You will be working with the model [TODO: model path] and the notebook [TODO: notebook path].
+You will be working with the file `exercises/exercise_1.py`, which contains a model that .
 :::
 :::
 
-::: {.column width='40%'}
-::: {.value-box icon="fa-solid fa-clock" icon-position="left" icon-size="2em"}
-45 minutes + 10 minute break
+::: {.column width='30%'}
+::: {.value-box icon="fa-solid fa-clock" icon-position="left" icon-size="2em" min-height="60px" font-size="0.8rem"}
+45 minutes <br>+ 10 minute break
 :::
 :::
 
