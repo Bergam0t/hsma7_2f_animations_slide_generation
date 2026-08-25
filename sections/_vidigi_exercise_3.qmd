@@ -6,9 +6,9 @@
 
 ::: {.column width='60%'}
 ::: {style='font-size: 75%;'}
-You will be working with the model [TODO: model path] and the notebook [TODO: notebook path].
+You will be working with the model **exercises/exercise_3.py**, which uses `VidigiPriorityStore`.
 
-This model already has the logging steps set up, as well as a simple one-step animation.
+This model already has most of the logging steps set up, as well as a simple animation using `animate_activity_log`.
 :::
 :::
 
@@ -26,6 +26,7 @@ This model already has the logging steps set up, as well as a simple one-step an
 
 ::: {.column width='60%'}
 ::: {style='font-size: 85%'}
+1. Add the patient priority to the logging steps
 1. Switch to using the three-step animation process
 1. Customise the icons so that high-priority patients are displayed differently
 :::

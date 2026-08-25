@@ -153,6 +153,8 @@ fig = generate_animation(
     full_entity_df_plus_pos=animation_df,
     event_position_df=my_animation.layout,
     scenario=my_params,
+    plotly_height=500,
+    plotly_width=1000
 )
 
 
@@ -188,33 +190,65 @@ class Animation:
 
 ::: {.codewindow .python}
 g_three_step_animation_custom_priority_icons.py
-```{.python code-line-style="focus:1,dim:2-3,focus:4,dim:5-14,focus:15-17,dim:18-23" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:1,dim:2,focus:3,dim:4-7,focus:8-10,dim:11-12" code-line-style-preset="emphasis"}
 class Animation:
     ...
-
     def build_animation(self, time_interval=1):
-        reshaped_df = reshape_for_animations(
-            event_log=self.event_log,
-            every_x_time_units=time_interval,
-            limit_duration=self.params.sim_duration
-        )
+        reshaped_df = reshape_for_animations(...)
 
-        animation_df = generate_animation_df(
-            full_entity_df=reshaped_df,
-            event_position_df=self.layout
-        )
+        animation_df = generate_animation_df(...)
 
         animation_df = animation_df.assign(
             icon=animation_df.apply(self.show_priority_icon, axis=1)
         )
 
-        return generate_animation(
-            full_entity_df_plus_pos=animation_df,
-            event_position_df=self.layout,
-            scenario=self.params
-        )
+        return generate_animation(...)
 ```
 :::
+
+## Taking a look at the animation df
+
+After we've applied our custom function, let's take a look at our icon column...
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: priority-icon-demo-animation-df
+
+from vidigi.prep import reshape_for_animations, generate_animation_df
+from vidigi.animation import generate_animation
+
+reshaped_df = reshape_for_animations(
+    event_log=my_event_log,
+    every_x_time_units=1,
+    limit_duration=my_params.sim_duration,
+)
+
+animation_df = generate_animation_df(
+    full_entity_df=reshaped_df,
+    event_position_df=my_animation.layout,
+)
+
+def show_priority_icon(row):
+    # First check this isn't a '+ y more' row
+    if "more" not in row["icon"]:
+        if row["priority"] == 1:
+            return "🚨"
+        if row["priority"] == 2:
+            return "⚠️"
+        else:
+            return row["icon"]
+    else:
+        return row["icon"]
+
+animation_df = animation_df.assign(
+            icon=animation_df.apply(show_priority_icon, axis=1)
+        )
+
+animation_df[["entity_id", "event_type", "event", "time", "resource_id", "priority", "snapshot_time", "icon"]].head(200)
+```
+
+[**\* some columns hidden**]{style="color:yellow; font-size:75%"}
 
 ## Rerunning the animation
 
@@ -224,13 +258,106 @@ And now we can properly see why certain people are jumping the queue!
 #| eval: true
 #| echo: false
 #| label: priority-icon-demo-animation
-
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
+fig = generate_animation(
+    full_entity_df_plus_pos=animation_df,
     event_position_df=my_animation.layout,
-    every_x_time_units=1,
+    scenario=my_params,
     plotly_height=500,
-    plotly_width=1180
+    plotly_width=1000
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```
+
+
+## BONUS: Adding extra information to icons
+
+::: {style='font-size: 75%;'}
+Because patient icons are just text, we can add other useful information in!
+
+A useful one might be the wait time.
+
+First, we make a new column that compares the `snapshot_time` (the time it is in the animation) with the `time` (the time the current event started).
+:::
+
+```{.python code-line-style="dim:1-3,focus:4-5" code-line-style-preset="emphasis"}
+reshaped_df = reshape_for_animations(...)
+animation_df = generate_animation_df(...)
+
+animation_df["time_in_step"] = animation_df["snapshot_time"] - animation_df["time"]
+animation_df["time_in_step"] = animation_df["time_in_step"].round(0)
+```
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: extra-info-demo-setup
+animation_df["time_in_step"] = animation_df["snapshot_time"] - animation_df["time"]
+animation_df["time_in_step"] = animation_df["time_in_step"].round(0)
+
+animation_df[["entity_id", "event", "time", "snapshot_time", "icon", "time_in_step", "resource_id", "event_type"]].head(1)
+```
+
+
+## BONUS: Adding extra information to icons - continued
+
+We can then modify our existing step
+
+```{.python}
+def add_time_in_step(self, row):
+    # First check this isn't a '+ y more' row
+    if "more" not in row["icon"]:
+        return row["icon"] + "<br>" + row["time_in_step"]
+    else:
+        return row["icon"]
+```
+
+and then call this in the same way as before.
+
+```{.python code-line-style="dim:1-7,focus:8-10" code-line-style-preset="emphasis"}
+reshaped_df = reshape_for_animations(...)
+animation_df = generate_animation_df(...)
+
+animation_df = animation_df.assign(
+            icon=animation_df.apply(self.show_priority_icon, axis=1)
+        )
+
+animation_df = animation_df.assign(
+            icon=animation_df.apply(self.add_time_in_step, axis=1)
+        )
+```
+
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: additional-info-demo-add-info
+def add_time_in_step(row):
+    # First check this isn't a '+ y more' row
+    if "more" not in row["icon"]:
+        return row["icon"] + "<br>" + f"{row["time_in_step"]:.0f}"
+    else:
+        return row["icon"]
+
+animation_df = animation_df.assign(
+            icon=animation_df.apply(add_time_in_step, axis=1)
+        )
+```
+
+
+## BONUS: Adding extra information to icons - output
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: additional-info-demo-animation
+fig = generate_animation(
+    full_entity_df_plus_pos=animation_df,
+    event_position_df=my_animation.layout,
+    scenario=my_params,
+    plotly_height=500,
+    plotly_width=1000,
+    entity_icon_size=16
 )
 
 HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))

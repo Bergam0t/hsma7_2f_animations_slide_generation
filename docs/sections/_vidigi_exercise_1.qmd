@@ -6,7 +6,7 @@
 
 ::: {.column width='60%'}
 ::: {style='font-size: 75%;'}
-You will be working with the file `exercises/exercise_1.py`, which contains a model that .
+You will be working with the file `exercises/exercise_1.py`. This is a simple multi-step branching model. At this point, there's no Trial class - we're just running single Model class runs.
 :::
 :::
 
