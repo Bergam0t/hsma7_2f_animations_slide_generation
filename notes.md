@@ -10,7 +10,7 @@ rendered/previewed standalone with the full live-revealjs styling, without
 duplicating the header and without rebuilding the whole deck:
 
 ```
-quarto preview sections/_foo.qmd --output-dir _preview
+quarto preview _SECTION_foo.qmd --output-dir _preview
 ```
 
 Always pass `--output-dir _preview` (gitignored) for these -- never let a

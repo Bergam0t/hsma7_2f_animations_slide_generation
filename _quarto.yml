@@ -34,15 +34,12 @@ docs-keep:
   - _extensions
   - _freeze
   - custom.scss
-  - title-slide.scss
-  - title-slide.html
   - _brand.yml
   - resources
   - code_examples
   - fullscreen
   - diagrams
   - sample_code
-  - sections
 
 format:
   revealjs:

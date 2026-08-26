@@ -15,7 +15,7 @@ _freeze/
 # quarto preview sections/_foo.qmd --output-dir _preview
 _preview/
 
-sections/*.html
+_SECTION_*.html
 
 _SECTION_*/*
 slides_files/

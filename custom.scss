@@ -86,7 +86,7 @@ body {
 
 // Default: content starts at the top for regular slides
 .reveal .slides > section {
-  /* background-color: rgba(56, 56, 56, 0.8); */
+  background-color: rgba(56, 56, 56, 0.8);
   border-radius: 12px;
   padding: 20px;
   box-sizing: border-box;
@@ -164,25 +164,14 @@ iframe.stlite {
   }
 }
 
-
-
 // Slides with no grey box
-// .reveal .slides section.no-box,
-// .reveal .slides > section.no-box,
-// .reveal .slides > section.stack > section.no-box {
-//   background-color: transparent !important;
-//   border-radius: 0 !important;
-//   box-shadow: none !important;
-// }
-
-// Slides with no grey box
-.reveal .slides > section.stack:has(> section.no-box) {
+.reveal .slides > section:has(> section.no-box) {
   background-color: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
 
-.reveal .slides > section.stack:has(> section.no-box) > section:not(.no-box) {
+.reveal .slides > section:has(> section.no-box) > section:not(.no-box) {
   background-color: rgba(56, 56, 56, 0.8) !important;
   border-radius: 12px !important;
   box-sizing: border-box !important;
@@ -197,12 +186,12 @@ iframe.stlite {
 }
 
 // # header slide should be centred vertically
-.reveal .slides > section.stack:has(> section.no-box) > section:first-child {
+.reveal .slides > section:has(> section.no-box) > section:first-child {
   justify-content: center !important;
 }
 
 /* Ensure column containers stretch to full width inside flex-slides */
-.reveal .slides section.stack:has(> section.no-box) section > .columns {
+.reveal .slides section:has(> section.no-box) section > .columns {
   width: 100% !important;
   flex-grow: 1; /* Allows the columns to fill vertical space if needed */
 }
@@ -212,7 +201,6 @@ iframe.stlite {
 .bg-light-grey { background-color:rgb(197, 197, 197) ; }
 
 .bg-light-blue { background-color:rgb(106, 189, 192) ; }
-
 
 .centred-grid {
   display: flex;
@@ -227,57 +215,6 @@ iframe.stlite {
     width: 60%;
   }
 }
-
-// /* 1. Reset list to be stable */
-// .reveal .focus-list ul,
-// .reveal .focus-list ol {
-//   list-style-type: none !important;
-//   padding-left: 1em !important;
-//   position: relative;
-// }
-
-// /* 2. The Fragment Container */
-// .reveal .focus-list .fragment {
-//   display: block;
-//   width: 100%;
-//   visibility: hidden;
-//   opacity: 1 !important;
-//   position: relative;
-//   transition: all 0.4s ease;
-// }
-
-// .reveal .focus-list .fragment.visible {
-//   visibility: visible;
-// }
-
-// /* 3. The Bullet */
-// .reveal .focus-list .fragment::before {
-//   content: "•";
-//   position: absolute;
-//   left: -0.8em;
-//   color: inherit;
-// }
-
-// /* 4. THE DARK THEME FIX: Light Alpha Dimming */
-// .reveal .focus-list .fragment.visible {
-//   /* Use a transparent white so it sits 'on top' of the dark bg */
-//   color: rgba(255, 255, 255, 0.3) !important;
-//   /*font-weight: 400;*/
-// }
-
-// /* 5. Highlight the Current Item */
-// .reveal .focus-list .fragment.current-fragment {
-//   color: #ffffff !important; /* A bright, 'Neon' blue looks great on dark themes */
-//   /*font-weight: 700;*/
-//   /* Optional: adds a glow to the active line */
-//   /*text-shadow: 0 0 10px rgba(88, 166, 255, 0.5);*/
-// }
-
-// /* 6. Keep Parents Bright */
-// .reveal .focus-list .fragment.current-fragment-ancestor {
-//   color: rgba(255, 255, 255, 0.85) !important;
-//   /*font-weight: 600;*/
-// }
 
 .reveal {
   --codewindow-bg: #1e293b;
