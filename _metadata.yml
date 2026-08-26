@@ -1,0 +1,78 @@
+# Shared metadata for every document in this project (merged in automatically
+# by Quarto, whether the document is rendered as part of the full deck via
+# slides.qmd's `{{< include >}}`s, or rendered/previewed on its own, e.g.
+# `quarto preview sections/_foo.qmd --output-dir _preview`).
+#
+# Keeping this out of slides.qmd's own header is deliberate: it's the single
+# source of truth for format/plugin/filter config, so previewing an
+# individual section can't drift out of sync with the real deck.
+#
+# slides.qmd keeps only its own title/subtitle/author -- those are specific
+# to the full deck, not to a section preview.
+execute:
+  eval: false # Don't run code by default
+  echo: true # Display code cells by default
+format:
+  live-revealjs:
+    embed-resources: false # necessary for stlite-quarto and chalkboard to work
+    # embed-resources: true # comment in/out as appropriate
+    chalkboard: true
+    view-distance: 3
+    height: 800 # default height and width ensure consistent behaviour on different screens
+    width: 1250 # would recommend leaving this and height value as they are
+    preview-links: true
+    controls: false
+    controls-layout: edges
+    transition: fade
+    plotly-connected: true
+    background-transition: fade
+    mermaid:
+      theme: neutral
+      format: svg
+    menu:
+        numbers: true
+    preload-iframes: true
+    logo: "assets/hsma_logo.png"
+    footer-logo-link: "https://hsma.co.uk"
+    # background-image: "assets/hsma_bg_1.png"
+    background-image: "assets/banner_hq.png"
+    # background-size: cover
+    theme: [default, custom.scss]
+    title-slide-attributes:
+        data-background-image: assets/banner.png
+    verticator:
+      themetag: 'h1'
+      color: ''
+      inversecolor: ''
+      skipuncounted: false
+      clickable: true
+      position: 'auto'
+      offset: '3vmin'
+      autogenerate: true
+      tooltip: false
+      scale: 1
+    include-in-header:
+      file: resources/header.html
+    include-after-body:
+      - file: resources/cytoscape-widget-fix.html
+      - file: resources/plotly-animation-gate.html
+    revealjs-a11y:
+      high-contrast: false
+      alt-text-warnings: true
+      slide-change-cue:
+        visual: false
+        audio: false
+revealjs-plugins:
+  - verticator
+  - fullscreen
+  - pointer
+  - codefocus
+  # - a11y
+  - codewindow
+filters:
+  - stlite # modified stlite extension
+  - reveal-header
+  - bergam0t/value-box
+  - bergam0t/focus-list
+  - code-fullscreen
+  - code-line-style

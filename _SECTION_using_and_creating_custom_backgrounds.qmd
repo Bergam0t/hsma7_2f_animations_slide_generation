@@ -1,0 +1,41 @@
+# Creating and using custom backgrounds
+
+## From this...
+
+Custom backgrounds can go a long way to making your animation feel more polished and interpretable.
+
+
+
+## To this!
+
+
+
+## Or this...
+
+
+## To this!
+
+
+
+## Software for creating a custom background
+
+
+
+
+
+## Vidigi customisation - `override_x_max` and `override_y_max`
+
+
+## Vidigi customiation - `plotly_width` and `plotly_height`
+
+
+## The difference between 'override_[x/y]_max' and `plotly_[width/height]`
+
+
+## Vidigi customisation - `setup_mode`
+
+
+## Vidigi customisation - `display_stage_labels`
+
+
+## Tips for aligning your queues and your background

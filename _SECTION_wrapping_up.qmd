@@ -1,0 +1,25 @@
+# Wrapping Up
+
+## Knowledge Check
+
+[TODO: Add Menti]
+
+## Summary
+
+## Further Reading
+
+::: {.value-box-row columns="3"}
+
+::: {.value-box href="https://hsma-tools.github.io/vidigi/examples/examples.html" target="_blank"}
+Look at the examples in the vidigi documentation
+:::
+
+::: {.value-box href="https://hsma-tools.github.io/vidigi/examples/feature_breakdowns.html" target="_blank"}
+Look at the advanced features in the feature breakdown
+:::
+
+::: {.value-box href="https://hsma-tools.github.io/vidigi/reference/" target="_blank"}
+Explore all of the available classes and functions and their parameters in the API reference
+:::
+
+:::

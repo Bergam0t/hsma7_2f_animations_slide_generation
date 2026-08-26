@@ -1,6 +1,7 @@
 project:
   title: "Title"
-  output-dir: docs
+  # output-dir: docs
+  execute-dir: project
   resources:
     - assets/
 

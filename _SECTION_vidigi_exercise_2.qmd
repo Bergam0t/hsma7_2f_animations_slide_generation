@@ -1,0 +1,48 @@
+# Exercise 2
+
+## {.slide data-menu-title="Vidigi Exercise 2"}
+
+:::: {.columns}
+
+::: {.column width='70%'}
+::: {style='font-size: 75%;'}
+You will be working with the model in `exercises/exercise_2.py`.
+
+This is the model from the previous exercise, but with the Trial class added in. However, the existing animation in the file is set to only work with an individual model run.
+:::
+:::
+
+::: {.column width='30%'}
+::: {.value-box icon="fa-solid fa-clock" icon-position="left" icon-size="2em" min-height="60px" font-size="0.8rem"}
+45 minutes <br>+ 10 minute break
+:::
+:::
+
+::::
+
+
+
+:::: {.columns}
+
+::: {.column width='60%'}
+::: {style='font-size: 75%'}
+1. Modify the code to account for the presence of the `Trial` class
+    - *Don't forget to add the run number to your Logger class!*
+1. Generate an animation for each run of the model. Do they differ significantly?
+1. Explore the EventLogger and TrialLogger visualisations [TODO: make this more specific - let's ask for one or two but specify which?]
+1. Build a ProcessMap class and display both a static and interactive process map of this system
+:::
+:::
+
+::: {.column width='40%'}
+::: {.fragment}
+::: {style='font-size: 60%; color: lightgrey'}
+### Extensions
+- Play around with some of the parameters available for the static process maps: [LINK](https://hsma-tools.github.io/vidigi/reference/process_mapping.dfg_to_graphviz.html)
+- Try out the parameters available for the interactive version of the process maps: [LINK](https://hsma-tools.github.io/vidigi/reference/process_mapping.dfg_to_cytoscape.html)
+- Try modifying one of the plots you created from the TrialLogger class. [TODO: add vidigi docs page about modifying plots that covers more ideas than we had here]
+:::
+:::
+:::
+
+::::

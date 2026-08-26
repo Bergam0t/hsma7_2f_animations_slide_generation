@@ -10,3 +10,12 @@ CLAUDE.md
 
 _freeze/
 .vscode/
+
+# scratch output dir for single-section preview renders, e.g.
+# quarto preview sections/_foo.qmd --output-dir _preview
+_preview/
+
+sections/*.html
+
+_SECTION_*/*
+slides_files/

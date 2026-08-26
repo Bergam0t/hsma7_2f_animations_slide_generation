@@ -4,119 +4,59 @@ subtitle: "Bringing your simulations to life with vidigi"
 author:
     name: Sammi Rosser
     affiliation: Health Service Modelling Associates Programme
-execute:
-  eval: false # Don't run code by default
-  echo: true # Display code cells by default
 format:
   live-revealjs:
-    embed-resources: false # necessary for stlite-quarto and chalkboard to work
-    # embed-resources: true # comment in/out as appropriate
-    chalkboard: true
     output-file: index.html # ensures picked up by github hosting
-    view-distance: 3
-    height: 800 # default height and width ensure consistent behaviour on different screens
-    width: 1250 # would recommend leaving this and height value as they are
-    preview-links: true
-    controls: false
-    controls-layout: edges
-    transition: fade
-    plotly-connected: true
-    background-transition: fade
-    mermaid:
-      theme: neutral
-      format: svg
-    menu:
-        numbers: true
-    preload-iframes: true
-    logo: "assets/hsma_logo.png"
-    footer-logo-link: "https://hsma.co.uk"
-    # background-image: "assets/hsma_bg_1.png"
-    background-image: "assets/banner_hq.png"
-    # background-size: cover
-    theme: [default, custom.scss]
-    title-slide-attributes:
-        data-background-image: assets/banner.png
-    verticator:
-      themetag: 'h1'
-      color: ''
-      inversecolor: ''
-      skipuncounted: false
-      clickable: true
-      position: 'auto'
-      offset: '3vmin'
-      autogenerate: true
-      tooltip: false
-      scale: 1
-    include-in-header:
-      file: resources/header.html
-    include-after-body:
-      - file: resources/cytoscape-widget-fix.html
-      - file: resources/plotly-animation-gate.html
-    revealjs-a11y:
-      high-contrast: false
-      alt-text-warnings: true
-      slide-change-cue:
-        visual: false
-        audio: false
-revealjs-plugins:
-  - verticator
-  - fullscreen
-  - pointer
-  - codefocus
-  # - a11y
-  - codewindow
-filters:
-  - stlite # modified stlite extension
-  - reveal-header
-  - bergam0t/value-box
-  - bergam0t/focus-list
-  - code-fullscreen
-  - code-line-style
+    output-dir: docs
+# Shared format/execute/filters/plugins config lives in _metadata.yml --
+# Quarto merges it in automatically for every document in the project,
+# including sections rendered/previewed standalone. Keeping it out of here
+# avoids two copies of that config drifting apart.
 ---
 
 
-{{< include sections/_intro_to_animations.qmd >}}
+{{< include _SECTION_intro_to_animations.qmd >}}
 
-{{< include sections/_what_is_vidigi.qmd >}}
-
-
-
-{{< include sections/_elements_of_vidigi_simple.qmd >}}
-
-{{< include sections/_creating_simple_vidigi_animations.qmd >}}
-
-{{< include sections/_elements_of_vidigi_advanced_resource_use.qmd >}}
-
-{{< include sections/_adding_resource_use_vidigi_animations.qmd >}}
-
-{{< include sections/_vidigi_exercise_1.qmd >}}
+{{< include _SECTION_what_is_vidigi.qmd >}}
 
 
 
+{{< include _SECTION_elements_of_vidigi_simple.qmd >}}
 
-{{< include sections/_vidigi_animation_settings.qmd >}}
+{{< include _SECTION_creating_simple_vidigi_animations.qmd >}}
 
-{{< include sections/_vidigi_with_trial_class.qmd >}}
+{{< include _SECTION_elements_of_vidigi_advanced_resource_use.qmd >}}
 
-{{< include sections/_trial_logger_event_logger_visualisations.qmd >}}
+{{< include _SECTION_adding_resource_use_vidigi_animations.qmd >}}
 
-{{< include sections/_vidigi_process_maps.qmd >}}
-
-{{< include sections/_vidigi_exercise_2.qmd >}}
-
-
-
-{{< include sections/_using_and_creating_custom_backgrounds.qmd >}}
-
-{{< include sections/_advanced_animations_three_step.qmd >}}
-
-{{< include sections/_advanced_animations_priority_icons.qmd >}}
-
-{{< include sections/_vidigi_exercise_3.qmd >}}
+{{< include _SECTION_vidigi_exercise_1.qmd >}}
 
 
 
 
-{{< include sections/_animating_bigger_systems_and_longer_timescales.qmd >}}
+{{< include _SECTION_vidigi_animation_settings.qmd >}}
 
-{{< include sections/_wrapping_up.qmd >}}
+{{< include _SECTION_vidigi_with_trial_class.qmd >}}
+
+{{< include _SECTION_trial_logger_event_logger_visualisations.qmd >}}
+
+{{< include _SECTION_vidigi_process_maps.qmd >}}
+
+{{< include _SECTION_vidigi_exercise_2.qmd >}}
+
+
+
+{{< include _SECTION_using_and_creating_custom_backgrounds.qmd >}}
+
+{{< include _SECTION_advanced_animations_three_step.qmd >}}
+
+{{< include _SECTION_advanced_animations_priority_icons.qmd >}}
+
+{{< include _SECTION_vidigi_exercise_3.qmd >}}
+
+
+
+
+{{< include _SECTION_animating_bigger_systems_and_longer_timescales.qmd >}}
+
+{{< include _SECTION_wrapping_up.qmd >}}
