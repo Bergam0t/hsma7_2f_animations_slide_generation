@@ -2,13 +2,32 @@
 
 # Statistics and Plots from TrialLogger and EventLogger
 
-##
+```{python}
+#| eval: true
+#| echo: false
+#| label: initiate-trial-example-trial-logger-viz-demo
+from sample_code.d_simple_one_step_model_vidigi_trial import Param, Trial
+from IPython.display import HTML
+
+my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10, num_replications=10)
+my_trial = Trial(my_params)
+my_trial.run_trial()
+my_trial.calculate_trial_results()
+
+import plotly.io as pio
+pio.renderers.default = "notebook"
+```
+
+## BONUS!
 
 `TrialLogger` and `EventLogger` both have a range of built-in useful helper functions and plots.
 
+<br>
 
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green" value="Why use these rather than making my own plots?" width="95%"}
 
-::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green" value="Why use these rather than making my own plots?"}
+<br>
+
 There's nothing to stop you still making your own plots - and I'd actively encourage it!
 
 But vidigi's plots have the benefit of being part of a tested ecosystem.
@@ -50,7 +69,7 @@ my_trial.trial_logger.get_event_duration_stat(
 
 ## TrialLogger - Duration Barplot
 
-::: {style='font-size: 75%;'}
+::: {style='font-size: 80%;'}
 We can also look at this as a plot for multiple events at once.
 :::
 
@@ -81,12 +100,15 @@ event_pairs = [
 
 ::::
 
+::: {style='font-size: 80%;'}
 Note that we're finally getting a chance to use that "nurse_treatment_ends" activity!
 
 While it's still identically timed to *depart* here
 
 - it is more intuitive to make use of it
 - it avoids issues if we add more steps to our process down the line
+:::
+
 
 ## TrialLogger - Duration Barplot - Output
 
@@ -109,12 +131,17 @@ my_trial.trial_logger.plot_metric_bar(
 
 ## TrialLogger - Queue length
 
+:::: {.columns}
+
+::: {.column width='25%'}
+::: {style='font-size: 75%;'}
 `.plot_queue_size` allows us to see how queues changed across the course of our model run, for every run.
 
 The black line indicates the average queue size, while the coloured lines show how the queue varied across runs.
+:::
+:::
 
-[TODO: add CI to this plot in vidigi?]
-
+::: {.column width='75%'}
 ```{python}
 #| eval: true
 #| echo: true
@@ -123,9 +150,11 @@ my_trial.trial_logger.plot_queue_size(
     ["nurse_wait_begins"],
     limit_duration=my_params.sim_duration,
     every_x_time_units=30, title="Nurse Queue Length",
-    width=1000, height=450)
+    width=875, height=450)
 ```
+:::
 
+::::
 
 ## Modifying these plots
 

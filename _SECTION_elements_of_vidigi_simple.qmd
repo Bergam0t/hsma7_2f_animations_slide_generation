@@ -67,15 +67,14 @@ my_logger.log_queue()
 
 ## Why EventLogger?
 
-:::{.value-box-row}
+:::{.value-box-row height="400px" align="center"}
 
 ::: {.value-box value="The Format Vidigi Expects"}
-The EventLogger methods work with all of vidigi's defaults, making it less likely that you'll make errors when adding an animation in
+<br> The EventLogger methods work with all of vidigi's defaults, making it less likely that you'll make errors when adding an animation in
 :::
 
-::: {.value-box value="Extra Plotting Helpers"}
-Later, we'll see what other plots - not just animations - that EventLogger can automate for us
-
+::: {.value-box value="Extra Plotting Helpers" fragment="fade-in"}
+<br> Later, we'll see other plots - not just animations - that EventLogger can automate for us
 :::
 
 :::
