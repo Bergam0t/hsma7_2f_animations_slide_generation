@@ -27,10 +27,24 @@ e.g
 
 :::
 
+## Vidigi can cope with quite big systems by default
 
-##
+![](assets/Code_VNCR4z2mWV.gif)
+
+## You can use just gauges
+
+![](assets/Code_7WUS2Mcxbf.gif)
+
+## Or a hybrid of gauges and icons
+
+![](assets/Code_1471lS0m98.gif)
 
 
+## Vidigi customisation - `step_snapshot_limit_gauges`
+
+You might remember that earlier we talked about `step_snapshot_limit_gauges`.
+
+It's very useful to set this to `True` for larger timescales.
 
 ## Vidigi customisation - `simulation_time_unit`
 
@@ -128,4 +142,9 @@ animate_activity_log(
 ```
 
 
-## Vidigi customisation - `step_snapshot_limit_gauges`
+## Further reading on animations for larger timescales
+
+We don't have time to go into this today, but if you need to animate a big system for your project, check out the following examples in Vidigi's docs:
+
+-
+-

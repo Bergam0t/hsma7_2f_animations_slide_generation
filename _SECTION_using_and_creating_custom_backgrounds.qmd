@@ -1,41 +1,557 @@
 # Creating and using custom backgrounds
 
-## From this...
-
 Custom backgrounds can go a long way to making your animation feel more polished and interpretable.
 
 
+## From this...
+
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash
+"""
+Carwash example.
+
+Covers:
+
+- Waiting for other processes
+- Resources: Resource
+
+Scenario:
+  A carwash has a limited number of washing machines and defines
+  a washing processes that takes some (random) time.
+
+  Car processes arrive at the carwash at a random time. If one washing
+  machine is available, they start the washing process and wait for it
+  to finish. If not, they wait until they can use one.
+
+  simpy model (simpy_carwash.py) written by Team SimPy as part of SimPy documentation.
+
+"""
+
+import itertools
+import random
+from vidigi.resources import VidigiStore
+from vidigi.animation import animate_activity_log
+from vidigi.logging import EventLogger
+from vidigi.utils import EventPosition, create_event_position_df
+
+import simpy
+import pandas as pd
+
+from IPython.display import HTML
+
+# fmt: off
+RANDOM_SEED = 42
+NUM_MACHINES = 2  # Number of machines in the carwash
+WASHTIME = 5      # Minutes it takes to clean a car
+T_INTER = 2       # Create a car every ~2 minutes
+SIM_TIME = 60     # Simulation time in minutes
+# fmt: on
+
+
+class Carwash:
+    """A carwash has a limited number of machines (``NUM_MACHINES``) to
+    clean cars in parallel.
+
+    Cars have to request one of the machines. When they got one, they
+    can start the washing processes and wait for it to finish (which
+    takes ``washtime`` minutes).
+
+    """
+
+    def __init__(self, env, num_machines, washtime):
+        self.env = env
+        self.machine = VidigiStore(env, num_resources=num_machines)
+        self.washtime = washtime
+        self.logger = EventLogger(env=self.env)
+
+    def wash(self, car):
+        """The washing processes. It takes a ``car`` processes and tries
+        to clean it."""
+        yield self.env.timeout(self.washtime)
+        pct_dirt = random.randint(50, 99)
+
+
+def car(env, name, cw):
+    """The car process (each car has a ``name``) arrives at the carwash
+    (``cw``) and requests a cleaning machine.
+
+    It then starts the washing process, waits for it to finish and
+    leaves to never come back ...
+
+    """
+    cw.logger.log_arrival(entity_id=name)
+    cw.logger.log_queue(entity_id=name, event='carwash_queue_wait_begins')
+    with cw.machine.request() as request:
+        carwash_spot = yield request
+
+
+        cw.logger.log_resource_use_start(entity_id=name, event="carwashing_begins",
+                                  resource_id=carwash_spot.id_attribute)
+
+        yield env.process(cw.wash(name))
+
+        cw.logger.log_resource_use_end(entity_id=name, event="carwashing_ends",
+                            resource_id=carwash_spot.id_attribute)
+
+        cw.logger.log_departure(entity_id=name)
+
+random.seed(RANDOM_SEED)
+
+env = simpy.Environment()
+
+# Create the carwash ourselves so we retain a reference to it
+carwash = Carwash(env, NUM_MACHINES, WASHTIME)
+
+car_count = itertools.count()
+
+# Initial cars
+for _ in range(4):
+    env.process(car(env, f'Car {next(car_count)}', carwash))
+
+# More cars
+def arrivals(env, carwash, t_inter, duration):
+    while env.now < duration:
+        yield env.timeout(random.randint(t_inter - 2, t_inter + 2))
+        env.process(car(env, f'Car {next(car_count)}', carwash))
+
+env.process(arrivals(env, carwash, T_INTER, SIM_TIME))
+
+# Run the simulation
+env.run(until=SIM_TIME)
+
+# Get the event log
+event_log = carwash.logger.to_dataframe()
+
+# Define positions for animation
+event_positions = create_event_position_df([
+    EventPosition(event='arrival', x=0, y=350, label="Entrance"),
+    EventPosition(event='carwash_queue_wait_begins', x=350, y=200, label="Queue"),
+    EventPosition(event='carwashing_begins', x=340, y=100, resource='num_carwashes',
+                  label="Being Washed"),
+    EventPosition(event='depart', x=250, y=50, label="Exit")
+])
+
+class Params:
+    def __init__(self):
+        self.num_carwashes = 2
+
+icon_list = [ "🚗", "🚙", "🚓",
+            "🚗", "🚙", "🏎️",
+            "🚗", "🚙", "🚚",
+            "🚗", "🚙", "🛻",
+            "🚗", "🚙", "🚛",
+            "🚗", "🚙", "🚕",
+            "🚗", "🚙", "🚒",
+            "🚗", "🚙", "🚑"]
+
+random.shuffle(icon_list)
+
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=675,
+        plotly_width=675,
+        override_x_max=400,
+        override_y_max=400,
+        limit_duration=60,
+        entity_icon_size=45,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=True,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=1,
+        setup_mode=False,
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+
+```
+
 
 ## To this!
 
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash-bg
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=675,
+        plotly_width=675,
+        override_x_max=400,
+        override_y_max=400,
+        limit_duration=60,
+        entity_icon_size=45,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=False,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=0,
+        setup_mode=False,
+        add_background_image="https://raw.githubusercontent.com/hsma-tools/vidigi/refs/heads/main/examples/example_14_carwash/carwash_bg.png",
+        background_image_opacity=1, # New parameter in 1.1.0
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
 
-
-## Or this...
-
-
-## To this!
-
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```
 
 
 ## Software for creating a custom background
 
+::: {style='font-size: 75%;'}
+I tend to use [draw.io](draw.io) (also known as [diagrams.net](diagrams.net)) for creating custom backgrounds.
+:::
 
-
-
-
-## Vidigi customisation - `override_x_max` and `override_y_max`
-
-
-## Vidigi customiation - `plotly_width` and `plotly_height`
-
-
-## The difference between 'override_[x/y]_max' and `plotly_[width/height]`
-
+```{=html}
+<iframe width='1200' height='625' src='https://embed.diagrams.net.' title='Draw io'></iframe>
+```
 
 ## Vidigi customisation - `setup_mode`
 
+:::: {.columns}
 
-## Vidigi customisation - `display_stage_labels`
+::: {.column width='30%'}
+To start with, turn on `setup_mode` in vidigi so you can get a sense of where everything is sitting in your animation.
 
+:::
+
+::: {.column width='70%'}
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash-bg-setup-mode
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=675,
+        plotly_width=675,
+        override_x_max=400,
+        override_y_max=400,
+        limit_duration=60,
+        entity_icon_size=45,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=True,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=1,
+        setup_mode=True,
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+
+```
+
+
+:::
+
+::::
+
+## Vidigi customisation - `override_x_max` and `override_y_max`
+
+::: {style='font-size: 75%;'}
+To help with aligning things consistently, it helps to set `override_x_max` and `override_y_max` to a specific value. This sets the limits of the coordinate grid to ensure that your plot size and shape doesn't change unexpectedly.
+:::
+
+:::: {.columns}
+
+::: {.column width='50%'}
+
+::: {style='font-size: 75%;'}
+`override_x_max=400` and `override_x_max=400`
+:::
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash-override_x_max_demo_1
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=400,
+        plotly_width=525,
+        override_x_max=400,
+        override_y_max=400,
+        limit_duration=60,
+        entity_icon_size=15,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=True,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=1,
+        setup_mode=True,
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
+
+fig.layout.sliders[0].visible = False
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+
+```
+:::
+
+::: {.column width='50%'}
+
+::: {style='font-size: 75%;'}
+`override_x_max=800` and `override_y_max=600`
+
+:::
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash-override_x_max_demo_2
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=400,
+        plotly_width=525,
+        override_x_max=800,
+        override_y_max=600,
+        limit_duration=60,
+        entity_icon_size=15,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=True,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=1,
+        setup_mode=True,
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
+
+fig.layout.sliders[0].visible = False
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+
+```
+:::
+
+::::
+
+## Vidigi customisation - `plotly_width` and `plotly_height`
+
+At this point, it's important to note that `plotly_width` and `plotly_height` are completely separate!
+
+This controls the physical output size.
+
+However, it's helpful to maintain the same [**aspect ratio**]{style="color:yellow"} so your background doesn't appear stretched.
+
+
+## Vidigi customisation - `plotly_width` and `plotly_height` example 1
+
+`plotly_width=1100` and `plotly_height=450`
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash-pw-ph-1
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=450,
+        plotly_width=1100,
+        override_x_max=400,
+        override_y_max=400,
+        limit_duration=60,
+        entity_icon_size=45,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=True,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=1,
+        setup_mode=True,
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+
+```
+
+## Vidigi customisation - `plotly_width` and `plotly_height` example 2
+
+
+`plotly_width=600` and `plotly_height=500`
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash-pw-ph-2
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=500,
+        plotly_width=600,
+        override_x_max=400,
+        override_y_max=400,
+        limit_duration=60,
+        entity_icon_size=45,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=True,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=1,
+        setup_mode=True,
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+
+```
+
+## Vidigi customisation - `display_stage_labels` and `resource_opacity`
+
+:::: {.columns}
+
+::: {.column width='30%'}
+Finally, if we're using a custom background, we often want to turn off vidigi's default labels (and sometimes the default icons too) so we can include our own within the background.
+:::
+
+::: {.column width='70%'}
+
+::: {style='font-size: 75%;'}
+`display_stage_labels=False` and `resource_opacity=0`
+:::
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: carwash-display-stage-labels-resource-opacity
+fig = animate_activity_log(
+        event_log=event_log,
+        event_position_df=event_positions,
+        scenario=Params(),
+        every_x_time_units=1,
+        plotly_height=525,
+        plotly_width=625,
+        override_x_max=400,
+        override_y_max=400,
+        limit_duration=60,
+        entity_icon_size=45,
+        gap_between_entities=50,
+        gap_between_resources=180,
+        display_stage_labels=False,
+        wrap_queues_at=7,
+        step_snapshot_max=7*3,
+        gap_between_queue_rows=50,
+        custom_entity_icon_list=icon_list,
+        resource_opacity=0,
+        setup_mode=False,
+        background_image_opacity=1, # New parameter in 1.1.0
+        overflow_text_color="white", # New parameter in 1.1.0
+        start_time="09:00:00",
+        time_display_units="day_clock",
+        step_snapshot_limit_gauges=False,
+        gauge_segments=10,
+        gauge_max_override=None
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```
+
+:::
+
+::::
+
+
+
+## `add_background_image`
+
+We can then point towards our background image in our folder.
+
+```{.python}
+animate_activity_log(
+    event_log=event_log,
+    event_position_df=event_positions,
+    scenario=Params(),
+    ...
+    add_background_image="carwash_bg.png"
+)
+
+```
+
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
+When you come to put your vidigi animation on the web as part of an app, it's best to host the background on the web and point to it there.
+
+The [vidigi documentation gives more details about this]().
+:::
 
 ## Tips for aligning your queues and your background
+
+This is unfortunately quite a bit of trial and error!
