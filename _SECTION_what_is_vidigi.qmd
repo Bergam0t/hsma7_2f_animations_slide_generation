@@ -37,15 +37,16 @@ So if anything isn't working, or if there is a feature you need that doesn't exi
 
 ## Helena Robinson - Non-Elective Flow Simulation
 
-![](assets/y5v39tbnlH.gif)
+![](assets/y5v39tbnlH.gif){.lightbox height=500}
 
 You can try her app out at [non-elective-flow-simulation-coch.streamlit.app](https://non-elective-flow-simulation-coch.streamlit.app)
 
-
 ## Rey Tan - Acute Ward Bed Occupancy
 
-![](assets/2026-08-10-17-16-09.png)
+![](assets/2026-08-10-17-16-09.png){.lightbox height=500}
 
 ## John Williams - Stroke Bed Unit Modelling
 
-![](assets/stroke_model.gif)
+![](assets/stroke_model.gif){.lightbox height=500}
+
+You can try this app out at [stroke-model-des.streamlit.app/](https://stroke-model-des.streamlit.app/)

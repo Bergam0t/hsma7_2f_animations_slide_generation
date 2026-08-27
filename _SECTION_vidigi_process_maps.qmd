@@ -7,8 +7,8 @@ There is a field of data science called **process mining** or **process analytic
 This looks at pre-existing processes - for example, a referrals process - where **timestamped** data exists, and helps to show
 
 - how the process *really* happens
--
-
+- the time between different events in the process, highlighting delays and possible problems
+- the possible routes people can take through a system, and how many people go down each route
 
 ## An example process map
 
@@ -131,7 +131,7 @@ Unlike vidigi animations, which just work with time 'units', the process mining 
 
 :::: {.columns}
 
-::: {.column width='70%'}
+::: {.column width='65%'}
 
 ::: {.codewindow .python}
 e_simple_one_step_model_vidigi_process_map.py
@@ -151,8 +151,8 @@ class ProcessMap:
 
 :::
 
-::: {.column width='30%'}
-::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="top" align="center" color="bg-green" font-size="0.8rem" width="95%" icon-size="1rem"}
+::: {.column width='35%'}
+::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="top" align="center" color="bg-green" font-size="0.8rem" width="85%" icon-size="1rem"}
 It doesn't *really* matter what time we use here as it won't ever be displayed in the process mining outputs. It's more about giving vidigi a reference point.
 
 However, if time does make sense in your simulation - like you have a clinic that opens at 8am every day - then it makes sense to make that the time you pass in!
