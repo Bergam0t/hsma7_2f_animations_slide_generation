@@ -52,7 +52,7 @@ class Param:
         num_nurses=2,
         num_specialists=1,
         specialist_prob=0.3,
-        sim_duration=60 * 8,
+        sim_duration=60 * 12,
         num_replications=5,
     ):
         self.mean_patient_inter = mean_patient_inter
@@ -422,9 +422,6 @@ class ProcessMap:
         my_event_log_timestamp = add_sim_timestamp(
             self.event_log, time_unit="minutes", sim_start="09:00:00"
         ).copy()
-
-        # If we print this, we can see our new timestamp column
-        # print(my_event_log_timestamp.head(10))
 
         # Now we'll discover the pathways in the model
         nodes, edges = discover_dfg(my_event_log_timestamp)

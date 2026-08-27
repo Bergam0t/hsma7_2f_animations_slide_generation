@@ -53,7 +53,7 @@ class Param:
         num_nurses=2,
         num_specialists=1,
         specialist_prob=0.3,
-        sim_duration=60 * 8,
+        sim_duration=60 * 12,
         num_replications=5,
     ):
         self.mean_patient_inter = mean_patient_inter
@@ -471,15 +471,20 @@ class ProcessMap:
         self.event_log = event_log
         self.params = params
 
-    def build_process_map(self, interactive=False):
+    def build_process_map(self, priority="all", interactive=False):  # NEW/UPDATED
         # First, we take our event log and add a timestamp column to it, as it's required
         # so that it can display average durations accurately
         my_event_log_timestamp = add_sim_timestamp(
             self.event_log, time_unit="minutes", sim_start="09:00:00"
         ).copy()
 
-        # If we print this, we can see our new timestamp column
-        # print(my_event_log_timestamp.head(10))
+        # NEW
+        # We'll filter if priority isn't 'all' (the default)
+        if priority != "all":
+            my_event_log_timestamp = my_event_log_timestamp[
+                my_event_log_timestamp["priority"] == priority
+            ]
+        # END NEW
 
         # Now we'll discover the pathways in the model
         nodes, edges = discover_dfg(my_event_log_timestamp)
@@ -497,7 +502,12 @@ class ProcessMap:
 
         else:
             # Now we can create a static representation of flow through the process
-            graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+            graphviz_graph = dfg_to_graphviz(
+                nodes,
+                edges,
+                min_frequency=5,
+                title=f"Priority: {priority}",  # NEW
+            )
             display(graphviz_graph)
 
 
@@ -551,3 +561,9 @@ if __name__ == "__main__":
     my_animation = Animation(my_event_log, base_case_params)
     fig = my_animation.build_animation()
     fig.show()
+
+    # NEW
+    my_process_map = ProcessMap(my_event_log, base_case_params)
+
+    for priority in range(1, 5):
+        my_process_map.build_process_map(priority=priority)
