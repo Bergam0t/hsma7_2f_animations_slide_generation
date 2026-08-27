@@ -4,7 +4,7 @@
 
 First, we need a few new imports at the top of our file.
 
-::: {.codewindow .python}
+::: {.codewindow .python style="width:100%;"}
 b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-3,focus:4-6" code-line-style-preset="emphasis"}
 import simpy
@@ -52,7 +52,7 @@ We will place all of the logging steps in the `.attend_clinic()` method.
 
 Let's first add an arrival logging step!
 
-::: {.codewindow .python}
+::: {.codewindow .python style="width:90%;"}
 b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
@@ -208,7 +208,7 @@ class Animation:
 
 ## Setting up a Layout Grid
 
-The next thing we'll define - still in our init method - is a layout grid.
+The next thing we'll define - still in our `__init__` method of our `Animation` class - is a layout grid.
 
 :::: {.columns}
 
@@ -233,10 +233,36 @@ EventPosition(
 
 For each event we want in our animation, we create an `EventPosition` object and pass four things:
 
-- the event name (which should match what we called it in the logger)
-- an x coordinate for the front of that queue
-- a y coordinate for the front of that queue
-- a nicer label to use in the animation
+- the event name [(which **MUST** match what we called it in the logger)]{style="color:yellow"}
+- an x coordinate for the [**front**]{style="color:yellow"} of that queue
+- a y coordinate for the [**front**]{style="color:yellow"} of that queue
+- a nicer label for the event to display in the animation
+
+:::
+
+::::
+
+
+## Queuing direction
+
+:::: {.columns}
+
+::: {.column width='70%'}
+![](assets/fig_positioning_scatterplot.png){height=600}
+:::
+
+::: {.column width='30%'}
+::: {style='font-size: 75%;'}
+In this example,
+
+- Arrival is at x=50, y=450
+- Waiting for treatment is at x=200, y=275
+- Being treated is at x=200, y=175
+- Exit is at x=275, y=25
+
+Dotted lines show where the queue would wrap
+
+:::
 
 :::
 
@@ -245,36 +271,63 @@ For each event we want in our animation, we create an `EventPosition` object and
 
 
 
-
 ## Coordinates
+::: {style='font-size: 70%;'}
+Vidigi works out the position of every entity and resource based on those few positions you define
+:::
 
-[TODO: create a blank axis]
+::: {.r-stack}
+![](assets/vidigi_no_features.png){height=600}
 
-[TODO: grab full fig from vidigi paper]
+![](assets/vidigi_with_features.png){.fragment height=600}
+:::
 
-## Arrival and Departure Events
+## Placing Arrival and Departure Events
 
 Behind the scenes, EventLogger always gives these the same event name if you use `.log_arrival()` and `.log_departure()`.
 
-::: {.codewindow .python}
+:::: {.columns}
+
+::: {.column width='45%'}
+`.log_arrival()` = "arrival"
+
+::: {.codewindow .python style="width:100%;"}
 b_simple_one_step_model_vidigi.py
 ```{.python}
 EventPosition(
-    event="arrival", x=0, y=350, label="Entrance"
+    event="arrival",
+    x=0, y=350,
+    label="Entrance"
 )
 ```
 :::
+:::
+
+::: {.column width='10%'}
+:::
+
+::: {.column width='45%'}
+`.log_departure()` = "depart"
+
+::: {.codewindow .python style="width:100%;"}
+b_simple_one_step_model_vidigi.py
+```{.python}
+EventPosition(
+    event="depart",
+    x=200, y=50,
+    label="Exit"
+)
+```
+:::
+:::
+
+::::
+
+
 
 <br>
 
-::: {.codewindow .python}
-b_simple_one_step_model_vidigi.py
-```{.python}
-EventPosition(
-    event="depart", x=200, y=50, label="Exit"
-)
-```
-:::
+
 
 ## `create_event_position_df`
 

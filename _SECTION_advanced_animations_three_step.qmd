@@ -225,7 +225,7 @@ def build_animation(self, time_interval=1):
 
 <div style="display: flex; justify-content: center; align-items: center;">
 
-::: {.value-box fragment="fade-in" icon="fa-solid fa-triangle-exclamation" icon-position="left" align="center" color="bg-amber"}
+::: {.value-box icon="fa-solid fa-triangle-exclamation" icon-position="left" align="center" color="bg-amber"}
 When you are using the three step animation, some customisation parameters need to be applied in **multiple steps**.
 
 Others only need to be applied in a single step.
