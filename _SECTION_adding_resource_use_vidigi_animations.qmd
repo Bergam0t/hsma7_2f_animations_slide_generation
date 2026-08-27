@@ -99,6 +99,7 @@ class Model:
 :::
 
 ::: {.column width='80%'}
+::: {style='font-size: 75%;'}
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-4,focus:5-6" code-line-style-preset="emphasis"}
@@ -111,18 +112,17 @@ def attend_clinic(self, patient):
 ```
 :::
 :::
+:::
 
 ::::
 
-
-
 :::: {.columns}
 
-::: {.column width='20%'}
+::: {.column width='15%'}
 **After**
 :::
 
-::: {.column width='80%'}
+::: {.column width='85%'}
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
 ```{.python code-line-style="dim:1-4,focus:5-6" code-line-style-preset="emphasis"}
@@ -273,15 +273,6 @@ class Animation:
 ```
 :::
 
-And, when we call it later
-
-::: {.codewindow .python}
-c_simple_one_step_model_vidigi_resources.py
-```{.python}
-my_animation = Animation(my_params, my_event_log)
-```
-:::
-
 ## 4b. ... our event position df...
 
 ::: {.codewindow .python}
@@ -309,15 +300,14 @@ We **still** don't need to visualise the 'nurse_treatment_ends' step!
 :::
 
 ::: {.column width='65%'}
-
+::: {style='font-size: 90%;'}
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
-```{.python code-line-style="focus:1,dim:2-8,focus:9,dim:10-11" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:1,dim:2-7,focus:8,dim:9-10" code-line-style-preset="emphasis"}
 class Param:
   def __init__(
       self, ...
-      sd_nurse_consult_time=1, num_nurses=1,
-      sim_duration=120, ...
+      sd_nurse_consult_time=1, num_nurses=1, sim_duration=120, ...
   ):
       ...
       self.sd_nurse_consult_time = sd_nurse_consult_time
@@ -326,7 +316,7 @@ class Param:
       ...
 ```
 :::
-
+:::
 :::
 
 ::::
@@ -354,8 +344,16 @@ def build_animation(self, time_interval=1):
 
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
-```{.python}
-my_animation = Animation(my_event_log, my_params)
+```{.python code-line-style="focus:1,dim:2-3,focus:4,dim:5,focus:5-8" code-line-style-preset="emphasis"}
+my_params = Param(num_nurses=2)
+my_model = Model(my_params)
+my_model.run_model()
+my_event_log = my_model.get_vidigi_event_log()
+
+my_animation = Animation(
+    my_event_log,
+    my_params # NEW
+    )
 ```
 :::
 

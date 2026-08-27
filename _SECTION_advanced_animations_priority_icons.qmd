@@ -195,9 +195,13 @@ class Animation:
 
 ## Applying our custom function
 
-::: {.codewindow .python}
+We apply this function to every row using a combination of `assign` and `apply`.
+
+It needs to be applied **after** we run `generate_animation_df()`, as that's the point at which the standard icons have been assigned to each entity, so we can intervene and overwrite them.
+
+::: {.codewindow .python style="width:100%;"}
 g_three_step_animation_custom_priority_icons.py
-```{.python code-line-style="focus:1,dim:2,focus:3,dim:4-7,focus:8-10,dim:11-12" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:1,dim:2,focus:3,dim:4-5,focus:6,dim:7,focus:8-10,dim:11-12" code-line-style-preset="emphasis"}
 class Animation:
     ...
     def build_animation(self, time_interval=1):
@@ -292,7 +296,6 @@ reshaped_df = reshape_for_animations(...)
 animation_df = generate_animation_df(...)
 
 animation_df["time_in_step"] = animation_df["snapshot_time"] - animation_df["time"]
-animation_df["time_in_step"] = animation_df["time_in_step"].round(0)
 ```
 
 ```{python}
@@ -300,7 +303,6 @@ animation_df["time_in_step"] = animation_df["time_in_step"].round(0)
 #| echo: false
 #| label: extra-info-demo-setup
 animation_df["time_in_step"] = animation_df["snapshot_time"] - animation_df["time"]
-animation_df["time_in_step"] = animation_df["time_in_step"].round(0)
 
 animation_df[["entity_id", "event", "time", "snapshot_time", "icon", "time_in_step", "resource_id", "event_type"]].head(1)
 ```
@@ -314,7 +316,7 @@ We can then modify our existing step
 def add_time_in_step(self, row):
     # First check this isn't a '+ y more' row
     if "more" not in row["icon"]:
-        return row["icon"] + "<br>" + row["time_in_step"]
+        return row["icon"] + "<br>" + f"{row["time_in_step"]:.0f}"
     else:
         return row["icon"]
 ```
@@ -346,6 +348,20 @@ def add_time_in_step(row):
     else:
         return row["icon"]
 
+
+animation_df = generate_animation_df(
+    full_entity_df=reshaped_df,
+    event_position_df=my_animation.layout,
+    gap_between_queue_rows=65,
+    wrap_queues_at=15
+)
+
+animation_df["time_in_step"] = animation_df["snapshot_time"] - animation_df["time"]
+
+animation_df = animation_df.assign(
+            icon=animation_df.apply(show_priority_icon, axis=1)
+        )
+
 animation_df = animation_df.assign(
             icon=animation_df.apply(add_time_in_step, axis=1)
         )
@@ -362,9 +378,11 @@ fig = generate_animation(
     full_entity_df_plus_pos=animation_df,
     event_position_df=my_animation.layout,
     scenario=my_params,
-    plotly_height=500,
-    plotly_width=1000,
-    entity_icon_size=16
+    plotly_height=600,
+    plotly_width=1100,
+    entity_icon_size=16,
+    override_y_max=500,
+    override_x_max=300
 )
 
 HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))

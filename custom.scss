@@ -244,6 +244,7 @@ iframe.stlite {
 // 30px title bar feels cramped, raise --codewindow-header-height alongside it.
 .reveal .codewindow {
   font-size: 0.50em;
+  margin-bottom: 12px;
 }
 
 // The file tab just inherits the window's font-size, so the filename renders at
