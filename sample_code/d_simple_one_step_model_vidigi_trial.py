@@ -112,9 +112,8 @@ class Model:
 # It's *almost* identical to the content in session 2C!
 # We don't need to make any changes to it for the purposes
 # of getting the animation working - our changes will just
-# be in how we pass the event log to the animation
-# so we will make a little helper method at the end of this
-# class for that purpose
+# be in how we store each replication's event log so we can
+# animate a chosen run afterwards
 class Trial:
     def __init__(self, param):
         self.param = param
@@ -153,8 +152,8 @@ class Trial:
 
 
 if __name__ == "__main__":
-    # NEW (but again, you've seen this before in session 2C)
-    # Rather than an individual run, we're just
+    # You've seen this before in session 2C
+    # Rather than an individual run, we're running a full trial
     my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
     my_trial = Trial(my_params)
     my_trial.run_trial()
@@ -168,11 +167,8 @@ if __name__ == "__main__":
     print()
 
     # NEW
-    # Now we will call our 'get_vidigi_trial_log' method to get the trial_logger
-    # object back
-
-    # This opens up access to any of the TrialLogger's methods
-
+    # Our trial_logger holds the event log from every replication.
+    # We can pull out the log for a single run using get_log_by_run
     print(my_trial.trial_logger.get_log_by_run(run=1, as_df=True).head(10))
 
     layout = create_event_position_df(
@@ -192,8 +188,11 @@ if __name__ == "__main__":
         ]
     )
 
+    # UPDATED
+    # We animate from the trial_logger instead of an individual model's logger,
+    # and tell it which run to animate
     fig = my_trial.trial_logger.animate_activity_log(
-        run_number=1,
+        run_number=1,  # NEW
         event_position_df=layout,
         every_x_time_units=1,
         scenario=my_params,

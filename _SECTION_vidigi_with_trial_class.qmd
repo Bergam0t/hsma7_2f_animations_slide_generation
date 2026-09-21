@@ -54,15 +54,17 @@ So first (if we haven't already - if you're following best practice, you'll have
 
 ::: {.codewindow .python}
 d_simple_one_step_model_vidigi_trial.py
-```{.python code-line-style="dim:1,focus:2,dim:3,focus:4,dim:5-7,focus:8" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:1,focus:2,dim:3,focus:4,dim:5-8,focus:9,dim:10" code-line-style-preset="emphasis"}
 class Model:
-    def __init__(self, param, replication_id): # UPDATED
+    def __init__(self, param, replication_id):  # UPDATED
         self.param = param
         self.replication_id = replication_id  # NEW
         self.env = simpy.Environment()
         self.patient_counter = 0
-        ...
-        self.logger = EventLogger(env=self.env, run_number=self.replication_id) # UPDATED
+        self.logger = EventLogger(
+            env=self.env,
+            run_number=self.replication_id,  # UPDATED
+        )
 ```
 :::
 
@@ -152,55 +154,72 @@ Note that the replication_id will count from 0
 ::::
 
 
-## Getting a run from the TrialLogger
+## Animating a run from the TrialLogger
 
-Now we need to update our code to grab an event log for animation.
+Now we need to update our animation code to animate a single run.
 
-`TrialLogger` provides a useful helper method called `.get_log_by_run`.
+`TrialLogger` has its own `animate_activity_log()` method, just like the `EventLogger` does.
 
-We can pass in any run number, and also choose whether it should be returned as an `EventLogger` object, or as a dataframe.
+It takes all the same arguments, plus a `run_number` to say which replication we want to animate.
 
 :::: {.columns}
 
-::: {.column width='20%'}
+::: {.column width='15%'}
 **Before**
 :::
 
-::: {.column width='80%'}
+::: {.column width='85%'}
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
-```{.python}
-my_event_log = my_model.get_vidigi_event_log()
+```{.python code-line-style="focus:1,dim:2-5" code-line-style-preset="emphasis"}
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    every_x_time_units=1,
+    scenario=my_params,
+)
 ```
 :::
 :::
 
 ::::
-
-
-
 
 :::: {.columns}
 
-::: {.column width='20%'}
+::: {.column width='15%'}
 **After**
 :::
 
-::: {.column width='80%'}
+::: {.column width='85%'}
 ::: {.codewindow .python}
 d_simple_one_step_model_vidigi_trial.py
-```{.python}
-my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
+```{.python code-line-style="focus:1-2,dim:3-6" code-line-style-preset="emphasis"}
+fig = my_trial.trial_logger.animate_activity_log(
+    run_number=1,  # NEW
+    event_position_df=layout,
+    every_x_time_units=1,
+    scenario=my_params,
+)
 ```
 :::
-
 :::
 
 ::::
 
-
 ::: {.value-box icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
-Now we can regenerate the animation for different runs by just changing what we pass to that `run` parameter!
+Now we can regenerate the animation for different runs by just changing what we pass to `run_number`!
+:::
+
+## Getting a run's event log from the TrialLogger
+
+`TrialLogger` also provides a useful helper method called `.get_log_by_run()`, for when we want to look at the event log for a particular run.
+
+We can pass in any run number, and also choose whether it should be returned as an `EventLogger` object, or as a dataframe.
+
+::: {.codewindow .python}
+d_simple_one_step_model_vidigi_trial.py
+```{.python}
+print(my_trial.trial_logger.get_log_by_run(run=1, as_df=True).head(10))
+```
 :::
 
 ```{python}
@@ -229,15 +248,17 @@ Ensure you're tracking the `replication_id` in your `Model` class and pass this 
 :::
 
 ::: {.column width='70%'}
-```{.python code-line-style="dim:1,focus:2,dim:3,focus:4,dim:5-7,focus:8" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:1,focus:2,dim:3,focus:4,dim:5-8,focus:9,dim:10" code-line-style-preset="emphasis"}
 class Model:
-    def __init__(self, param, replication_id): # UPDATED
+    def __init__(self, param, replication_id):  # UPDATED
         self.param = param
         self.replication_id = replication_id  # NEW
         self.env = simpy.Environment()
         self.patient_counter = 0
-        ...
-        self.logger = EventLogger(env=self.env, run_number=self.replication_id) # UPDATED
+        self.logger = EventLogger(
+            env=self.env,
+            run_number=self.replication_id,  # UPDATED
+        )
 ```
 :::
 
@@ -304,12 +325,17 @@ class Trial:
 :::: {.columns .fragment}
 
 ::: {.column width='30%'}
-Update how we grab the `EventLog`
+Animate from the `TrialLogger`, choosing a `run_number`
 :::
 
 ::: {.column width='70%'}
-```{.python}
-my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
+```{.python code-line-style="focus:1-2,dim:3-6" code-line-style-preset="emphasis"}
+fig = my_trial.trial_logger.animate_activity_log(
+    run_number=1,  # NEW
+    event_position_df=layout,
+    every_x_time_units=1,
+    scenario=my_params,
+)
 ```
 :::
 
