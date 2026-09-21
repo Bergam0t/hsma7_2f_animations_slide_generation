@@ -113,48 +113,6 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
-    def get_vidigi_event_log(self):
-        return self.logger
-
-
-class Animation:
-    # NEW - We'll now also pass params to our Animation class
-    def __init__(self, event_log, params):  # UPDATED
-        self.event_log = event_log
-        self.params = params  # NEW
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                    # NEW
-                    # We now just need to pass in the resource to visualise
-                    # This will be looked up from our Params class, so we need
-                    # to make sure the name exactly matches how it's written there
-                    resource="num_nurses",  # NEW
-                ),
-                # We **still** don't need to visualise the 'nurse_treatment_ends' step as
-                # the timing will be identical to the depart step
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def build_animation(self, time_interval=1):
-        return self.event_log.animate_activity_log(
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-            scenario=self.params,  # NEW
-            custom_resource_icon="👩‍⚕️",  # NEW - OPTIONAL
-            resource_icon_size=32,  # NEW - OPTIONAL
-        )
-
 
 if __name__ == "__main__":
     # NEW
@@ -179,10 +137,38 @@ if __name__ == "__main__":
         f"{my_model.perc_90_q_time_nurse:.2f} minutes",
     )
 
-    my_event_log = my_model.get_vidigi_event_log()
-    print(my_event_log.to_dataframe().head(10))
+    print(my_model.logger.to_dataframe().head(10))
 
     # NEW - note we're now passing in our params here
-    my_animation = Animation(my_event_log, my_params)
-    fig = my_animation.build_animation()
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=150,
+                label="Being Seen By Nurse",
+                # NEW
+                # We now just need to pass in the resource to visualise
+                # This will be looked up from our Params class, so we need
+                # to make sure the name exactly matches how it's written there
+                resource="num_nurses",  # NEW
+            ),
+            # We **still** don't need to visualise the 'nurse_treatment_ends' step as
+            # the timing will be identical to the depart step
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
+
+    fig = my_model.logger.animate_activity_log(
+        event_position_df=layout,
+        every_x_time_units=1,
+        scenario=my_params,  # NEW
+        custom_resource_icon="👩‍⚕️",  # NEW - OPTIONAL
+        resource_icon_size=32,  # NEW - OPTIONAL
+    )
+
     fig.show()

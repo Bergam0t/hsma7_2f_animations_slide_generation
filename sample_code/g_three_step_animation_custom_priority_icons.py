@@ -253,9 +253,6 @@ class Model:
 
         self.replication_arrival_times = entity_dataframe["arrival_time"]
 
-    def get_vidigi_event_log(self):
-        return self.logger
-
 
 class Trial:
     def __init__(self, param):
@@ -429,120 +426,6 @@ class Trial:
         fig.show()
         fig.write_html("clinic_arrival_time_frequencies.html")
 
-    def get_vidigi_trial_log(self):
-        return self.trial_logger
-
-
-class Animation:
-    def __init__(self, trial_log, params):
-        self.trial_log = trial_log
-        self.params = params
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                    resource="num_nurses",
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    # NEW
-    def show_priority_icon(self, row):
-        # First check this isn't a '+ y more' row
-        if "more" not in row["icon"]:
-            if row["patient_priority"] == 1:
-                return "🚨"
-            if row["patient_priority"] == 2:
-                return "⚠️"
-            else:
-                return row["icon"]
-        else:
-            return row["icon"]
-
-    def build_animation(self, time_interval=1, run_number=1):
-        reshaped_df = self.trial_log.reshape_for_animations(
-            run_number=run_number,
-            every_x_time_units=time_interval,
-            limit_duration=self.params.sim_duration,
-        )
-
-        animation_df = generate_animation_df(
-            full_entity_df=reshaped_df,
-            event_position_df=self.layout,
-        )
-
-        # Assign our custom priority icons
-        animation_df = animation_df.assign(
-            icon=animation_df.apply(self.show_priority_icon, axis=1)
-        )
-
-        return generate_animation(
-            full_entity_df_plus_pos=animation_df,
-            event_position_df=self.layout,
-            scenario=self.params,
-        )
-
-
-class ProcessMap:
-    def __init__(self, trial_log, params):
-        self.trial_log = trial_log
-        self.params = params
-
-    def build_process_map(self, interactive=True, priority="all", run_number=1):
-        filtered_event_log = self.trial_log.get_log_by_run(
-            run=run_number, as_df=True
-        ).copy()
-
-        if priority != "all":
-            filtered_event_log = filtered_event_log[
-                filtered_event_log["patient_priority"] == priority
-            ]
-
-        filtered_event_log_timestamp = add_sim_timestamp(
-            filtered_event_log, time_unit="minutes", sim_start="09:00:00"
-        )
-
-        # Now we'll discover the pathways in the model
-        nodes, edges = discover_dfg(
-            filtered_event_log_timestamp,
-            # Our 'case_col' will be 'entity_id' if we've used EventLogger
-            # This just means that each person is considered to be a separate
-            # journey
-            case_col="entity_id",
-        )
-
-        if interactive:
-            # An an interactive version
-            cytoscape_widget = dfg_to_cytoscape(
-                nodes,
-                edges,
-                min_frequency=5,
-                layout_name="dagre",
-                layout_orientation="LR",
-                spacing_factor=2,
-                width=1400,
-            )
-            display(cytoscape_widget)
-
-        else:
-            # Now we can create a static representation of flow through the process
-            graphviz_graph = dfg_to_graphviz(
-                nodes,
-                edges,
-                min_frequency=5,
-                title=f"Priority: {priority}",  # NEW
-            )
-            display(graphviz_graph)
-
 
 if __name__ == "__main__":
     my_params = Param(
@@ -564,16 +447,61 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    my_trial_log = my_trial.get_vidigi_trial_log()
-    print(my_trial_log.get_log_by_run(run=0, as_df=True).head(10))
-
-    my_animation = Animation(my_trial_log, my_params)
-    # Because we're running it for longer, let's do a frame every two
-    # minutes to keep it generating quickly
-    fig = my_animation.build_animation(time_interval=2, run_number=1)  # UPDATED
-    fig.show()
+    print(my_trial.logger.get_log_by_run(run=0, as_df=True).head(10))
 
     # NEW
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=150,
+                label="Being Seen By Nurse",
+                resource="num_nurses",
+            ),
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
+
+    def show_priority_icon(self, row):
+        # First check this isn't a '+ y more' row
+        if "more" not in row["icon"]:
+            if row["patient_priority"] == 1:
+                return "🚨"
+            if row["patient_priority"] == 2:
+                return "⚠️"
+            else:
+                return row["icon"]
+        else:
+            return row["icon"]
+
+    reshaped_df = reshape_for_animations(
+        event_log=my_trial.trial_logger,
+        run_number=1,
+        every_x_time_units=1,
+        limit_duration=my_params.sim_duration,
+    )
+
+    animation_df = generate_animation_df(
+        full_entity_df=reshaped_df,
+        event_position_df=layout,
+    )
+
+    # Assign our custom priority icons
+    animation_df = animation_df.assign(
+        icon=animation_df.apply(show_priority_icon, axis=1)
+    )
+
+    fig = generate_animation(
+        full_entity_df_plus_pos=animation_df,
+        event_position_df=layout,
+        scenario=my_params,
+    )
+
     # Let's see if our TrialLogger can give us queue size insight
     queue_fig = my_trial.trial_logger.plot_queue_size(
         ["nurse_wait_begins"],
@@ -583,10 +511,36 @@ if __name__ == "__main__":
     )
     queue_fig.show()
 
-    my_process_map = ProcessMap(my_trial_log, my_params)
-    my_process_map.build_process_map(interactive=False, run_number=1)
-
     for priority in [1, 2, 3]:
-        my_process_map.build_process_map(
-            interactive=False, priority=priority, run_number=1
+        filtered_event_log = add_sim_timestamp(
+            my_trial.trial_logger.get_log_by_run(run=1, as_df=True),
+            time_unit="minutes",
+            sim_start="09:00:00",
+        ).copy()
+
+        if priority != "all":
+            filtered_event_log = filtered_event_log[
+                filtered_event_log["patient_priority"] == priority
+            ]
+
+        filtered_event_log_timestamp = add_sim_timestamp(
+            filtered_event_log, time_unit="minutes", sim_start="09:00:00"
         )
+
+        # Now we'll discover the pathways in the model
+        nodes, edges = discover_dfg(
+            filtered_event_log,
+            # Our 'case_col' will be 'entity_id' if we've used EventLogger
+            # This just means that each person is considered to be a separate
+            # journey
+            case_col="entity_id",
+        )
+
+        # A static representation of flow through the process
+        graphviz_graph = dfg_to_graphviz(
+            nodes,
+            edges,
+            min_frequency=5,
+            title=f"Priority: {priority}",  # NEW
+        )
+        display(graphviz_graph)

@@ -105,9 +105,6 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
-    def get_vidigi_event_log(self):
-        return self.logger
-
 
 class Trial:
     def __init__(self, param):
@@ -142,51 +139,6 @@ class Trial:
             "mean_q_time_nurse"
         ].quantile(0.9)
 
-    def get_vidigi_trial_log(self):
-        return self.trial_logger
-
-
-class Animation:
-    def __init__(self, trial_log, params):
-        self.trial_log = trial_log
-        self.params = params
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                    resource="num_nurses",
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    # UPDATED
-    def build_animation(self, time_interval=1):
-        reshaped_df = self.trial_log.reshape_for_animations(
-            run_number=1,
-            every_x_time_units=time_interval,
-            limit_duration=self.params.sim_duration,
-        )
-
-        animation_df = generate_animation_df(
-            full_entity_df=reshaped_df,
-            event_position_df=self.layout,
-        )
-
-        return generate_animation(
-            full_entity_df_plus_pos=animation_df,
-            event_position_df=self.layout,
-            scenario=self.params,
-        )
-
     # END UPDATED CODE
 
 
@@ -203,9 +155,42 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    my_trial_log = my_trial.get_vidigi_trial_log()
-    print(my_trial_log.get_log_by_run(run=2, as_df=True).head(10))
+    # NEW
+    print(my_trial.logger.get_log_by_run(run=2, as_df=True).head(10))
 
-    my_animation = Animation(my_trial_log, my_params)
-    fig = my_animation.build_animation()
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=150,
+                label="Being Seen By Nurse",
+                resource="num_nurses",
+            ),
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
+
+    reshaped_df = reshape_for_animations(
+        event_log=my_trial.trial_logger,
+        run_number=1,
+        every_x_time_units=1,
+        limit_duration=my_params.sim_duration,
+    )
+
+    animation_df = generate_animation_df(
+        full_entity_df=reshaped_df,
+        event_position_df=layout,
+    )
+
+    fig = generate_animation(
+        full_entity_df_plus_pos=animation_df,
+        event_position_df=layout,
+        scenario=my_params,
+    )
+
     fig.show()

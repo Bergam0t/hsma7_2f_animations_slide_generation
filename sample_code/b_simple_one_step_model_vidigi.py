@@ -92,43 +92,6 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
-    def get_vidigi_event_log(self):
-        return self.logger
-
-
-# NEW #
-class Animation:
-    def __init__(self, event_log):
-
-        self.event_log = event_log
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                ),
-                # We don't need to visualise the 'nurse_treatment_ends' step as the timing will
-                # be identical to the depart step
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def build_animation(self, time_interval=1):
-        return self.event_log.animate_activity_log(
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-        )
-
-
-# END NEW #
-
 
 # NEW
 # The special line
@@ -157,15 +120,34 @@ if __name__ == "__main__":
         f"{my_model.perc_90_q_time_nurse:.2f} minutes",
     )
 
-    # NEW #
-    my_event_log = my_model.get_vidigi_event_log()
-    print(my_event_log.to_dataframe().head(10))
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=150,
+                label="Being Seen By Nurse",
+            ),
+            # We don't need to visualise the 'nurse_treatment_ends' step as the timing will
+            # be identical to the depart step
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
 
-    my_animation = Animation(my_event_log)
-    fig = my_animation.build_animation()
+    print(my_model.logger.to_dataframe().head(10))
+
+    fig = my_model.logger.animate_activity_log(
+        event_position_df=layout,
+        every_x_time_units=1,
+    )
+
     fig.show()
 
     # Optionally, we could output these to files
-    # my_event_log.to_csv("simplest_event_log.csv", index=False)
-    # my_animation.build_animation().write_html("simplest_animation.html")
+    # my_model.logger.to_csv("simplest_event_log.csv", index=False)
+    # fig.write_html("simplest_animation.html")
     # END NEW #

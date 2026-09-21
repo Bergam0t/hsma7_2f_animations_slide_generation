@@ -109,9 +109,6 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
-    def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
-
 
 class Trial:
     def __init__(self, param):
@@ -147,80 +144,6 @@ class Trial:
         ].quantile(0.9)
 
 
-class Animation:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
-        self.params = params
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                    resource="num_nurses",
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def build_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-            scenario=self.params,
-        )
-
-
-class ProcessMap:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
-        self.params = params
-
-    def build_process_map(self, interactive=True):
-        # First, we take our event log and add a timestamp column to it, as it's required
-        # so that it can display average durations accurately
-        my_event_log_timestamp = add_sim_timestamp(
-            self.event_log, time_unit="minutes", sim_start="09:00:00"
-        ).copy()
-
-        # If we print this, we can see our new timestamp column
-        print(my_event_log_timestamp.head(10))
-
-        # Now we'll discover the pathways in the model
-        nodes, edges = discover_dfg(
-            my_event_log_timestamp,
-            # Our 'case_col' will be 'entity_id' if we've used EventLogger
-            # This just means that each person is considered to be a separate
-            # journey
-            case_col="entity_id",
-        )
-
-        if interactive:
-            # An an interactive version
-            cytoscape_widget = dfg_to_cytoscape(
-                nodes,
-                edges,
-                min_frequency=5,
-                layout_name="dagre",
-                layout_orientation="LR",
-                spacing_factor=2,
-                width=1400,
-            )
-            display(cytoscape_widget)
-
-        else:
-            # Now we can create a static representation of flow through the process
-            graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
-            display(graphviz_graph)
-
-
 if __name__ == "__main__":
     my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
     my_trial = Trial(my_params)
@@ -234,14 +157,76 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
-
-    # NEW
     # We've commented out the animation code as we don't need it for now
-    # my_animation = Animation(my_event_log, my_params)
-    # fig = my_animation.build_animation()
-    # fig.show()
+    # layout = create_event_position_df(
+    #     [
+    #         EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+    #         EventPosition(
+    #             event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+    #         ),
+    #         EventPosition(
+    #             event="being_seen_by_nurse",
+    #             x=200,
+    #             y=150,
+    #             label="Being Seen By Nurse",
+    #             resource="num_nurses",
+    #         ),
+    #         EventPosition(event="depart", x=200, y=50, label="Exit"),
+    #     ]
+    # )
 
-    my_process_map = ProcessMap(my_event_log, my_params)
-    my_process_map.build_process_map(interactive=True)
-    my_process_map.build_process_map(interactive=False)
+    # animate_activity_log(
+    #     event_position_df=layout,
+    #     every_x_time_units=1,
+    #     scenario=my_params,
+    # )
+
+    # Example 1 - step by step
+
+    my_event_log_timestamp = add_sim_timestamp(
+        my_trial.trial_logger.get_log_by_run(run=1, as_df=True),
+        time_unit="minutes",
+        sim_start="09:00:00",
+    ).copy()
+
+    # If we print this, we can see our new timestamp column
+    print(my_event_log_timestamp.head(10))
+
+    # Now we'll discover the pathways in the model
+    nodes, edges = discover_dfg(
+        my_event_log_timestamp,
+        # Our 'case_col' will be 'entity_id' if we've used EventLogger
+        # This just means that each person is considered to be a separate
+        # journey
+        case_col="entity_id",
+    )
+
+    # An an interactive version
+    cytoscape_widget = dfg_to_cytoscape(
+        nodes,
+        edges,
+        min_frequency=5,
+        layout_name="dagre",
+        layout_orientation="LR",
+        spacing_factor=2,
+        width=1400,
+    )
+    display(cytoscape_widget)
+
+    # A static representation of flow through the process
+    graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+    display(graphviz_graph)
+
+    # Repeat the same thing with the simplified call from the trial logger object
+
+    display(
+        my_trial.trial_logger.generate_dfg(
+            run_number=1, input_time_format="minutes", output_format="graphviz-object"
+        )
+    )
+
+    display(
+        my_trial.trial_logger.generate_dfg(
+            run_number=1, input_time_format="minutes", output_format="cytoscape-jupyter"
+        )
+    )

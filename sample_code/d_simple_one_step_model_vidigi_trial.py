@@ -107,9 +107,6 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
-    def get_vidigi_event_log(self):
-        return self.logger
-
 
 # NEW - but you've seen all this before.
 # It's *almost* identical to the content in session 2C!
@@ -154,40 +151,6 @@ class Trial:
             "mean_q_time_nurse"
         ].quantile(0.9)
 
-    def get_vidigi_trial_log(self):
-        return self.trial_logger
-
-
-class Animation:
-    def __init__(self, trial_log, params):
-        self.trial_log = trial_log
-        self.params = params
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=350, label="Entrance"),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=150,
-                    label="Being Seen By Nurse",
-                    resource="num_nurses",
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def build_animation(self, time_interval=1, run_number=1):
-        return self.trial_log.animate_activity_log(
-            run_number=run_number,
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-            scenario=self.params,
-        )
-
 
 if __name__ == "__main__":
     # NEW (but again, you've seen this before in session 2C)
@@ -210,9 +173,29 @@ if __name__ == "__main__":
 
     # This opens up access to any of the TrialLogger's methods
 
-    my_trial_log = my_trial.get_vidigi_trial_log()
-    print(my_trial_log.get_log_by_run(run=1, as_df=True).head(10))
+    print(my_trial.trial_logger.get_log_by_run(run=1, as_df=True).head(10))
 
-    my_animation = Animation(my_trial_log, my_params)
-    fig = my_animation.build_animation()
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=150,
+                label="Being Seen By Nurse",
+                resource="num_nurses",
+            ),
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
+
+    fig = my_trial.trial_logger.animate_activity_log(
+        run_number=1,
+        event_position_df=layout,
+        every_x_time_units=1,
+        scenario=my_params,
+    )
     fig.show()
