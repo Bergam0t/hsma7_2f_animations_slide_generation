@@ -41,7 +41,7 @@ class Model:
         self.env = simpy.Environment()
         self.patient_counter = 0
 
-        self.logger = EventLogger(env=self.env)
+        self.logger = EventLogger(env=self.env)  # UPDATED - moved above our resource
 
         # NEW
         # We change simpy.Resource to VidigiStore
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     print(my_model.logger.to_dataframe().head(10))
 
-    # NEW - note we're now passing in our params here
+    # UPDATED - our layout now says which resource to draw
     layout = create_event_position_df(
         [
             EventPosition(event="arrival", x=0, y=350, label="Entrance"),
