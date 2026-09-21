@@ -502,61 +502,6 @@ class Animation:
         )
 
 
-class ProcessMap:
-    def __init__(self, trial_log, params):
-        self.trial_log = trial_log
-        self.params = params
-
-    def build_process_map(self, interactive=True, priority="all", run_number=1):
-        filtered_event_log = self.trial_log.get_log_by_run(
-            run=run_number, as_df=True
-        ).copy()
-
-        if priority != "all":
-            filtered_event_log = filtered_event_log[
-                filtered_event_log["patient_priority"] == priority
-            ]
-
-        filtered_event_log_timestamp = add_sim_timestamp(
-            filtered_event_log,
-            time_unit="minutes",
-            sim_start="09:00:00",
-            warm_up=self.params.warm_up_period,  # NEW
-        )
-
-        # Now we'll discover the pathways in the model
-        nodes, edges = discover_dfg(
-            filtered_event_log_timestamp,
-            # Our 'case_col' will be 'entity_id' if we've used EventLogger
-            # This just means that each person is considered to be a separate
-            # journey
-            case_col="entity_id",
-        )
-
-        if interactive:
-            # An an interactive version
-            cytoscape_widget = dfg_to_cytoscape(
-                nodes,
-                edges,
-                min_frequency=5,
-                layout_name="dagre",
-                layout_orientation="LR",
-                spacing_factor=2,
-                width=1400,
-            )
-            display(cytoscape_widget)
-
-        else:
-            # Now we can create a static representation of flow through the process
-            graphviz_graph = dfg_to_graphviz(
-                nodes,
-                edges,
-                min_frequency=5,
-                title=f"Priority: {priority}",  # NEW
-            )
-            display(graphviz_graph)
-
-
 if __name__ == "__main__":
     my_params = Param(
         patient_iat_csv="nspp_example_dataset.csv",
@@ -600,10 +545,30 @@ if __name__ == "__main__":
     )
     queue_fig.show()
 
-    my_process_map = ProcessMap(my_trial_log, my_params)
-    my_process_map.build_process_map(interactive=False, run_number=1)
-
-    for priority in [1, 2, 3]:
-        my_process_map.build_process_map(
-            interactive=False, priority=priority, run_number=1
+    # And let's apply a warm-up to our process map
+    display(
+        my_trial.trial_logger.generate_dfg(
+            run_number=1,
+            input_time_format="minutes",
+            output_format="graphviz-object",
+            warm_up=my_params.warm_up_period,  # NEW
         )
+    )
+
+    # Alternative step-by-step approach for process map
+
+    my_event_log_timestamp = add_sim_timestamp(
+        my_trial.trial_logger.get_log_by_run(run=1, as_df=True),
+        time_unit="minutes",
+        sim_start="09:00:00",
+        warm_up=my_params.warm_up_period,  # NEW
+    ).copy()
+
+    # Now we'll discover the pathways in the model
+    nodes, edges = discover_dfg(
+        my_event_log_timestamp,
+        case_col="entity_id",
+    )
+
+    graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+    display(graphviz_graph)

@@ -447,7 +447,7 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    print(my_trial.logger.get_log_by_run(run=0, as_df=True).head(10))
+    print(my_trial.trial_logger.get_log_by_run(run=0, as_df=True).head(10))
 
     # NEW
     layout = create_event_position_df(
@@ -467,7 +467,7 @@ if __name__ == "__main__":
         ]
     )
 
-    def show_priority_icon(self, row):
+    def show_priority_icon(row):
         # First check this isn't a '+ y more' row
         if "more" not in row["icon"]:
             if row["patient_priority"] == 1:
