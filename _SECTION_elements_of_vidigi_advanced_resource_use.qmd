@@ -18,9 +18,8 @@ And this works, but has a couple of downsides
 We don't have to change too much
 
 1. We will swap in a *custom* resource class instead of Simpy.Resource
-1. We will capture the ID of the resource used
-1. We will swap the logging type for resource use events and store this resource ID
-1. We will pass our params class to our animation (so it knows how many resources there are) and our event position dataframe.
+1. We will set up automated logging of our resource use events - vidigi captures the ID of the resource used for us
+1. We will tell our layout which resource to draw, and pass our params to our animation code (so it knows how many resources there are)
 
 ## Custom Resource Classes
 
