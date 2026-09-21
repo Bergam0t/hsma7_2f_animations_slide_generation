@@ -64,20 +64,20 @@ class Model:
             self.env,
             num_resources=self.param.num_receptionists,
             logger=self.logger,
-            name="receiptionist",
+            label="receiptionist",
         )
         self.nurse = VidigiStore(
             self.env,
             num_resources=self.param.num_nurses,
             logger=self.logger,
-            name="nurse",
+            label="nurse",
         )
 
         self.specialist = VidigiStore(
             self.env,
             num_resources=self.param.num_specialists,
             logger=self.logger,
-            name="specialist",
+            label="specialist",
         )
 
         ss = np.random.SeedSequence(self.replication_id)
@@ -129,63 +129,45 @@ class Model:
         start_q_registration = self.env.now
         self.logger.log_queue(entity_id=patient.id, event="receptionist_wait_begins")
 
-        with self.receptionist.request() as req:
-            receptionist_obtained = yield req
+        with self.receptionist.request(
+            entity_id=patient.id,
+            start_event="being_seen_by_receptionist",
+            end_event="receptionist_visit_ends",
+        ) as req:
+            yield req
             end_q_registration = self.env.now
             patient.q_time_registration = end_q_registration - start_q_registration
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_receptionist",
-                resource_id=receptionist_obtained.id_attribute,
-            )
             sampled_reg_act_time = self.registration_time_dist.sample()
             yield self.env.timeout(sampled_reg_act_time)
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="receptionist_visit_ends",
-                resource_id=receptionist_obtained.id_attribute,
-            )
 
         start_q_nurse = self.env.now
         self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
 
-        with self.nurse.request() as req:
-            nurse_obtained = yield req
+        with self.nurse.request(
+            entity_id=patient.id,
+            start_event="being_seen_by_nurse",
+            end_event="nurse_treatment_ends",
+        ) as req:
+            yield req
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                resource_id=nurse_obtained.id_attribute,
-            )
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                resource_id=nurse_obtained.id_attribute,
-            )
 
         if self.specialist_branch_prob_rng.random() < self.param.specialist_prob:
             start_q_specialist = self.env.now
             self.logger.log_queue(entity_id=patient.id, event="specialist_wait_begins")
 
-            with self.specialist.request() as req:
-                specialist_obtained = yield req
+            with self.specialist.request(
+                entity_id=patient.id,
+                start_event="being_seen_by_specialist",
+                end_event="specialist_treatment_ends",
+            ) as req:
+                yield req
                 end_q_specialist = self.env.now
                 patient.q_time_specialist = end_q_specialist - start_q_specialist
-                self.logger.log_resource_use_start(
-                    entity_id=patient.id,
-                    event="being_seen_by_specialist",
-                    resource_id=specialist_obtained.id_attribute,
-                )
                 sampled_specialist_act_time = self.specialist_time_dist.sample()
                 yield self.env.timeout(sampled_specialist_act_time)
-                self.logger.log_resource_use_end(
-                    entity_id=patient.id,
-                    event="specialist_treatment_ends",
-                    resource_id=specialist_obtained.id_attribute,
-                )
 
         self.logger.log_departure(entity_id=patient.id)
 
@@ -216,7 +198,7 @@ class Model:
         )
 
     def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
+        return self.logger
 
 
 class Trial:
@@ -367,8 +349,7 @@ class Animation:
         )
 
     def build_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
+        return self.event_log.animate_activity_log(
             event_position_df=self.layout,
             every_x_time_units=time_interval,
             scenario=self.params,
@@ -427,7 +408,7 @@ if __name__ == "__main__":
 
     # my_event_log = base_case_model.get_vidigi_event_log()
 
-    # print(my_event_log.head(20))
+    # print(my_event_log.to_dataframe().head(20))
 
     # my_animation = Animation(my_event_log, base_case_params)
 

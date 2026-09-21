@@ -82,9 +82,15 @@ class Model:
         self.replication_id = replication_id
         self.env = simpy.Environment()
         self.patient_counter = 0
+        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
 
         # UPDATED
-        self.nurse = VidigiPriorityStore(self.env, num_resources=self.param.num_nurses)
+        self.nurse = VidigiPriorityStore(
+            self.env,
+            num_resources=self.param.num_nurses,
+            label="nurse",
+            logger=self.logger,
+        )
 
         ss = np.random.SeedSequence(self.replication_id)
         seeds = ss.spawn(4)  # NEW - added extra seed spawn
@@ -106,8 +112,6 @@ class Model:
         self.mean_q_time_nurse = pd.NA
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
-
-        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
 
     def generator_patient_arrivals(self):
         while True:
@@ -190,7 +194,7 @@ class Model:
         # as additional arguments
         self.logger.log_arrival(
             entity_id=patient.id,
-            priority=patient.priority,  # NEW
+            patient_priority=patient.priority,  # NEW
         )
 
         start_q_nurse = self.env.now
@@ -198,35 +202,27 @@ class Model:
         self.logger.log_queue(
             entity_id=patient.id,
             event="nurse_wait_begins",
-            priority=patient.priority,  # NEW
+            patient_priority=patient.priority,  # NEW
         )
 
-        with self.nurse.request(priority=patient.priority) as req:
-            nurse_obtained = yield req
+        with self.nurse.request(
+            priority=patient.priority,
+            entity_id=patient.id,
+            start_event="being_seen_by_nurse",
+            end_event="nurse_treatment_ends",
+            patient_priority=patient.priority,
+        ) as req:
+            yield req
 
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
 
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                resource_id=nurse_obtained.id_attribute,
-                priority=patient.priority,  # NEW
-            )
-
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
 
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                resource_id=nurse_obtained.id_attribute,
-                priority=patient.priority,  # NEW
-            )
-
         self.logger.log_departure(
             entity_id=patient.id,
-            priority=patient.priority,  # NEW
+            patient_priority=patient.priority,  # NEW
         )
 
     def run_model(self):
@@ -258,7 +254,7 @@ class Model:
         self.replication_arrival_times = entity_dataframe["arrival_time"]
 
     def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
+        return self.logger
 
 
 class Trial:
@@ -433,10 +429,13 @@ class Trial:
         fig.show()
         fig.write_html("clinic_arrival_time_frequencies.html")
 
+    def get_vidigi_trial_log(self):
+        return self.trial_logger
+
 
 class Animation:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
+    def __init__(self, trial_log, params):
+        self.trial_log = trial_log
         self.params = params
 
         self.layout = create_event_position_df(
@@ -460,18 +459,18 @@ class Animation:
     def show_priority_icon(self, row):
         # First check this isn't a '+ y more' row
         if "more" not in row["icon"]:
-            if row["priority"] == 1:
+            if row["patient_priority"] == 1:
                 return "🚨"
-            if row["priority"] == 2:
+            if row["patient_priority"] == 2:
                 return "⚠️"
             else:
                 return row["icon"]
         else:
             return row["icon"]
 
-    def build_animation(self, time_interval=1):
-        reshaped_df = reshape_for_animations(
-            event_log=self.event_log,
+    def build_animation(self, time_interval=1, run_number=1):
+        reshaped_df = self.trial_log.reshape_for_animations(
+            run_number=run_number,
             every_x_time_units=time_interval,
             limit_duration=self.params.sim_duration,
         )
@@ -494,16 +493,18 @@ class Animation:
 
 
 class ProcessMap:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
+    def __init__(self, trial_log, params):
+        self.trial_log = trial_log
         self.params = params
 
-    def build_process_map(self, interactive=True, priority="all"):
-        filtered_event_log = self.event_log.copy()
+    def build_process_map(self, interactive=True, priority="all", run_number=1):
+        filtered_event_log = self.trial_log.get_log_by_run(
+            run=run_number, as_df=True
+        ).copy()
 
         if priority != "all":
             filtered_event_log = filtered_event_log[
-                filtered_event_log["priority"] == priority
+                filtered_event_log["patient_priority"] == priority
             ]
 
         filtered_event_log_timestamp = add_sim_timestamp(
@@ -563,13 +564,13 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    my_event_log = my_trial.trial_logger.get_log_by_run(run=0, as_df=True)
-    print(my_event_log.head(10))
+    my_trial_log = my_trial.get_vidigi_trial_log()
+    print(my_trial_log.get_log_by_run(run=0, as_df=True).head(10))
 
-    my_animation = Animation(my_event_log, my_params)
+    my_animation = Animation(my_trial_log, my_params)
     # Because we're running it for longer, let's do a frame every two
     # minutes to keep it generating quickly
-    fig = my_animation.build_animation(time_interval=2)  # UPDATED
+    fig = my_animation.build_animation(time_interval=2, run_number=1)  # UPDATED
     fig.show()
 
     # NEW
@@ -582,8 +583,10 @@ if __name__ == "__main__":
     )
     queue_fig.show()
 
-    my_process_map = ProcessMap(my_event_log, my_params)
-    my_process_map.build_process_map(interactive=False)
+    my_process_map = ProcessMap(my_trial_log, my_params)
+    my_process_map.build_process_map(interactive=False, run_number=1)
 
     for priority in [1, 2, 3]:
-        my_process_map.build_process_map(interactive=False, priority=priority)
+        my_process_map.build_process_map(
+            interactive=False, priority=priority, run_number=1
+        )

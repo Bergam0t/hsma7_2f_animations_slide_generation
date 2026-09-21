@@ -40,16 +40,19 @@ class Model:
     def __init__(self, param, replication_id):  # UPDATED
         self.param = param
         self.replication_id = replication_id  # NEW
-
+        self.env = simpy.Environment()
+        self.patient_counter = 0
         # We can now pass our run_number to our logger
         self.logger = EventLogger(
             env=self.env,
             run_number=self.replication_id,  # UPDATED
         )
-
-        self.env = simpy.Environment()
-        self.patient_counter = 0
-        self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
+        self.nurse = VidigiStore(
+            self.env,
+            num_resources=self.param.num_nurses,
+            logger=self.logger,
+            label="nurse",
+        )
         self.patient_inter_dist = Exponential(mean=self.param.mean_patient_inter)
         self.nurse_consult_time_dist = Lognormal(
             mean=self.param.mean_nurse_consult_time,
@@ -76,26 +79,18 @@ class Model:
 
         self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
 
-        with self.nurse.request() as req:
-            nurse_obtained = yield req
+        with self.nurse.request(
+            entity_id=patient.id,
+            start_event="being_seen_by_nurse",
+            end_event="nurse_treatment_ends",
+        ) as req:
+            yield req
 
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
 
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                resource_id=nurse_obtained.id_attribute,
-            )
-
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                resource_id=nurse_obtained.id_attribute,
-            )
 
         self.logger.log_departure(entity_id=patient.id)
 
@@ -113,7 +108,7 @@ class Model:
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
     def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
+        return self.logger
 
 
 # NEW - but you've seen all this before.
@@ -159,10 +154,13 @@ class Trial:
             "mean_q_time_nurse"
         ].quantile(0.9)
 
+    def get_vidigi_trial_log(self):
+        return self.trial_logger
+
 
 class Animation:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
+    def __init__(self, trial_log, params):
+        self.trial_log = trial_log
         self.params = params
 
         self.layout = create_event_position_df(
@@ -182,9 +180,9 @@ class Animation:
             ]
         )
 
-    def build_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
+    def build_animation(self, time_interval=1, run_number=1):
+        return self.trial_log.animate_activity_log(
+            run_number=run_number,
             event_position_df=self.layout,
             every_x_time_units=time_interval,
             scenario=self.params,
@@ -207,12 +205,14 @@ if __name__ == "__main__":
     print()
 
     # NEW
-    # Now instead of just calling 'get_vidigi_event_log()' directly
-    # on our model run, we just grab back our chosen run from the trial
-    # logger (remembering that Python counts from 0)
-    my_event_log = my_trial.trial_logger.get_log_by_run(run=2, as_df=True)
-    print(my_event_log.head(10))
+    # Now we will call our 'get_vidigi_trial_log' method to get the trial_logger
+    # object back
 
-    my_animation = Animation(my_event_log, my_params)
+    # This opens up access to any of the TrialLogger's methods
+
+    my_trial_log = my_trial.get_vidigi_trial_log()
+    print(my_trial_log.get_log_by_run(run=1, as_df=True).head(10))
+
+    my_animation = Animation(my_trial_log, my_params)
     fig = my_animation.build_animation()
     fig.show()

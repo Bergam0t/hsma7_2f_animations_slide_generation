@@ -50,7 +50,13 @@ class Model:
         self.replication_id = replication_id
         self.env = simpy.Environment()
         self.patient_counter = 0
-        self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
+        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
+        self.nurse = VidigiStore(
+            self.env,
+            num_resources=self.param.num_nurses,
+            label="nurse",
+            logger=self.logger,
+        )
         self.patient_inter_dist = Exponential(mean=self.param.mean_patient_inter)
         self.nurse_consult_time_dist = Lognormal(
             mean=self.param.mean_nurse_consult_time,
@@ -60,8 +66,6 @@ class Model:
         self.mean_q_time_nurse = pd.NA
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
-
-        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
 
     def generator_patient_arrivals(self):
         while True:
@@ -79,26 +83,16 @@ class Model:
 
         self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
 
-        with self.nurse.request() as req:
-            nurse_obtained = yield req
-
+        with self.nurse.request(
+            entity_id=patient.id,
+            start_event="being_seen_by_nurse",
+            end_event="nurse_treatment_ends",
+        ) as req:
+            yield req
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
-
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                resource_id=nurse_obtained.id_attribute,
-            )
-
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                resource_id=nurse_obtained.id_attribute,
-            )
 
         self.logger.log_departure(entity_id=patient.id)
 
