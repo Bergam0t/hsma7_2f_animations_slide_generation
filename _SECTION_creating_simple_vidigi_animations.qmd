@@ -94,19 +94,17 @@ We're going to start with the simplest way of logging that someone is being seen
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-7,focus:8,dim:9-12,focus:13" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:1-5,focus:6,dim:7-10,focus:11" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     ...
     with self.nurse.request() as req:
         yield req
         end_q_nurse = self.env.now
-        patient.q_time_nurse = end_q_nurse - start_q_nurse
-
         self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")  # NEW
+        patient.q_time_nurse = end_q_nurse - start_q_nurse
 
         sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
         yield self.env.timeout(sampled_nurse_act_time)
-
         self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")  # NEW
 ```
 :::
@@ -144,7 +142,7 @@ Let's recap the changes we made.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1,focus:2,dim:3-5,focus:6,dim:7-12,focus:13,dim:14-17,focus:18,dim:19,focus:20" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:1,focus:2,dim:3-5,focus:6,dim:7-10,focus:11,dim:12-15,focus:16,dim:17,focus:18" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)  # NEW
 
@@ -155,13 +153,11 @@ def attend_clinic(self, patient):
     with self.nurse.request() as req:
         yield req
         end_q_nurse = self.env.now
-        patient.q_time_nurse = end_q_nurse - start_q_nurse
-
         self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")  # NEW
+        patient.q_time_nurse = end_q_nurse - start_q_nurse
 
         sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
         yield self.env.timeout(sampled_nurse_act_time)
-
         self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")  # NEW
 
     self.logger.log_departure(entity_id=patient.id)  # NEW
@@ -170,44 +166,46 @@ def attend_clinic(self, patient):
 
 ## Accessing our event log
 
-We'll want to grab out our event log as a pandas dataframe.
+Once our model has run, our `EventLogger` is sitting on our model as `my_model.logger`.
 
-It's neat to set up a little helper method in our `Model` class to do that.
+We'll want to look at the event log as a pandas dataframe, so we ask the logger to convert it for us with `to_dataframe()`.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="focus:1,dim:2-4,focus:5-6" code-line-style-preset="emphasis"}
-class Model:
-    def __init__():
-    ...
+```{.python code-line-style="dim:1-5,focus:6" code-line-style-preset="emphasis"}
+my_params = Param()
+my_model = Model(my_params)
+my_model.run_model()
+...
 
-    def get_vidigi_event_log(self):
-        return self.logger
+print(my_model.logger.to_dataframe().head(10))
 ```
 :::
 
-Vidigi provides the `to_dataframe()` method for our convenience. This will look at the EventLogger object, find where it stores the event logs, and convert it into this format for us.
+Vidigi's `to_dataframe()` method will look at the EventLogger object, find where it stores the event logs, and convert it into this format for us.
 
-## The new class - Animation
+## Where does the animation code go?
 
 Our models contain some key classes: `Params`, `Patient`, `Model`
 
 (also `Trial`, but in this first example, we're just working at the level of a single model - we'll look at wiring Vidigi into `Trial` a bit later)
 
-We're now going to define a brand new class called `Animation`.
+This time, we **don't** need a new class. Vidigi's animation function can be called directly, so our animation code goes at the bottom of our script, after our model has run.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python}
-class Animation:
-    def __init__(self, event_log):
-        self.event_log = event_log
+```{.python code-line-style="dim:1-4,focus:5" code-line-style-preset="emphasis"}
+my_params = Param()
+my_model = Model(my_params)
+my_model.run_model()
+...
+# Our animation code goes here!
 ```
 :::
 
 ## Setting up a Layout Grid
 
-The next thing we'll define - still in our `__init__` method of our `Animation` class - is a layout grid.
+The first thing we need for our animation is a layout grid.
 
 :::: {.columns}
 
@@ -367,69 +365,49 @@ We don't need to visualise the 'nurse_treatment_ends' step as the timing will be
 
 ## The full Grid in situ
 
-We'll bind this to `self.layout`.
+We'll store this in a variable called `layout`, at the bottom of our script.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="focus:1-2,dim:3-4,focus:5-20" code-line-style-preset="emphasis"}
-class Animation:
-    def __init__(self, event_log):
-        self.event_log = event_log
+```{.python code-line-style="dim:1-2,focus:3-18" code-line-style-preset="emphasis"}
+...
 
-        self.layout = create_event_position_df(
-            [
-                EventPosition(
-                    event="arrival", x=0, y=350, label="Entrance"
-                ),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse", x=200, y=150, label="Being Seen By Nurse"
-                ),
-                EventPosition(
-                    event="depart", x=200, y=50, label="Exit"
-                )
-            ]
+layout = create_event_position_df(
+    [
+        EventPosition(
+            event="arrival", x=0, y=350, label="Entrance"
+        ),
+        EventPosition(
+            event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+        ),
+        EventPosition(
+            event="being_seen_by_nurse", x=200, y=150, label="Being Seen By Nurse"
+        ),
+        EventPosition(
+            event="depart", x=200, y=50, label="Exit"
         )
+    ]
+)
 ```
 :::
 
 ## Generating the Animation
 
-Now, we just need a small function to call vidigi's animation creation logic.
+Now, we just need to ask our logger to generate the animation for us, using vidigi's `animate_activity_log()`.
+
+We pass it our layout, and how often we want a frame in our animation - here, one frame for every 1 minute of simulated time.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-4,focus:5-11" code-line-style-preset="emphasis"}
-class Animation:
-    def __init__(self, event_log):
-        ...
+```{.python code-line-style="dim:1-3,focus:4-7,dim:8,focus:9" code-line-style-preset="emphasis"}
+...
+layout = create_event_position_df(...)
 
-    def build_animation(self, time_interval=1):
-        self.event_log.animate_activity_log(
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-        )
-```
-:::
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    every_x_time_units=1,
+)
 
-## Calling the animation
-
-::: {.codewindow .python}
-b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-7,focus:8-12" code-line-style-preset="emphasis"}
-my_params = Param()
-my_model = Model(my_params)
-my_model.run_model()
-
-patient_df = my_model.convert_entity_list_to_dataframe(my_model.list_of_patients)
-my_model.calculate_run_results(patient_df)
-
-my_event_log = my_model.get_vidigi_event_log()
-
-my_animation = Animation(my_event_log)
-fig = my_animation.build_animation()
 fig.show()
 ```
 :::
@@ -450,16 +428,14 @@ itables.options.layout["topStart"] = None
 
 display(HTML("<style>.dt-container { font-size: 20pt; }</style>"))
 
-from sample_code.b_simple_one_step_model_vidigi import Param, Model, Animation
-from vidigi.animation import animate_activity_log
+from sample_code.b_simple_one_step_model_vidigi import Param, Model
+from vidigi.utils import create_event_position_df, EventPosition
 
 my_params = Param()
 my_model = Model(my_params)
 my_model.run_model()
 
-my_event_log = my_model.get_vidigi_event_log()
-
-my_event_log.to_dataframe()
+my_model.logger.to_dataframe()
 ```
 
 
@@ -469,11 +445,25 @@ my_event_log.to_dataframe()
 #| eval: true
 #| echo: false
 #| label: first-simple-animation
-my_animation = Animation(my_event_log)
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+# Layout is defined inside the `if __name__ == "__main__":` block of
+# b_simple_one_step_model_vidigi.py, so it can't be imported - keep this
+# copy in sync with that file
+layout = create_event_position_df(
+    [
+        EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+        EventPosition(
+            event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+        ),
+        EventPosition(
+            event="being_seen_by_nurse", x=200, y=150, label="Being Seen By Nurse"
+        ),
+        EventPosition(event="depart", x=200, y=50, label="Exit"),
+    ]
+)
+
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     every_x_time_units=1,
     plotly_height=600,
     plotly_width=1180
@@ -490,15 +480,9 @@ If you head to the folder in sample_code, you may notice a funny line:
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-9,focus:10,dim:11-14" code-line-style-preset="emphasis"}
-class Animation:
-    def __init__(self, event_log):
-        ...
-
-    def build_animation(self, time_interval=1):
-        return self.event_log.animate_activity_log(
-            event_position_df=self.layout, every_x_time_units=time_interval
-            )
+```{.python code-line-style="dim:1-3,focus:4,dim:5-8" code-line-style-preset="emphasis"}
+class Model:
+    ...
 
 if __name__ == "__main__":
     my_params = Param()
@@ -520,5 +504,5 @@ HOWEVER, if you import pieces of that code into another file, it *won't* run the
 
 
 ::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
-This is really useful if we want to reuse our classes somewhere else, like in a web app, so we'll be getting in the habit of doing this.
+This is really useful if we want to reuse our `Param` and `Model` classes somewhere else, like in a web app, so we'll be getting in the habit of doing this.
 :::

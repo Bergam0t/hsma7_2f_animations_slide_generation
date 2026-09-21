@@ -70,12 +70,12 @@ class Model:
         with self.nurse.request() as req:
             yield req
             end_q_nurse = self.env.now
-            self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")
+            self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")  # NEW
             patient.q_time_nurse = end_q_nurse - start_q_nurse
 
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-            self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")
+            self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")  # NEW
 
         self.logger.log_departure(entity_id=patient.id)  # NEW
 
