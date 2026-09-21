@@ -442,7 +442,7 @@ if __name__ == "__main__":
         base_case_trial.trial_logger.get_log_by_run(run=0, as_df=True),
         time_unit="minutes",
         sim_start="09:00:00",
-    ).copy()
+    )
 
     # Now we'll discover the pathways in the model
     nodes, edges = discover_dfg(my_event_log_timestamp, case_col="entity_id")

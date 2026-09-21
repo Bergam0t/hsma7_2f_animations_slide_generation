@@ -101,12 +101,12 @@ First, we pull out the event log for one run from our trial logger, then pass it
 
 ::: {.codewindow .python}
 e_simple_one_step_model_vidigi_process_map.py
-```{.python code-line-style="dim:1,focus:2,dim:3-5" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:1,focus:2,dim:3-4" code-line-style-preset="emphasis"}
 my_event_log_timestamp = add_sim_timestamp(
     my_trial.trial_logger.get_log_by_run(run=1, as_df=True),
     time_unit="minutes",
     sim_start="09:00:00",
-).copy()
+)
 ```
 :::
 
@@ -157,7 +157,7 @@ my_event_log_timestamp = add_sim_timestamp(
     my_trial.trial_logger.get_log_by_run(run=1, as_df=True),
     time_unit="minutes",
     sim_start="09:00:00",
-).copy()
+)
 
 my_event_log_timestamp
 ```

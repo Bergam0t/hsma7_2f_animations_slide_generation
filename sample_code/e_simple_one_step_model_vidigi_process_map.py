@@ -189,7 +189,7 @@ if __name__ == "__main__":
         my_trial.trial_logger.get_log_by_run(run=1, as_df=True),
         time_unit="minutes",
         sim_start="09:00:00",
-    ).copy()
+    )
 
     # If we print this, we can see our new timestamp column
     print(my_event_log_timestamp.head(10))
@@ -207,6 +207,10 @@ if __name__ == "__main__":
     # (e.g. a Jupyter notebook or VSCode's interactive window). If you run this
     # as a plain script from the terminal, you'll just see text.
 
+    # A static representation of flow through the process
+    graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
+    display(graphviz_graph)
+
     # An interactive version
     cytoscape_widget = dfg_to_cytoscape(
         nodes,
@@ -218,10 +222,6 @@ if __name__ == "__main__":
         width=1400,
     )
     display(cytoscape_widget)
-
-    # A static representation of flow through the process
-    graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
-    display(graphviz_graph)
 
     # NEW
     # Repeat the same thing with the simplified call from the trial logger object
