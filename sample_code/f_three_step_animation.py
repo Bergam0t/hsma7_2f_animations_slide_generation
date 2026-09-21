@@ -8,7 +8,7 @@ import pandas as pd
 from vidigi.logging import EventLogger, TrialLogger
 from vidigi.utils import create_event_position_df, EventPosition
 from vidigi.prep import reshape_for_animations, generate_animation_df  # NEW
-from vidigi.animation import generate_animation  # UPDATED
+from vidigi.animation import generate_animation  # NEW
 from vidigi.resources import VidigiStore
 
 
@@ -37,15 +37,14 @@ class Param:
 
 
 class Model:
-    def __init__(self, param, replication_id):  # UPDATED
+    def __init__(self, param, replication_id):
         self.param = param
         self.replication_id = replication_id
         self.env = simpy.Environment()
         self.patient_counter = 0
-        # We can now pass our run_number to our logger
         self.logger = EventLogger(
             env=self.env,
-            run_number=self.replication_id,  # UPDATED
+            run_number=self.replication_id,
         )
         self.nurse = VidigiStore(
             self.env,
@@ -139,8 +138,6 @@ class Trial:
             "mean_q_time_nurse"
         ].quantile(0.9)
 
-    # END UPDATED CODE
-
 
 if __name__ == "__main__":
     my_params = Param(mean_patient_inter=3, num_nurses=2, mean_nurse_consult_time=10)
@@ -155,8 +152,7 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    # NEW
-    print(my_trial.logger.get_log_by_run(run=2, as_df=True).head(10))
+    print(my_trial.trial_logger.get_log_by_run(run=1, as_df=True).head(10))
 
     layout = create_event_position_df(
         [
@@ -175,6 +171,11 @@ if __name__ == "__main__":
         ]
     )
 
+    # NEW
+    # Rather than calling animate_activity_log() in one go, we now run
+    # the three steps that it is made up of, one at a time
+
+    # Step 1: build the minute-by-minute snapshots of where everyone is
     reshaped_df = reshape_for_animations(
         event_log=my_trial.trial_logger,
         run_number=1,
@@ -182,11 +183,13 @@ if __name__ == "__main__":
         limit_duration=my_params.sim_duration,
     )
 
+    # Step 2: assign each entity an icon and a position for every snapshot
     animation_df = generate_animation_df(
         full_entity_df=reshaped_df,
         event_position_df=layout,
     )
 
+    # Step 3: turn it into an animation
     fig = generate_animation(
         full_entity_df_plus_pos=animation_df,
         event_position_df=layout,
