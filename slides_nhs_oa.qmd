@@ -1,0 +1,36 @@
+---
+title: "Animaniacs"
+subtitle: "Bringing your simulations to life with vidigi"
+author:
+    name: Sammi Rosser
+    affiliation: Health Service Modelling Associates Programme
+format:
+  live-revealjs:
+    output-file: index_nhs_oa.html # ensures picked up by github hosting
+    output-dir: docs_nhs_oa
+# Shared format/execute/filters/plugins config lives in _metadata.yml --
+# Quarto merges it in automatically for every document in the project,
+# including sections rendered/previewed standalone. Keeping it out of here
+# avoids two copies of that config drifting apart.
+---
+
+
+{{< include _SECTION_intro_to_animations.qmd >}}
+
+{{< include _SECTION_what_is_vidigi.qmd >}}
+
+{{< include _SECTION_nhs_oa_vidigi_showcase.qmd >}}
+
+
+{{< include _SECTION_elements_of_vidigi_simple.qmd >}}
+
+{{< include _SECTION_creating_simple_vidigi_animations.qmd >}}
+
+{{< include _SECTION_adding_resource_use_vidigi_animations.qmd >}}
+
+
+
+
+
+
+{{< include _SECTION_vidigi_exercise_nhs_oa.qmd >}}

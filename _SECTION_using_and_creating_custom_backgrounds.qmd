@@ -546,6 +546,8 @@ animate_activity_log(
 
 ```
 
+<br>
+
 ::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
 When you come to put your vidigi animation on the web as part of an app, it's best to host the background on the web and point to it there.
 

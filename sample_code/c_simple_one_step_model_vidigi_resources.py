@@ -40,11 +40,22 @@ class Model:
         self.param = param
         self.env = simpy.Environment()
         self.patient_counter = 0
+
+        self.logger = EventLogger(env=self.env)
+
         # NEW
         # We change simpy.Resource to VidigiStore
         # and we change 'capacity' to 'num_resources' (as capacity has its own
         # special meaning in vidigi's resources)
-        self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
+        # We also pass in a label and our logger (so we need to define our resources
+        # after we set up the logger first)
+
+        self.nurse = VidigiStore(
+            self.env,
+            num_resources=self.param.num_nurses,
+            logger=self.logger,
+            label="nurse",
+        )
         self.patient_inter_dist = Exponential(mean=self.param.mean_patient_inter)
         self.nurse_consult_time_dist = Lognormal(
             mean=self.param.mean_nurse_consult_time,
@@ -54,8 +65,6 @@ class Model:
         self.mean_q_time_nurse = pd.NA
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
-
-        self.logger = EventLogger(env=self.env)
 
     def generator_patient_arrivals(self):
         while True:
@@ -73,37 +82,21 @@ class Model:
 
         self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
 
-        with self.nurse.request() as req:
-            # NEW
-            # We need to assign the result of this yield to a variable
-            # We can call it anything, but make sure you don't name it
-            # the exact same thing as your resource!
-            nurse_obtained = yield req
+        # NEW/UPDATED
+        # We need to pass in our patient ID and names to use for the events that will be associated
+        # with starting to use a resource and finishing using it
+        with self.nurse.request(
+            entity_id=patient.id,
+            start_event="being_seen_by_nurse",
+            end_event="nurse_treatment_ends",
+        ) as req:
+            yield req
 
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
 
-            # NEW
-            # We swap our queue event here for a resource_use_start event
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                # We can then get the ID of the nurse and use this to
-                # track visually which nurse is assigned to which patient
-                resource_id=nurse_obtained.id_attribute,  # NEW
-            )
-
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-
-            # NEW
-            # We swap our queue event here for a resource_use_end event
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                # We pass the nurse's ID again
-                resource_id=nurse_obtained.id_attribute,  # NEW
-            )
 
         self.logger.log_departure(entity_id=patient.id)
 
@@ -121,7 +114,7 @@ class Model:
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
     def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
+        return self.logger
 
 
 class Animation:
@@ -145,7 +138,7 @@ class Animation:
                     # We now just need to pass in the resource to visualise
                     # This will be looked up from our Params class, so we need
                     # to make sure the name exactly matches how it's written there
-                    resource="num_nurses",
+                    resource="num_nurses",  # NEW
                 ),
                 # We **still** don't need to visualise the 'nurse_treatment_ends' step as
                 # the timing will be identical to the depart step
@@ -154,8 +147,7 @@ class Animation:
         )
 
     def build_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
+        return self.event_log.animate_activity_log(
             event_position_df=self.layout,
             every_x_time_units=time_interval,
             scenario=self.params,  # NEW
@@ -188,7 +180,7 @@ if __name__ == "__main__":
     )
 
     my_event_log = my_model.get_vidigi_event_log()
-    print(my_event_log.head(10))
+    print(my_event_log.to_dataframe().head(10))
 
     # NEW - note we're now passing in our params here
     my_animation = Animation(my_event_log, my_params)

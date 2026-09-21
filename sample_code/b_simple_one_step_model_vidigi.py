@@ -7,7 +7,6 @@ from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
 from vidigi.logging import EventLogger  # NEW
 from vidigi.utils import create_event_position_df, EventPosition  # NEW
-from vidigi.animation import animate_activity_log  # NEW
 
 
 class Patient:
@@ -71,18 +70,12 @@ class Model:
         with self.nurse.request() as req:
             yield req
             end_q_nurse = self.env.now
+            self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")
             patient.q_time_nurse = end_q_nurse - start_q_nurse
-
-            self.logger.log_queue(
-                entity_id=patient.id, event="being_seen_by_nurse"
-            )  # NEW
 
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-
-            self.logger.log_queue(
-                entity_id=patient.id, event="nurse_treatment_ends"
-            )  # NEW
+            self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")
 
         self.logger.log_departure(entity_id=patient.id)  # NEW
 
@@ -99,14 +92,14 @@ class Model:
         self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
         self.perc_90_q_time_nurse = entity_dataframe["q_time_nurse"].quantile(0.9)
 
-    # NEW
     def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
+        return self.logger
 
 
 # NEW #
 class Animation:
     def __init__(self, event_log):
+
         self.event_log = event_log
 
         self.layout = create_event_position_df(
@@ -128,8 +121,7 @@ class Animation:
         )
 
     def build_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
+        return self.event_log.animate_activity_log(
             event_position_df=self.layout,
             every_x_time_units=time_interval,
         )
@@ -167,7 +159,7 @@ if __name__ == "__main__":
 
     # NEW #
     my_event_log = my_model.get_vidigi_event_log()
-    print(my_event_log.head(10))
+    print(my_event_log.to_dataframe().head(10))
 
     my_animation = Animation(my_event_log)
     fig = my_animation.build_animation()

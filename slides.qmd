@@ -19,6 +19,8 @@ format:
 
 {{< include _SECTION_what_is_vidigi.qmd >}}
 
+{{< include _SECTION_hsma_projects_using_vidigi.qmd >}}
+
 
 
 {{< include _SECTION_elements_of_vidigi_simple.qmd >}}

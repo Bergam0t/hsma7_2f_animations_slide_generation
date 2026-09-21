@@ -7,7 +7,6 @@ from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
 from vidigi.logging import EventLogger, TrialLogger  # UPDATED
 from vidigi.utils import create_event_position_df, EventPosition
-from vidigi.animation import animate_activity_log
 from vidigi.resources import VidigiStore
 
 
@@ -41,6 +40,13 @@ class Model:
     def __init__(self, param, replication_id):  # UPDATED
         self.param = param
         self.replication_id = replication_id  # NEW
+
+        # We can now pass our run_number to our logger
+        self.logger = EventLogger(
+            env=self.env,
+            run_number=self.replication_id,  # UPDATED
+        )
+
         self.env = simpy.Environment()
         self.patient_counter = 0
         self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses)
@@ -53,11 +59,6 @@ class Model:
         self.mean_q_time_nurse = pd.NA
         self.sd_q_time_nurse = pd.NA
         self.perc_90_q_time_nurse = pd.NA
-
-        # We can now pass our run_number to our logger
-        self.logger = EventLogger(
-            env=self.env, run_number=self.replication_id
-        )  # UPDATED
 
     def generator_patient_arrivals(self):
         while True:

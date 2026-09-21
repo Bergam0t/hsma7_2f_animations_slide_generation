@@ -32,15 +32,12 @@ Vidigi's `EventLogger` class is the powerhouse of the whole shebang.
 It allows us to record the key types of events that happen throughout the model.
 
 
-
-
-
 ## Using EventLogger
 
-We can import EventLogger from the `utils` module of lokigi like this.
+We can import EventLogger from the `utils` module of vidigi like this.
 
 ```python
-from lokigi.utils import EventLogger
+from vidigi.utils import EventLogger
 ```
 We then set up an instance of EventLogger like so.
 

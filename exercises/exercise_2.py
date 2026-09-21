@@ -58,18 +58,26 @@ class Model:
         self.env = simpy.Environment()
         self.patient_counter = 0
 
+        self.logger = EventLogger(env=self.env)
+
         self.receptionist = VidigiStore(
             self.env,
             num_resources=self.param.num_receptionists,
+            logger=self.logger,
+            name="receiptionist",
         )
         self.nurse = VidigiStore(
             self.env,
             num_resources=self.param.num_nurses,
+            logger=self.logger,
+            name="nurse",
         )
 
         self.specialist = VidigiStore(
             self.env,
             num_resources=self.param.num_specialists,
+            logger=self.logger,
+            name="specialist",
         )
 
         ss = np.random.SeedSequence(self.replication_id)
@@ -106,8 +114,6 @@ class Model:
         self.mean_q_time_specialist = pd.NA
         self.sd_q_time_specialist = pd.NA
         self.perc_90_q_time_specialist = pd.NA
-
-        self.logger = EventLogger(env=self.env)
 
     def generator_patient_arrivals(self):
         while True:

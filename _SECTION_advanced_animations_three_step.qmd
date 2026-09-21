@@ -192,7 +192,6 @@ def build_animation(self, time_interval=1):
 
 #### After
 
-::: {style='font-size: 85%;'}
 ::: {.codewindow .python}
 f_three_step_animation.py
 ```{.python}
@@ -214,7 +213,6 @@ def build_animation(self, time_interval=1):
         scenario=self.params,
     )
 ```
-:::
 :::
 :::
 
