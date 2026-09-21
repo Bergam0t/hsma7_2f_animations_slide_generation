@@ -30,7 +30,8 @@ This is the model from the previous exercise, but with the Trial class added in.
     - *Don't forget to add the run number to your Logger class!*
 1. Generate an animation for each run of the model. Do they differ significantly?
 1. Explore the EventLogger and TrialLogger visualisations [TODO: make this more specific - let's ask for one or two but specify which?]
-1. Build a ProcessMap class and display both a static and interactive process map of this system
+1. Create and display both a static and an interactive process map of this system
+    - *You can build these step by step, or use the `generate_dfg()` shortcut on the `TrialLogger`*
 :::
 :::
 

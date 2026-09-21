@@ -7,7 +7,6 @@ from sim_tools.distributions import Exponential, Lognormal
 import pandas as pd
 from vidigi.logging import EventLogger, TrialLogger
 from vidigi.utils import create_event_position_df, EventPosition
-from vidigi.animation import animate_activity_log
 from vidigi.resources import VidigiStore
 
 # NEW imports
@@ -175,12 +174,15 @@ if __name__ == "__main__":
     #     ]
     # )
 
-    # animate_activity_log(
+    # fig = my_trial.trial_logger.animate_activity_log(
+    #     run_number=1,
     #     event_position_df=layout,
     #     every_x_time_units=1,
     #     scenario=my_params,
     # )
+    # fig.show()
 
+    # NEW
     # Example 1 - step by step
 
     my_event_log_timestamp = add_sim_timestamp(
@@ -201,7 +203,11 @@ if __name__ == "__main__":
         case_col="entity_id",
     )
 
-    # An an interactive version
+    # NOTE: display() only draws these graphs in an interactive environment
+    # (e.g. a Jupyter notebook or VSCode's interactive window). If you run this
+    # as a plain script from the terminal, you'll just see text.
+
+    # An interactive version
     cytoscape_widget = dfg_to_cytoscape(
         nodes,
         edges,
@@ -217,6 +223,7 @@ if __name__ == "__main__":
     graphviz_graph = dfg_to_graphviz(nodes, edges, min_frequency=5)
     display(graphviz_graph)
 
+    # NEW
     # Repeat the same thing with the simplified call from the trial logger object
 
     display(
