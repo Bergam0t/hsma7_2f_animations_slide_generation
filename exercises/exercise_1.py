@@ -194,6 +194,11 @@ if __name__ == "__main__":
     # Suggested event positions
     ################################
 
+    # Use these to build your layout with create_event_position_df().
+    # The event names in your layout need to exactly match the event names you
+    # use when logging.
+    # (The vidigi logger's departure step is always called "depart")
+
     # Arrival: x = 0, y = 850
     # Waiting for receptionist: x = 200, y = 800
     # Being seen by receptionist: x = 200, y = 700

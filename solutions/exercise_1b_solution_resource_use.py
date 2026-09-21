@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from vidigi.logging import EventLogger
 from vidigi.utils import create_event_position_df, EventPosition
-from vidigi.animation import animate_activity_log
 from vidigi.resources import VidigiStore  # NEW
 
 
@@ -56,18 +55,28 @@ class Model:
         self.env = simpy.Environment()
         self.patient_counter = 0
 
-        self.receptionist = VidigiStore(  # NEW/UPDATED
+        self.logger = EventLogger(env=self.env)  # UPDATED - moved above our resources
+
+        # NEW/UPDATED
+        # We swap simpy.Resource for VidigiStore, and pass in our logger and a label
+        self.receptionist = VidigiStore(
             self.env,
-            num_resources=self.param.num_receptionists,  # NEW/UPDATED
+            num_resources=self.param.num_receptionists,
+            logger=self.logger,
+            label="receptionist",
         )
-        self.nurse = VidigiStore(  # NEW/UPDATED
+        self.nurse = VidigiStore(
             self.env,
-            num_resources=self.param.num_nurses,  # NEW/UPDATED
+            num_resources=self.param.num_nurses,
+            logger=self.logger,
+            label="nurse",
         )
 
-        self.specialist = VidigiStore(  # NEW/UPDATED
+        self.specialist = VidigiStore(
             self.env,
-            num_resources=self.param.num_specialists,  # NEW/UPDATED
+            num_resources=self.param.num_specialists,
+            logger=self.logger,
+            label="specialist",
         )
 
         ss = np.random.SeedSequence(self.replication_id)
@@ -105,8 +114,6 @@ class Model:
         self.sd_q_time_specialist = pd.NA
         self.perc_90_q_time_specialist = pd.NA
 
-        self.logger = EventLogger(env=self.env)
-
     def generator_patient_arrivals(self):
         while True:
             self.patient_counter += 1
@@ -121,63 +128,45 @@ class Model:
         start_q_registration = self.env.now
         self.logger.log_queue(entity_id=patient.id, event="receptionist_wait_begins")
 
-        with self.receptionist.request() as req:
-            receptionist_obtained = yield req  # NEW/UPDATED
+        with self.receptionist.request(  # NEW/UPDATED
+            entity_id=patient.id,
+            start_event="being_seen_by_receptionist",
+            end_event="receptionist_visit_ends",
+        ) as req:
+            yield req
             end_q_registration = self.env.now
             patient.q_time_registration = end_q_registration - start_q_registration
-            self.logger.log_resource_use_start(  # NEW/UPDATED
-                entity_id=patient.id,
-                event="being_seen_by_receptionist",
-                resource_id=receptionist_obtained.id_attribute,  # NEW
-            )
             sampled_reg_act_time = self.registration_time_dist.sample()
             yield self.env.timeout(sampled_reg_act_time)
-            self.logger.log_resource_use_end(  # NEW/UPDATED
-                entity_id=patient.id,
-                event="receptionist_visit_ends",
-                resource_id=receptionist_obtained.id_attribute,  # NEW
-            )
 
         start_q_nurse = self.env.now
         self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
 
-        with self.nurse.request() as req:
-            nurse_obtained = yield req  # NEW/UPDATED
+        with self.nurse.request(  # NEW/UPDATED
+            entity_id=patient.id,
+            start_event="being_seen_by_nurse",
+            end_event="nurse_treatment_ends",
+        ) as req:
+            yield req
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                resource_id=nurse_obtained.id_attribute,  # NEW
-            )
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                resource_id=nurse_obtained.id_attribute,  # NEW
-            )
 
         if self.specialist_branch_prob_rng.random() < self.param.specialist_prob:
             start_q_specialist = self.env.now
             self.logger.log_queue(entity_id=patient.id, event="specialist_wait_begins")
 
-            with self.specialist.request() as req:
-                specialist_obtained = yield req  # NEW/UPDATED
+            with self.specialist.request(  # NEW/UPDATED
+                entity_id=patient.id,
+                start_event="being_seen_by_specialist",
+                end_event="specialist_treatment_ends",
+            ) as req:
+                yield req
                 end_q_specialist = self.env.now
                 patient.q_time_specialist = end_q_specialist - start_q_specialist
-                self.logger.log_resource_use_start(  # NEW/UPDATED
-                    entity_id=patient.id,
-                    event="being_seen_by_specialist",
-                    resource_id=specialist_obtained.id_attribute,  # NEW
-                )
                 sampled_specialist_act_time = self.specialist_time_dist.sample()
                 yield self.env.timeout(sampled_specialist_act_time)
-                self.logger.log_resource_use_end(  # NEW/UPDATED
-                    entity_id=patient.id,
-                    event="specialist_treatment_ends",
-                    resource_id=specialist_obtained.id_attribute,  # NEW
-                )
 
         self.logger.log_departure(entity_id=patient.id)
 
@@ -205,66 +194,6 @@ class Model:
         self.sd_q_time_specialist = entity_dataframe["q_time_specialist"].std()
         self.perc_90_q_time_specialist = entity_dataframe["q_time_specialist"].quantile(
             0.9
-        )
-
-    def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
-
-
-class Animation:
-    def __init__(self, event_log, params):  # NEW/UPDATED
-        self.event_log = event_log
-        self.params = params  # NEW
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=850, label="Entrance"),
-                EventPosition(
-                    event="receptionist_wait_begins",
-                    x=200,
-                    y=800,
-                    label="Waiting for Receptionist",
-                ),
-                EventPosition(
-                    event="being_seen_by_receptionist",
-                    x=200,
-                    y=700,
-                    label="Being Seen By Receptionist",
-                    resource="num_receptionists",  # NEW
-                ),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=550, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=450,
-                    label="Being Seen By Nurse",
-                    resource="num_nurses",  # NEW
-                ),
-                EventPosition(
-                    event="specialist_wait_begins",
-                    x=75,
-                    y=300,
-                    label="Waiting for Specialist",
-                ),
-                EventPosition(
-                    event="being_seen_by_specialist",
-                    x=75,
-                    y=200,
-                    label="Being Seen By Specialist",
-                    resource="num_specialists",  # NEW
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def build_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-            scenario=self.params,  # NEW
         )
 
 
@@ -299,12 +228,59 @@ if __name__ == "__main__":
     print(f"90th Perc : {base_case_model.perc_90_q_time_specialist:.2f} ", "minutes")
     print()
 
-    my_event_log = base_case_model.get_vidigi_event_log()
+    # NEW
+    # The layout is just a variable at the bottom of our script
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=850, label="Entrance"),
+            EventPosition(
+                event="receptionist_wait_begins",
+                x=200,
+                y=800,
+                label="Waiting for Receptionist",
+            ),
+            EventPosition(
+                event="being_seen_by_receptionist",
+                x=200,
+                y=700,
+                label="Being Seen By Receptionist",
+                resource="num_receptionists",  # NEW
+            ),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=550, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=450,
+                label="Being Seen By Nurse",
+                resource="num_nurses",  # NEW
+            ),
+            EventPosition(
+                event="specialist_wait_begins",
+                x=75,
+                y=300,
+                label="Waiting for Specialist",
+            ),
+            EventPosition(
+                event="being_seen_by_specialist",
+                x=75,
+                y=200,
+                label="Being Seen By Specialist",
+                resource="num_specialists",  # NEW
+            ),
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
 
-    print(my_event_log.head(20))
+    print(base_case_model.logger.to_dataframe().head(20))  # NEW
 
-    my_animation = Animation(my_event_log, base_case_params)  # NEW/UPDATED
+    # NEW
+    # We animate straight from the logger - there's no need for a separate class
+    fig = base_case_model.logger.animate_activity_log(
+        event_position_df=layout,
+        every_x_time_units=1,
+        scenario=base_case_params,  # NEW
+    )
 
-    fig = my_animation.build_animation()
-
-    fig.show()
+    fig.show()  # NEW

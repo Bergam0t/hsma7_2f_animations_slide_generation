@@ -28,8 +28,8 @@ You will be working with the file `exercises/exercise_1.py`. This is a simple mu
 1. Add the required logging steps
     - arrival & departure
     - queues [(I'd recommend just using queues, not resource use, to start with)]{style="color:lightgrey;font-size: 65%"}
-1. Add a method to get the event log from your Model as a dataframe and print the first 20 rows of your event log
-1. Set up and generate the animation [- you have been provided with a starter template for the layout]{style="color:lightgrey;font-size: 65%"}
+1. Print the first 20 rows of your event log [(your logger can give you it as a dataframe)]{style="color:lightgrey;font-size: 65%"}
+1. Set up and generate the animation [- you have been provided with suggested positions for the layout]{style="color:lightgrey;font-size: 65%"}
 1. Go back through and convert appropriate queues to resource use
 :::
 :::

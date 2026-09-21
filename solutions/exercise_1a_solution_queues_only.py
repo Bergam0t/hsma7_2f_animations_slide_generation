@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from vidigi.logging import EventLogger  # NEW
 from vidigi.utils import create_event_position_df, EventPosition  # NEW
-from vidigi.animation import animate_activity_log  # NEW
 
 
 class Patient:
@@ -191,65 +190,6 @@ class Model:
             0.9
         )
 
-    # NEW
-    def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
-
-
-# NEW
-class Animation:
-    def __init__(self, event_log):
-        self.event_log = event_log
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=850, label="Entrance"),
-                EventPosition(
-                    event="receptionist_wait_begins",
-                    x=200,
-                    y=800,
-                    label="Waiting for Receptionist",
-                ),
-                EventPosition(
-                    event="being_seen_by_receptionist",
-                    x=200,
-                    y=700,
-                    label="Being Seen By Receptionist",
-                ),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=550, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=450,
-                    label="Being Seen By Nurse",
-                ),
-                EventPosition(
-                    event="specialist_wait_begins",
-                    x=75,
-                    y=300,
-                    label="Waiting for Specialist",
-                ),
-                EventPosition(
-                    event="being_seen_by_specialist",
-                    x=75,
-                    y=200,
-                    label="Being Seen By Specialist",
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def build_animation(self, time_interval=1):
-        return animate_activity_log(
-            event_log=self.event_log,
-            event_position_df=self.layout,
-            every_x_time_units=time_interval,
-        )
-
-
-# END NEW
 
 if __name__ == "__main__":
     base_case_params = Param()
@@ -282,12 +222,55 @@ if __name__ == "__main__":
     print(f"90th Perc : {base_case_model.perc_90_q_time_specialist:.2f} ", "minutes")
     print()
 
-    my_event_log = base_case_model.get_vidigi_event_log()  # NEW
+    # NEW
+    # The layout is just a variable at the bottom of our script
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=850, label="Entrance"),
+            EventPosition(
+                event="receptionist_wait_begins",
+                x=200,
+                y=800,
+                label="Waiting for Receptionist",
+            ),
+            EventPosition(
+                event="being_seen_by_receptionist",
+                x=200,
+                y=700,
+                label="Being Seen By Receptionist",
+            ),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=550, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=450,
+                label="Being Seen By Nurse",
+            ),
+            EventPosition(
+                event="specialist_wait_begins",
+                x=75,
+                y=300,
+                label="Waiting for Specialist",
+            ),
+            EventPosition(
+                event="being_seen_by_specialist",
+                x=75,
+                y=200,
+                label="Being Seen By Specialist",
+            ),
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
 
-    print(my_event_log.head(20))  # NEW
+    print(base_case_model.logger.to_dataframe().head(20))  # NEW
 
-    my_animation = Animation(my_event_log)  # NEW
-
-    fig = my_animation.build_animation()  # NEW
+    # NEW
+    # We animate straight from the logger - there's no need for a separate class
+    fig = base_case_model.logger.animate_activity_log(
+        event_position_df=layout,
+        every_x_time_units=1,
+    )
 
     fig.show()  # NEW
