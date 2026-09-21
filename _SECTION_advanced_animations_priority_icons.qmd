@@ -29,16 +29,26 @@ g_three_step_animation_custom_priority_icons.py
 class Model:
     def __init__(self, param, replication_id):
         ...
-        self.nurse = VidigiPriorityStore(self.env, num_resources=self.param.num_nurses)
+        self.nurse = VidigiPriorityStore(
+            self.env,
+            num_resources=self.param.num_nurses,
+            label="nurse",
+            logger=self.logger,
+        )
 ```
 :::
 
 ## Requesting a resource with priority
 
-This line is completely unchanged from when we're using a Simpy PriorityResource.
+We pass the priority in exactly as we would for a Simpy PriorityResource - alongside the arguments we already met for `VidigiStore`.
 
-```{.python}
-with self.nurse.request(priority=patient.priority) as req:
+```{.python code-line-style="dim:1,focus:2,dim:3-6" code-line-style-preset="emphasis"}
+with self.nurse.request(
+    priority=patient.priority,  # NEW
+    entity_id=patient.id,
+    start_event="being_seen_by_nurse",
+    end_event="nurse_treatment_ends",
+) as req:
     ...
 ```
 
@@ -47,45 +57,46 @@ with self.nurse.request(priority=patient.priority) as req:
 ::: {style='font-size: 75%;'}
 Every vidigi logging step can record any number of additional things about an entity, so we can add an entity's priority.
 
+We'll call our extra field `patient_priority` - it's separate from the `priority` argument that controls the queue.
 :::
 
 ::: {.codewindow .python}
 g_three_step_animation_custom_priority_icons.py
-```{.python code-line-style="focus:1,dim:2,focus:3,dim:4,focus:5,dim:6-8,focus:9,dim:10,focus:11,dim:12-13,focus:14,dim:15-18,focus:19,dim:20-21,focus:22,dim:23-27,focus:28,dim:29-30,focus:31,dim:32-33,focus:34" code-line-style-preset="emphasis"}
-class Model:
-    ...
-    def attend_clinic(self, patient):
-        patient.arrival_time = self.env.now
-        self.logger.log_arrival(entity_id=patient.id, priority=patient.priority)
+```{.python code-line-style="dim:1-4,focus:5,dim:6-12,focus:13,dim:14-20,focus:21,dim:22-32,focus:33,dim:34" code-line-style-preset="emphasis"}
+def attend_clinic(self, patient):
+    patient.arrival_time = self.env.now
+    self.logger.log_arrival(
+        entity_id=patient.id,
+        patient_priority=patient.priority,
+    )
 
-        start_q_nurse = self.env.now
+    start_q_nurse = self.env.now
 
-        self.logger.log_queue(
-            entity_id=patient.id, event="nurse_wait_begins",
-            priority=patient.priority
-        )
+    self.logger.log_queue(
+        entity_id=patient.id,
+        event="nurse_wait_begins",
+        patient_priority=patient.priority,
+    )
 
-        with self.nurse.request(priority=patient.priority) as req:
-            nurse_obtained = yield req
-            end_q_nurse = self.env.now
-            patient.q_time_nurse = end_q_nurse - start_q_nurse
+    with self.nurse.request(
+        priority=patient.priority,
+        entity_id=patient.id,
+        start_event="being_seen_by_nurse",
+        end_event="nurse_treatment_ends",
+        patient_priority=patient.priority,
+    ) as req:
+        yield req
 
-            self.logger.log_resource_use_start(
-                entity_id=patient.id, event="being_seen_by_nurse",
-                resource_id=nurse_obtained.id_attribute,
-                priority=patient.priority,
-            )
+        end_q_nurse = self.env.now
+        patient.q_time_nurse = end_q_nurse - start_q_nurse
 
-            sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
-            yield self.env.timeout(sampled_nurse_act_time)
+        sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
+        yield self.env.timeout(sampled_nurse_act_time)
 
-            self.logger.log_resource_use_end(
-                entity_id=patient.id, event="nurse_treatment_ends",
-                resource_id=nurse_obtained.id_attribute,
-                priority=patient.priority,
-            )
-
-        self.logger.log_departure(entity_id=patient.id, priority=patient.priority)
+    self.logger.log_departure(
+        entity_id=patient.id,
+        patient_priority=patient.priority,
+    )
 ```
 :::
 
@@ -107,8 +118,7 @@ itables.options.lengthMenu = [10]
 itables.options.layout["topStart"] = None
 display(HTML("<style>.dt-container { font-size: 20pt; }</style>"))
 
-from sample_code.g_three_step_animation_custom_priority_icons import Param, Model, Animation
-from vidigi.animation import animate_activity_log
+from sample_code.g_three_step_animation_custom_priority_icons import Param, Model
 
 import os
 from pathlib import Path
@@ -125,9 +135,7 @@ my_params = Param(num_nurses=2,
 my_model = Model(my_params, replication_id=1)
 my_model.run_model()
 
-my_event_log = my_model.get_vidigi_event_log()
-
-my_animation = Animation(my_event_log, my_params)
+my_event_log = my_model.logger.to_dataframe()
 
 my_event_log
 ```
@@ -144,6 +152,27 @@ Now, if we just run the three step animation as-is, we won't see any impact of t
 
 from vidigi.prep import reshape_for_animations, generate_animation_df
 from vidigi.animation import generate_animation
+from vidigi.utils import create_event_position_df, EventPosition
+
+# The layout in sample_code/g_three_step_animation_custom_priority_icons.py is defined
+# inside the `if __name__ == "__main__"` block, so it can't be imported.
+# Keep this copy in sync with that file.
+layout = create_event_position_df(
+    [
+        EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+        EventPosition(
+            event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+        ),
+        EventPosition(
+            event="being_seen_by_nurse",
+            x=200,
+            y=150,
+            label="Being Seen By Nurse",
+            resource="num_nurses",
+        ),
+        EventPosition(event="depart", x=200, y=50, label="Exit"),
+    ]
+)
 
 reshaped_df = reshape_for_animations(
     event_log=my_event_log,
@@ -153,12 +182,12 @@ reshaped_df = reshape_for_animations(
 
 animation_df = generate_animation_df(
     full_entity_df=reshaped_df,
-    event_position_df=my_animation.layout,
+    event_position_df=layout,
 )
 
 fig = generate_animation(
     full_entity_df_plus_pos=animation_df,
-    event_position_df=my_animation.layout,
+    event_position_df=layout,
     scenario=my_params,
     plotly_height=500,
     plotly_width=1000
@@ -171,25 +200,22 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 
 ## Creating a custom function for assigning icons
 
-We are going to create a new method in our Animation class.
+We are going to create a new function. It looks at each row of our animation dataframe and decides which icon that entity should have.
 
 ::: {.codewindow .python}
 g_three_step_animation_custom_priority_icons.py
 ```{.python}
-class Animation:
-    ...
-
-    def show_priority_icon(self, row):
-        # First check this isn't a '+ y more' row
-        if "more" not in row["icon"]:
-            if row["priority"] == 1:
-                return "🚨"
-            if row["priority"] == 2:
-                return "⚠️"
-            else:
-                return row["icon"]
+def show_priority_icon(row):
+    # First check this isn't a '+ y more' row
+    if "more" not in row["icon"]:
+        if row["patient_priority"] == 1:
+            return "🚨"
+        if row["patient_priority"] == 2:
+            return "⚠️"
         else:
             return row["icon"]
+    else:
+        return row["icon"]
 ```
 :::
 
@@ -201,19 +227,16 @@ It needs to be applied **after** we run `generate_animation_df()`, as that's the
 
 ::: {.codewindow .python style="width:100%;"}
 g_three_step_animation_custom_priority_icons.py
-```{.python code-line-style="focus:1,dim:2,focus:3,dim:4-5,focus:6,dim:7,focus:8-10,dim:11-12" code-line-style-preset="emphasis"}
-class Animation:
-    ...
-    def build_animation(self, time_interval=1):
-        reshaped_df = reshape_for_animations(...)
+```{.python code-line-style="dim:1-4,focus:5-7,dim:8-9" code-line-style-preset="emphasis"}
+reshaped_df = reshape_for_animations(...)
 
-        animation_df = generate_animation_df(...)
+animation_df = generate_animation_df(...)
 
-        animation_df = animation_df.assign(
-            icon=animation_df.apply(self.show_priority_icon, axis=1)
-        )
+animation_df = animation_df.assign(
+    icon=animation_df.apply(show_priority_icon, axis=1)
+)
 
-        return generate_animation(...)
+fig = generate_animation(...)
 ```
 :::
 
@@ -237,15 +260,15 @@ reshaped_df = reshape_for_animations(
 
 animation_df = generate_animation_df(
     full_entity_df=reshaped_df,
-    event_position_df=my_animation.layout,
+    event_position_df=layout,
 )
 
 def show_priority_icon(row):
     # First check this isn't a '+ y more' row
     if "more" not in row["icon"]:
-        if row["priority"] == 1:
+        if row["patient_priority"] == 1:
             return "🚨"
-        if row["priority"] == 2:
+        if row["patient_priority"] == 2:
             return "⚠️"
         else:
             return row["icon"]
@@ -256,7 +279,7 @@ animation_df = animation_df.assign(
             icon=animation_df.apply(show_priority_icon, axis=1)
         )
 
-animation_df[["entity_id", "event_type", "event", "time", "resource_id", "priority", "snapshot_time", "icon"]].head(200)
+animation_df[["entity_id", "event_type", "event", "time", "resource_id", "patient_priority", "snapshot_time", "icon"]].head(200)
 ```
 
 [**\* some columns hidden**]{style="color:yellow; font-size:75%"}
@@ -271,7 +294,7 @@ And now we can properly see why certain people are jumping the queue!
 #| label: priority-icon-demo-animation
 fig = generate_animation(
     full_entity_df_plus_pos=animation_df,
-    event_position_df=my_animation.layout,
+    event_position_df=layout,
     scenario=my_params,
     plotly_height=500,
     plotly_width=1000
@@ -314,7 +337,7 @@ animation_df[["entity_id", "event", "time", "snapshot_time", "time_in_step", "ic
 We can then modify our existing step
 
 ```{.python}
-def add_time_in_step(self, row):
+def add_time_in_step(row):
     # First check this isn't a '+ y more' row
     if "more" not in row["icon"]:
         return row["icon"] + "<br>" + f"{row["time_in_step"]:.0f}"
@@ -329,12 +352,12 @@ reshaped_df = reshape_for_animations(...)
 animation_df = generate_animation_df(...)
 
 animation_df = animation_df.assign(
-            icon=animation_df.apply(self.show_priority_icon, axis=1)
-        )
+    icon=animation_df.apply(show_priority_icon, axis=1)
+)
 
 animation_df = animation_df.assign(
-            icon=animation_df.apply(self.add_time_in_step, axis=1)
-        )
+    icon=animation_df.apply(add_time_in_step, axis=1)
+)
 ```
 
 
@@ -352,7 +375,7 @@ def add_time_in_step(row):
 
 animation_df = generate_animation_df(
     full_entity_df=reshaped_df,
-    event_position_df=my_animation.layout,
+    event_position_df=layout,
     gap_between_queue_rows=65,
     wrap_queues_at=15
 )
@@ -377,7 +400,7 @@ animation_df = animation_df.assign(
 #| label: additional-info-demo-animation
 fig = generate_animation(
     full_entity_df_plus_pos=animation_df,
-    event_position_df=my_animation.layout,
+    event_position_df=layout,
     scenario=my_params,
     plotly_height=600,
     plotly_width=1100,

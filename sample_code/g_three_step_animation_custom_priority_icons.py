@@ -206,11 +206,11 @@ class Model:
         )
 
         with self.nurse.request(
-            priority=patient.priority,
+            priority=patient.priority,  # NEW
             entity_id=patient.id,
             start_event="being_seen_by_nurse",
             end_event="nurse_treatment_ends",
-            patient_priority=patient.priority,
+            patient_priority=patient.priority,  # NEW
         ) as req:
             yield req
 
@@ -447,9 +447,8 @@ if __name__ == "__main__":
     print(f"90th Perc : {my_trial.trial_perc_90_q_time_nurse:.2f} minutes")
     print()
 
-    print(my_trial.trial_logger.get_log_by_run(run=0, as_df=True).head(10))
+    print(my_trial.trial_logger.get_log_by_run(run=1, as_df=True).head(10))
 
-    # NEW
     layout = create_event_position_df(
         [
             EventPosition(event="arrival", x=0, y=350, label="Entrance"),
@@ -467,6 +466,8 @@ if __name__ == "__main__":
         ]
     )
 
+    # NEW
+    # A function that will give us a different icon depending on priority
     def show_priority_icon(row):
         # First check this isn't a '+ y more' row
         if "more" not in row["icon"]:
@@ -491,6 +492,7 @@ if __name__ == "__main__":
         event_position_df=layout,
     )
 
+    # NEW
     # Assign our custom priority icons
     animation_df = animation_df.assign(
         icon=animation_df.apply(show_priority_icon, axis=1)
@@ -501,6 +503,8 @@ if __name__ == "__main__":
         event_position_df=layout,
         scenario=my_params,
     )
+
+    fig.show()
 
     # Let's see if our TrialLogger can give us queue size insight
     queue_fig = my_trial.trial_logger.plot_queue_size(
@@ -516,16 +520,12 @@ if __name__ == "__main__":
             my_trial.trial_logger.get_log_by_run(run=1, as_df=True),
             time_unit="minutes",
             sim_start="09:00:00",
-        ).copy()
+        )
 
         if priority != "all":
             filtered_event_log = filtered_event_log[
                 filtered_event_log["patient_priority"] == priority
             ]
-
-        filtered_event_log_timestamp = add_sim_timestamp(
-            filtered_event_log, time_unit="minutes", sim_start="09:00:00"
-        )
 
         # Now we'll discover the pathways in the model
         nodes, edges = discover_dfg(
