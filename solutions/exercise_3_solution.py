@@ -78,18 +78,26 @@ class Model:
         self.env = simpy.Environment()
         self.patient_counter = 0
 
+        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
+
         self.receptionist = VidigiStore(
             self.env,
             num_resources=self.param.num_receptionists,
+            logger=self.logger,
+            label="receptionist",
         )
         self.nurse = VidigiPriorityStore(
             self.env,
             num_resources=self.param.num_nurses,
+            logger=self.logger,
+            label="nurse",
         )
 
         self.specialist = VidigiPriorityStore(
             self.env,
             num_resources=self.param.num_specialists,
+            logger=self.logger,
+            label="specialist",
         )
 
         ss = np.random.SeedSequence(self.replication_id)
@@ -131,7 +139,6 @@ class Model:
         self.sd_q_time_specialist = pd.NA
         self.perc_90_q_time_specialist = pd.NA
 
-        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
 
     def generator_patient_arrivals(self):
         while True:
@@ -158,89 +165,77 @@ class Model:
             yield self.env.timeout(sampled_inter)
 
     def attend_clinic(self, patient):
-        self.logger.log_arrival(entity_id=patient.id, priority=patient.priority)
+        # NEW
+        # We log `patient_priority` as a plain extra field throughout - it's
+        # separate from the `priority` argument that controls the nurse/specialist
+        # queues below
+        self.logger.log_arrival(
+            entity_id=patient.id,
+            patient_priority=patient.priority,  # NEW
+        )
         start_q_registration = self.env.now
         self.logger.log_queue(
             entity_id=patient.id,
             event="receptionist_wait_begins",
-            priority=patient.priority,  # NEW
+            patient_priority=patient.priority,  # NEW
         )
 
-        with self.receptionist.request() as req:
-            receptionist_obtained = yield req
+        with self.receptionist.request(
+            entity_id=patient.id,
+            start_event="being_seen_by_receptionist",
+            end_event="receptionist_visit_ends",
+            patient_priority=patient.priority,  # NEW
+        ) as req:
+            yield req
             end_q_registration = self.env.now
             patient.q_time_registration = end_q_registration - start_q_registration
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_receptionist",
-                resource_id=receptionist_obtained.id_attribute,
-                priority=patient.priority,  # NEW
-            )
             sampled_reg_act_time = self.registration_time_dist.sample()
             yield self.env.timeout(sampled_reg_act_time)
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="receptionist_visit_ends",
-                resource_id=receptionist_obtained.id_attribute,
-                priority=patient.priority,  # NEW
-            )
 
         start_q_nurse = self.env.now
         self.logger.log_queue(
             entity_id=patient.id,
             event="nurse_wait_begins",
-            priority=patient.priority,  # NEW
+            patient_priority=patient.priority,  # NEW
         )
 
-        with self.nurse.request(priority=patient.priority) as req:
-            nurse_obtained = yield req
+        with self.nurse.request(
+            priority=patient.priority,
+            entity_id=patient.id,
+            start_event="being_seen_by_nurse",
+            end_event="nurse_treatment_ends",
+            patient_priority=patient.priority,  # NEW
+        ) as req:
+            yield req
             end_q_nurse = self.env.now
             patient.q_time_nurse = end_q_nurse - start_q_nurse
-            self.logger.log_resource_use_start(
-                entity_id=patient.id,
-                event="being_seen_by_nurse",
-                resource_id=nurse_obtained.id_attribute,
-                priority=patient.priority,  # NEW
-            )
             sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
             yield self.env.timeout(sampled_nurse_act_time)
-            self.logger.log_resource_use_end(
-                entity_id=patient.id,
-                event="nurse_treatment_ends",
-                resource_id=nurse_obtained.id_attribute,
-                priority=patient.priority,  # NEW
-            )
 
         if self.specialist_branch_prob_rng.random() < self.param.specialist_prob:
             start_q_specialist = self.env.now
             self.logger.log_queue(
                 entity_id=patient.id,
                 event="specialist_wait_begins",
-                priority=patient.priority,  # NEW
+                patient_priority=patient.priority,  # NEW
             )
 
-            with self.specialist.request(priority=patient.priority) as req:
-                specialist_obtained = yield req
+            with self.specialist.request(
+                priority=patient.priority,
+                entity_id=patient.id,
+                start_event="being_seen_by_specialist",
+                end_event="specialist_treatment_ends",
+                patient_priority=patient.priority,  # NEW
+            ) as req:
+                yield req
                 end_q_specialist = self.env.now
                 patient.q_time_specialist = end_q_specialist - start_q_specialist
-                self.logger.log_resource_use_start(
-                    entity_id=patient.id,
-                    event="being_seen_by_specialist",
-                    resource_id=specialist_obtained.id_attribute,
-                    priority=patient.priority,  # NEW
-                )
                 sampled_specialist_act_time = self.specialist_time_dist.sample()
                 yield self.env.timeout(sampled_specialist_act_time)
-                self.logger.log_resource_use_end(
-                    entity_id=patient.id,
-                    event="specialist_treatment_ends",
-                    resource_id=specialist_obtained.id_attribute,
-                    priority=patient.priority,  # NEW
-                )
 
         self.logger.log_departure(
             entity_id=patient.id,
-            priority=patient.priority,  # NEW
+            patient_priority=patient.priority,  # NEW
         )
 
     def run_model(self):
@@ -268,9 +263,6 @@ class Model:
         self.perc_90_q_time_specialist = entity_dataframe["q_time_specialist"].quantile(
             0.9
         )
-
-    def get_vidigi_event_log(self):
-        return self.logger.to_dataframe()
 
 
 class Trial:
@@ -376,141 +368,6 @@ class Trial:
         )
 
 
-class Animation:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
-        self.params = params
-
-        self.layout = create_event_position_df(
-            [
-                EventPosition(event="arrival", x=0, y=850, label="Entrance"),
-                EventPosition(
-                    event="receptionist_wait_begins",
-                    x=200,
-                    y=800,
-                    label="Waiting for Receptionist",
-                ),
-                EventPosition(
-                    event="being_seen_by_receptionist",
-                    x=200,
-                    y=700,
-                    label="Being Seen By Receptionist",
-                    resource="num_receptionists",
-                ),
-                EventPosition(
-                    event="nurse_wait_begins", x=200, y=550, label="Waiting for Nurse"
-                ),
-                EventPosition(
-                    event="being_seen_by_nurse",
-                    x=200,
-                    y=450,
-                    label="Being Seen By Nurse",
-                    resource="num_nurses",
-                ),
-                EventPosition(
-                    event="specialist_wait_begins",
-                    x=200,
-                    y=300,
-                    label="Waiting for Specialist",
-                ),
-                EventPosition(
-                    event="being_seen_by_specialist",
-                    x=200,
-                    y=200,
-                    label="Being Seen By Specialist",
-                    resource="num_specialists",
-                ),
-                EventPosition(event="depart", x=200, y=50, label="Exit"),
-            ]
-        )
-
-    def build_animation(self, time_interval=1):
-        reshaped_df = reshape_for_animations(
-            event_log=self.event_log,
-            every_x_time_units=time_interval,
-            limit_duration=self.params.sim_duration,
-        )
-
-        animation_df = generate_animation_df(
-            full_entity_df=reshaped_df,
-            event_position_df=self.layout,
-        )
-
-        def show_priority_icon(row):
-            # First check this isn't a '+ y more' row
-            if "more" not in row["icon"]:
-                if row["priority"] == 1:
-                    return "🔴"
-                if row["priority"] == 2:
-                    return "🟠"
-                if row["priority"] == 3:
-                    return "🟡"
-                if row["priority"] == 4:
-                    return "🔵"
-                else:
-                    return row["icon"]
-            else:
-                return row["icon"]
-
-        animation_df = animation_df.assign(
-            icon=animation_df.apply(show_priority_icon, axis=1)
-        )
-
-        return generate_animation(
-            full_entity_df_plus_pos=animation_df,
-            event_position_df=self.layout,
-            scenario=self.params,
-            plotly_height=600,
-            plotly_width=1100,
-            entity_icon_size=16,
-        )
-
-
-class ProcessMap:
-    def __init__(self, event_log, params):
-        self.event_log = event_log
-        self.params = params
-
-    def build_process_map(self, priority="all", interactive=False):  # NEW/UPDATED
-        # First, we take our event log and add a timestamp column to it, as it's required
-        # so that it can display average durations accurately
-        my_event_log_timestamp = add_sim_timestamp(
-            self.event_log, time_unit="minutes", sim_start="09:00:00"
-        ).copy()
-
-        # NEW
-        # We'll filter if priority isn't 'all' (the default)
-        if priority != "all":
-            my_event_log_timestamp = my_event_log_timestamp[
-                my_event_log_timestamp["priority"] == priority
-            ]
-        # END NEW
-
-        # Now we'll discover the pathways in the model
-        nodes, edges = discover_dfg(my_event_log_timestamp)
-
-        if interactive:
-            # An an interactive version
-            cytoscape_widget = dfg_to_cytoscape(
-                nodes,
-                edges,
-                min_frequency=5,
-                spacing_factor=2,
-                width=1400,
-            )
-            display(cytoscape_widget)
-
-        else:
-            # Now we can create a static representation of flow through the process
-            graphviz_graph = dfg_to_graphviz(
-                nodes,
-                edges,
-                min_frequency=5,
-                title=f"Priority: {priority}",  # NEW
-            )
-            display(graphviz_graph)
-
-
 if __name__ == "__main__":
     base_case_params = Param()
     base_case_trial = Trial(base_case_params)
@@ -557,13 +414,115 @@ if __name__ == "__main__":
     )
     print()
 
-    my_event_log = base_case_trial.trial_logger.get_log_by_run(run=0, as_df=True)
-    my_animation = Animation(my_event_log, base_case_params)
-    fig = my_animation.build_animation()
+    # 1. Priority is now included in every logging step above (see `# NEW`)
+    print(base_case_trial.trial_logger.get_log_by_run(run=0, as_df=True).head(10))
+
+    layout = create_event_position_df(
+        [
+            EventPosition(event="arrival", x=0, y=850, label="Entrance"),
+            EventPosition(
+                event="receptionist_wait_begins",
+                x=200,
+                y=800,
+                label="Waiting for Receptionist",
+            ),
+            EventPosition(
+                event="being_seen_by_receptionist",
+                x=200,
+                y=700,
+                label="Being Seen By Receptionist",
+                resource="num_receptionists",
+            ),
+            EventPosition(
+                event="nurse_wait_begins", x=200, y=550, label="Waiting for Nurse"
+            ),
+            EventPosition(
+                event="being_seen_by_nurse",
+                x=200,
+                y=450,
+                label="Being Seen By Nurse",
+                resource="num_nurses",
+            ),
+            EventPosition(
+                event="specialist_wait_begins",
+                x=200,
+                y=300,
+                label="Waiting for Specialist",
+            ),
+            EventPosition(
+                event="being_seen_by_specialist",
+                x=200,
+                y=200,
+                label="Being Seen By Specialist",
+                resource="num_specialists",
+            ),
+            EventPosition(event="depart", x=200, y=50, label="Exit"),
+        ]
+    )
+
+    # 2. Switch to the three-step animation process
+    reshaped_df = reshape_for_animations(
+        event_log=base_case_trial.trial_logger,
+        run_number=0,
+        every_x_time_units=1,
+        limit_duration=base_case_params.sim_duration,
+    )
+
+    animation_df = generate_animation_df(
+        full_entity_df=reshaped_df,
+        event_position_df=layout,
+    )
+
+    # 3. Customise the icons so that high-priority patients are displayed differently
+    def show_priority_icon(row):
+        # First check this isn't a '+ y more' row
+        if "more" not in row["icon"]:
+            if row["patient_priority"] == 1:
+                return "🔴"
+            if row["patient_priority"] == 2:
+                return "🟠"
+            if row["patient_priority"] == 3:
+                return "🟡"
+            if row["patient_priority"] == 4:
+                return "🔵"
+            else:
+                return row["icon"]
+        else:
+            return row["icon"]
+
+    animation_df = animation_df.assign(
+        icon=animation_df.apply(show_priority_icon, axis=1)
+    )
+
+    fig = generate_animation(
+        full_entity_df_plus_pos=animation_df,
+        event_position_df=layout,
+        scenario=base_case_params,
+        plotly_height=600,
+        plotly_width=1100,
+        entity_icon_size=16,
+    )
+
     fig.show()
 
-    # NEW
-    my_process_map = ProcessMap(my_event_log, base_case_params)
+    # Extension: separate process maps for each priority of patient
+    my_event_log = base_case_trial.trial_logger.get_log_by_run(run=0, as_df=True)
+
+    my_event_log_timestamp = add_sim_timestamp(
+        my_event_log, time_unit="minutes", sim_start="09:00:00"
+    )
 
     for priority in range(1, 5):
-        my_process_map.build_process_map(priority=priority)
+        priority_event_log = my_event_log_timestamp[
+            my_event_log_timestamp["patient_priority"] == priority
+        ]
+
+        nodes, edges = discover_dfg(priority_event_log, case_col="entity_id")
+
+        graphviz_graph = dfg_to_graphviz(
+            nodes,
+            edges,
+            min_frequency=5,
+            title=f"Priority: {priority}",
+        )
+        display(graphviz_graph)
