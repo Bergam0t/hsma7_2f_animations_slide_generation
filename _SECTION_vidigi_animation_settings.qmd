@@ -57,9 +57,8 @@ If your model is set up in minutes, 1 unit = 1 minute
 
 If it's set in weeks, 1 unit = 1 week
 
-```{.python code-line-style="focus:1,dim:2-3,focus:4,dim:5" code-line-style-preset="emphasis"}
-animate_activity_log(
-    event_log=event_log,
+```{.python code-line-style="focus:1,dim:2,focus:3,dim:4" code-line-style-preset="emphasis"}
+fig = my_model.logger.animate_activity_log(
     event_position_df=layout,
     every_x_time_units=1,
 )
@@ -93,8 +92,8 @@ It directly influences how big the underlying dataframe is, as well as the numbe
 #| echo: false
 #| label: every-1-min-time-size
 
-from sample_code.c_simple_one_step_model_vidigi_resources import Param, Model, Animation
-from vidigi.animation import animate_activity_log
+from sample_code.c_simple_one_step_model_vidigi_resources import Param, Model
+from vidigi.utils import create_event_position_df, EventPosition
 import time
 from IPython.display import HTML
 
@@ -102,15 +101,31 @@ my_params = Param(sim_duration=60*24, mean_patient_inter=1)
 my_model = Model(my_params)
 my_model.run_model()
 
-my_event_log = my_model.get_vidigi_event_log()
-my_animation = Animation(my_event_log, my_params)
+# The layout in sample_code/c_simple_one_step_model_vidigi_resources.py is defined
+# inside the `if __name__ == "__main__"` block, so it can't be imported.
+# Keep this copy in sync with that file.
+layout = create_event_position_df(
+    [
+        EventPosition(event="arrival", x=0, y=350, label="Entrance"),
+        EventPosition(
+            event="nurse_wait_begins", x=200, y=250, label="Waiting for Nurse"
+        ),
+        EventPosition(
+            event="being_seen_by_nurse",
+            x=200,
+            y=150,
+            label="Being Seen By Nurse",
+            resource="num_nurses",
+        ),
+        EventPosition(event="depart", x=200, y=50, label="Exit"),
+    ]
+)
 
 # Time the animation generation
 start_time_1 = time.perf_counter()
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     every_x_time_units=1,
     plotly_height=600,
@@ -135,9 +150,9 @@ HTML(html_fig_1)
 #| label: every-10-mins-time-size
 start_time_2 = time.perf_counter()
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    scenario=my_params,
     every_x_time_units=10,
     plotly_height=600,
     plotly_width=1100
@@ -204,13 +219,11 @@ Another approach you can take to reducing size is to use the `limit_duration` ar
 
 In a simulation you run for several days, you may choose to only show a small snippet from the start of the animation.
 
-```{.python code-line-style="dim:1-3,focus:4,dim:5" code-line-style-preset="emphasis"}
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+```{.python code-line-style="dim:1-2,focus:3,dim:4" code-line-style-preset="emphasis"}
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     limit_duration=500
 )
-
 ```
 
 ::: {style='font-size: 75%;'}
@@ -243,9 +256,8 @@ Vidigi has two key parameters dictating how fast your animation runs:
 #| echo: false
 #| label: frame-duration-demo-short
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -263,9 +275,8 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 #| echo: false
 #| label: frame-duration-demo-long
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -285,9 +296,8 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 #| echo: false
 #| label: frame-transition-demo-short-zero
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -307,9 +317,8 @@ The `wrap_queues_at` parameter changes how many people appear in every row of th
 #| echo: false
 #| label: queue-wrapping-demo
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -322,10 +331,9 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 
 ## Max Queue Size (`step_snapshot_max`)
 
-```{.python code-line-style="dim:1-3,focus:4,dim:5" code-line-style-preset="emphasis"}
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+```{.python code-line-style="dim:1-2,focus:3,dim:4" code-line-style-preset="emphasis"}
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     step_snapshot_max=30
 )
 ```
@@ -345,7 +353,7 @@ This is one of the most important parameters for keeping your animation generati
 
 ::: {style='font-size: 75%;'}
 ```{.python code-line-style="dim:1-2,focus:3,dim:4" code-line-style-preset="emphasis"}
-fig = animate_activity_log(
+fig = my_model.logger.animate_activity_log(
     ...
     step_snapshot_limit_gauges=False
 )
@@ -358,9 +366,8 @@ fig = animate_activity_log(
 #| echo: false
 #| label: no-gauge-demo
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -401,7 +408,7 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 
 ::: {style='font-size: 75%;'}
 ```{.python code-line-style="dim:1-2,focus:3,dim:4" code-line-style-preset="emphasis"}
-fig = animate_activity_log(
+fig = my_model.logger.animate_activity_log(
     ...
     step_snapshot_limit_gauges=True
 )
@@ -413,9 +420,8 @@ fig = animate_activity_log(
 #| echo: false
 #| label: gauge-demo
 
-fig2 = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig2 = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -468,9 +474,8 @@ The size of the gauge is set by the maximum queue length observed across the sim
 #| echo: false
 #| label: entity-spacing-demo
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -491,9 +496,8 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 #| echo: false
 #| label: entity-sizing-demo
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params,
     limit_duration=60,
     every_x_time_units=1,
@@ -522,12 +526,8 @@ my_params_lots_of_nurses = Param(sim_duration=60, num_nurses=20)
 my_model = Model(my_params_lots_of_nurses)
 my_model.run_model()
 
-my_event_log = my_model.get_vidigi_event_log()
-my_animation = Animation(my_event_log, my_params_lots_of_nurses)
-
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params_lots_of_nurses,
     limit_duration=60,
     every_x_time_units=1,
@@ -551,12 +551,8 @@ my_params_quite_a_lot_of_nurses = Param(sim_duration=60, num_nurses=10)
 my_model = Model(my_params_quite_a_lot_of_nurses)
 my_model.run_model()
 
-my_event_log = my_model.get_vidigi_event_log()
-my_animation = Animation(my_event_log, my_params_quite_a_lot_of_nurses)
-
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
     scenario=my_params_quite_a_lot_of_nurses,
     limit_duration=60,
     every_x_time_units=1,
@@ -577,10 +573,9 @@ And `resource_icon_size` handles the icon size for your resources. You'll usuall
 #| echo: false
 #| label: resource-sizing-demo
 
-fig = animate_activity_log(
-    event_log=my_animation.event_log,
-    event_position_df=my_animation.layout,
-    scenario=my_params,
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    scenario=my_params_quite_a_lot_of_nurses,
     limit_duration=60,
     every_x_time_units=1,
     gap_between_resources=30,
