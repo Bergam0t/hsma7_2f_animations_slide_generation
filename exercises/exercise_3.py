@@ -7,7 +7,9 @@ import random
 import numpy as np
 from vidigi.logging import EventLogger, TrialLogger
 from vidigi.utils import create_event_position_df, EventPosition
-from vidigi.resources import VidigiPriorityStore, VidigiStore
+from vidigi.resources import VidigiStore
+# 1. Swap the import above for VidigiPriorityStore, and use it for the nurse
+# and specialist resources below
 from vidigi.process_mapping import (
     add_sim_timestamp,
     discover_dfg,
@@ -84,14 +86,14 @@ class Model:
             logger=self.logger,
             label="receptionist",
         )
-        self.nurse = VidigiPriorityStore(
+        self.nurse = VidigiStore(
             self.env,
             num_resources=self.param.num_nurses,
             logger=self.logger,
             label="nurse",
         )
 
-        self.specialist = VidigiPriorityStore(
+        self.specialist = VidigiStore(
             self.env,
             num_resources=self.param.num_specialists,
             logger=self.logger,
@@ -182,7 +184,6 @@ class Model:
         self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
 
         with self.nurse.request(
-            priority=patient.priority,
             entity_id=patient.id,
             start_event="being_seen_by_nurse",
             end_event="nurse_treatment_ends",
@@ -198,7 +199,6 @@ class Model:
             self.logger.log_queue(entity_id=patient.id, event="specialist_wait_begins")
 
             with self.specialist.request(
-                priority=patient.priority,
                 entity_id=patient.id,
                 start_event="being_seen_by_specialist",
                 end_event="specialist_treatment_ends",

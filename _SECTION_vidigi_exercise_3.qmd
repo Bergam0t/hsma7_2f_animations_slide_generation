@@ -6,7 +6,7 @@
 
 ::: {.column width='60%'}
 ::: {style='font-size: 75%;'}
-You will be working with the model **exercises/exercise_3.py**, which uses `VidigiPriorityStore`.
+You will be working with the model **exercises/exercise_3.py**.
 
 This model already has most of the logging steps set up, as well as a simple animation using `animate_activity_log`.
 :::
@@ -26,7 +26,8 @@ This model already has most of the logging steps set up, as well as a simple ani
 
 ::: {.column width='60%'}
 ::: {style='font-size: 85%'}
-1. Add the patient priority to the logging steps
+1. Swap the nurse and specialist resources for `VidigiPriorityStore`, and pass `priority=patient.priority` into their `.request()` calls so higher-priority patients are seen first
+1. Add `patient_priority` as a separate field on the logging steps [(it's not the same as the `priority` argument above - one controls the queue, the other is just for the log)]{style="color:lightgrey;font-size: 65%"}
 1. Switch to using the three-step animation process
 1. Customise the icons so that high-priority patients are displayed differently
 :::
