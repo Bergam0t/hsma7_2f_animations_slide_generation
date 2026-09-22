@@ -7,7 +7,11 @@ author:
 format:
   live-revealjs:
     output-file: index.html # ensures picked up by github hosting
-    output-dir: docs
+# The output *directory* (docs/) is set at the project level in _quarto.yml,
+# not here -- a per-document output-dir key looks like it should work but
+# Quarto silently ignores it for this project type, which is why docs/ went
+# stale after the section restructuring. See _quarto-nhs_oa.yml for how a
+# second deck gets its own output-dir via a project profile instead.
 # Shared format/execute/filters/plugins config lives in _metadata.yml --
 # Quarto merges it in automatically for every document in the project,
 # including sections rendered/previewed standalone. Keeping it out of here
@@ -53,6 +57,8 @@ format:
 {{< include _SECTION_advanced_animations_three_step.qmd >}}
 
 {{< include _SECTION_advanced_animations_priority_icons.qmd >}}
+
+{{< include _SECTION_adding_a_synchronised_trace.qmd >}}
 
 {{< include _SECTION_vidigi_exercise_3.qmd >}}
 

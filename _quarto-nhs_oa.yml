@@ -1,0 +1,32 @@
+# Quarto project profile: renders slides_nhs_oa.qmd to its own output-dir
+# instead of docs/, so this deck doesn't collide with the main deck's
+# published output. Activate with:
+#
+#   quarto render --profile nhs_oa
+#
+# Quarto merges this on top of _quarto.yml when that profile is active --
+# see https://quarto.org/docs/projects/profiles.html. Both project.output-dir
+# and project.render are replaced wholesale (not merged) by this override.
+project:
+  output-dir: docs_nhs_oa
+  render:
+    - slides_nhs_oa.qmd
+
+# This profile's own allowlist for _docs_cleanup.py -- deliberately separate
+# from _quarto.yml's docs-keep (index.html/slides_files belong to the
+# default deck, not this one) so a stray mirrored copy of the other deck's
+# output gets cleaned up rather than kept.
+docs-keep:
+  - index_nhs_oa.html
+  - slides_nhs_oa_files
+  - assets
+  - .nojekyll
+  - _extensions
+  - _freeze
+  - custom.scss
+  - _brand.yml
+  - resources
+  - code_examples
+  - fullscreen
+  - diagrams
+  - sample_code

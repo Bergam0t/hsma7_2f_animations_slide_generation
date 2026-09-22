@@ -1,6 +1,6 @@
 project:
   title: "Title"
-  # output-dir: docs
+  output-dir: docs
   execute-dir: project
   resources:
     - assets/
@@ -26,6 +26,12 @@ project:
 # Add any folder your deck links to at runtime -- extra images, PDFs, data
 # files, handouts. If you drop an entry the deck actually needs, the deck
 # breaks silently on the published site, so check it after editing this list.
+#
+# This is the default profile's list (-> docs/, this deck's own output only).
+# The nhs_oa profile has its own docs-keep in _quarto-nhs_oa.yml -- keep them
+# separate, don't list index_nhs_oa.html/slides_nhs_oa_files here, otherwise
+# _docs_cleanup.py can't tell that deck's stray mirrored files apart from
+# docs/'s real contents.
 docs-keep:
   - index.html
   - slides_files

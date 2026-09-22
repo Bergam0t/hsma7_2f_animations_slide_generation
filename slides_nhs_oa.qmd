@@ -7,7 +7,10 @@ author:
 format:
   live-revealjs:
     output-file: index_nhs_oa.html # ensures picked up by github hosting
-    output-dir: docs_nhs_oa
+# The output *directory* (docs_nhs_oa/) comes from the nhs_oa project
+# profile (_quarto-nhs_oa.yml), not from a per-document key here -- Quarto
+# silently ignores a per-document output-dir for this project type. Render
+# this deck with `quarto render --profile nhs_oa`.
 # Shared format/execute/filters/plugins config lives in _metadata.yml --
 # Quarto merges it in automatically for every document in the project,
 # including sections rendered/previewed standalone. Keeping it out of here
@@ -19,7 +22,6 @@ format:
 
 {{< include _SECTION_what_is_vidigi.qmd >}}
 
-{{< include _SECTION_nhs_oa_vidigi_showcase.qmd >}}
 
 
 {{< include _SECTION_elements_of_vidigi_simple.qmd >}}
@@ -30,7 +32,7 @@ format:
 
 
 
-
+{{< include _SECTION_nhs_oa_vidigi_showcase.qmd >}}
 
 
 {{< include _SECTION_vidigi_exercise_nhs_oa.qmd >}}

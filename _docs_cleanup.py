@@ -8,6 +8,9 @@ and it does not respect `.gitignore`. Left alone, `docs/` silently fills up
 with your source files, `data/` folders, `__pycache__/`, lockfiles, notes,
 and multi-megabyte Jupyter intermediates, all of which then get published to
 GitHub Pages. In one HSMA deck repo this grew the published folder to 1.4GB.
+With multiple decks/profiles (see below), this mirroring can also leak one
+deck's own output files into another deck's output-dir -- the allowlist
+guards against that too.
 
 Two things that look like fixes but are not:
   * `.quartoignore` only affects `quarto use template` scaffolding. It has
@@ -18,11 +21,20 @@ Two things that look like fixes but are not:
 So this script runs after every render and deletes everything in the output
 directory that isn't on an explicit allowlist.
 
-CONFIGURATION LIVES IN `_quarto.yml`, NOT IN HERE:
+CONFIGURATION LIVES IN `_quarto.yml` (AND `_quarto-<profile>.yml`), NOT HERE:
   * the output directory comes from `project: output-dir:`
   * the allowlist comes from the top-level `docs-keep:` list
 
-Edit that list -- not this file -- when your deck gains a new folder.
+If this project renders more than one deck via project profiles
+(`quarto render --profile <name>`, see `_quarto-<name>.yml`), each profile
+file can declare its own `project: output-dir:` and its own `docs-keep:` --
+this script picks whichever one matches the output directory actually in use
+for the current render, so one deck's files don't get kept as if they
+belonged in another deck's output-dir. A profile file that only overrides
+`output-dir` and not `docs-keep` inherits the base file's list.
+
+Edit `docs-keep:` (in the right file) -- not this file -- when a deck gains
+a new folder.
 """
 
 import os
@@ -32,7 +44,7 @@ from pathlib import Path
 
 try:
     import yaml
-except ImportError:  # pyyaml missing -- see read_keep_list() for the fallback
+except ImportError:  # pyyaml missing -- see load_config() for the fallback
     yaml = None
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -44,12 +56,6 @@ def warn(message):
     print(f"_docs_cleanup.py: {message}")
     print("_docs_cleanup.py: nothing deleted.")
     sys.exit(0)
-
-
-def read_yaml_text():
-    if not QUARTO_YML.is_file():
-        warn(f"could not find {QUARTO_YML.name}")
-    return QUARTO_YML.read_text(encoding="utf-8")
 
 
 def parse_simple_list(text, key):
@@ -81,18 +87,6 @@ def parse_simple_list(text, key):
     return entries
 
 
-def read_keep_list(text):
-    if yaml is not None:
-        config = yaml.safe_load(text)
-        config = config if isinstance(config, dict) else {}
-        return config.get("docs-keep")
-    print(
-        "_docs_cleanup.py: pyyaml not installed (pip install pyyaml) -- "
-        "falling back to simple parsing of docs-keep"
-    )
-    return parse_simple_list(text, "docs-keep")
-
-
 def parse_simple_scalar(text, key):
     """Fallback reader for a `key: value` line, used when pyyaml is absent."""
     for raw in text.splitlines():
@@ -102,32 +96,72 @@ def parse_simple_scalar(text, key):
     return None
 
 
-def read_output_dir(text):
-    """Quarto sets QUARTO_PROJECT_OUTPUT_DIR for pre/post-render scripts.
-    Fall back to _quarto.yml, then to the Quarto default of 'docs'."""
+def load_config(path):
+    """Read a _quarto.yml / _quarto-<profile>.yml into
+    {"docs-keep": [...] | None, "output-dir": str | None}."""
+    text = path.read_text(encoding="utf-8")
+    if yaml is not None:
+        config = yaml.safe_load(text)
+        config = config if isinstance(config, dict) else {}
+        return {
+            "docs-keep": config.get("docs-keep"),
+            "output-dir": (config.get("project") or {}).get("output-dir"),
+        }
+    print(
+        "_docs_cleanup.py: pyyaml not installed (pip install pyyaml) -- "
+        "falling back to simple parsing"
+    )
+    return {
+        "docs-keep": parse_simple_list(text, "docs-keep") or None,
+        "output-dir": parse_simple_scalar(text, "output-dir"),
+    }
+
+
+def load_candidates():
+    """One entry per known project config (base + each profile override),
+    as (output-dir-relative-path, docs-keep-list)."""
+    if not QUARTO_YML.is_file():
+        warn(f"could not find {QUARTO_YML.name}")
+
+    base = load_config(QUARTO_YML)
+    candidates = [(base["output-dir"] or "docs", base["docs-keep"])]
+
+    for profile_path in sorted(PROJECT_ROOT.glob("_quarto-*.yml")):
+        profile = load_config(profile_path)
+        if not profile["output-dir"]:
+            continue  # doesn't change output-dir -- nothing extra to match
+        candidates.append((profile["output-dir"], profile["docs-keep"] or base["docs-keep"]))
+
+    return candidates
+
+
+def resolve_output_dir(default_relative):
+    """Quarto sets QUARTO_PROJECT_OUTPUT_DIR for pre/post-render scripts --
+    that's the ground truth for what actually got rendered this time."""
     output_dir = os.environ.get("QUARTO_PROJECT_OUTPUT_DIR")
-    if not output_dir:
-        if yaml is not None:
-            config = yaml.safe_load(text)
-            if isinstance(config, dict):
-                output_dir = (config.get("project") or {}).get("output-dir")
-        else:
-            output_dir = parse_simple_scalar(text, "output-dir")
-    return (PROJECT_ROOT / (output_dir or "docs")).resolve()
+    return (PROJECT_ROOT / (output_dir or default_relative)).resolve()
 
 
 def main():
-    text = read_yaml_text()
+    candidates = load_candidates()
+    output_dir = resolve_output_dir(candidates[0][0])
 
-    keep = read_keep_list(text)
+    keep = None
+    for relative, candidate_keep in candidates:
+        if (PROJECT_ROOT / relative).resolve() == output_dir:
+            keep = candidate_keep
+            break
+    else:
+        # No config declares this output-dir (e.g. a one-off --output-dir on
+        # the command line) -- fall back to the base allowlist.
+        keep = candidates[0][1]
+
     if not isinstance(keep, list) or not keep:
         warn(
-            "no `docs-keep:` list found in _quarto.yml -- refusing to guess "
-            "what is safe to delete"
+            "no matching `docs-keep:` list found for this output-dir -- "
+            "refusing to guess what is safe to delete"
         )
     keep = set(keep)
-
-    output_dir = read_output_dir(text)
 
     # Safety rails: never let a misconfigured output-dir turn this into
     # "delete the project".

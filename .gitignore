@@ -13,10 +13,11 @@ _freeze/
 .vscode/
 
 # scratch output dir for single-section preview renders, e.g.
-# quarto preview sections/_foo.qmd --output-dir _preview
+# quarto preview _SECTION_foo.qmd --output-dir _preview
 _preview/
 
 _SECTION_*.html
 
 _SECTION_*/*
 slides_files/
+slides_nhs_oa_files/
