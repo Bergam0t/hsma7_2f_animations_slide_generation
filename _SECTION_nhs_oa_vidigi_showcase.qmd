@@ -1,9 +1,791 @@
-
+# Showcase
 
 ## Advanced Animations
 
+:::: {.columns}
+
+::: {.column width='20%'}
+Animations can be enhanced with additional information about individual entities and the whole system.
+:::
+
+::: {.column width='80%'}
+
+
+```{python}
+#| echo: false
+#| eval: true
+import itertools
+import random
+import simpy
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+from IPython.display import HTML
+
+from vidigi.logging import EventLogger, TrialLogger
+from vidigi.resources import VidigiStore
+from vidigi.animation import (
+    add_subplot_panels,
+    add_synchronised_trace_from_dataframe,
+    generate_animation,
+)
+from vidigi.prep import generate_animation_df, reshape_for_animations
+from vidigi.utils import EventPosition, create_event_position_df
+```
+
+```{python}
+#| echo: false
+#| eval: true
+"""
+Gas Station Refueling example
+
+Covers:
+
+- Resources: Resource
+- Resources: Container
+- Waiting for other processes
+
+Scenario:
+  A gas station has a limited number of gas pumps that share a common
+  fuel reservoir. Cars randomly arrive at the gas station, request one
+  of the fuel pumps and start refueling from that reservoir.
+
+  A gas station control process observes the gas station's fuel level
+  and calls a tank truck for refueling if the station's level drops
+  below a threshold.
+
+  simpy model (simpy_gas_stations.py) written by Team SimPy as part of SimPy documentation.
+
+"""
+
+
+# fmt: off
+RANDOM_SEED = 42
+STATION_TANK_SIZE = 600    # MODIFIED FROM EXAMPLE: Size of the gas station tank (liters)
+THRESHOLD = 25             # Station tank minimum level (% of full)
+CAR_TANK_SIZE = 50         # Size of car fuel tanks (liters)
+CAR_TANK_LEVEL = [5, 25]   # Min/max levels of car fuel tanks (liters)
+PAYMENT_TIME = [30, 90]    # MODIFICATION: Time it takes to pay
+REFUELING_SPEED = 1        # MODIFIED FROM EXAMPLE: Rate of refuelling car fuel tank (liters / second)
+TANK_TRUCK_ARRIVAL_TIME = 300  # Time it takes tank truck to arrive (seconds)
+TANK_TRUCK_REFUEL_TIME = 1000  # MODIFICATION: Time it takes tank truck to fill the station tank (seconds)
+T_INTER = [15, 90]        # Interval between car arrivals [min, max] (seconds)
+SIM_TIME = 60*60*6           # Simulation duration (seconds)
+# fmt: on
+
+
+def car(name, env, gas_station, station_tank, logger):
+    """A car arrives at the gas station for refueling.
+
+    It requests one of the gas station's fuel pumps and tries to get the
+    desired amount of fuel from it. If the station's fuel tank is
+    depleted, the car has to wait for the tank truck to arrive.
+
+    """
+    car_tank_level = random.randint(*CAR_TANK_LEVEL)
+    logger.log_arrival(entity_id=name)
+    # print(f"{env.now:6.1f} s: {name} arrived at gas station")
+    logger.log_queue(
+        entity_id=name,
+        event="pump_queue_wait_begins",
+        fuel_level_start=car_tank_level,
+        fuel_level_end=CAR_TANK_SIZE,
+    )
+    with gas_station.request() as req:
+        # Request one of the gas pumps
+        gas_pump = yield req
+
+        # Get the required amount of fuel
+        fuel_required = CAR_TANK_SIZE - car_tank_level
+        yield station_tank.get(fuel_required)
+
+        logger.log_resource_use_start(
+            entity_id=name,
+            event="payment_begins",
+            resource_id=gas_pump.id_attribute,
+            fuel_level_start=car_tank_level,
+            fuel_level_end=CAR_TANK_SIZE,
+        )
+
+        yield env.timeout(random.randint(*PAYMENT_TIME))
+
+        logger.log_resource_use_end(
+            entity_id=name,
+            event="payment_ends",
+            resource_id=gas_pump.id_attribute,
+            fuel_level_start=car_tank_level,
+            fuel_level_end=CAR_TANK_SIZE,
+        )
+
+        logger.log_resource_use_start(
+            entity_id=name,
+            event="pumping_begins",
+            resource_id=gas_pump.id_attribute,
+            fuel_level_start=car_tank_level,
+            fuel_level_end=CAR_TANK_SIZE,
+        )
+
+        # The "actual" refueling process takes some time
+        yield env.timeout(fuel_required / REFUELING_SPEED)
+
+        logger.log_resource_use_end(
+            entity_id=name,
+            event="pumping_ends",
+            resource_id=gas_pump.id_attribute,
+            fuel_level_start=car_tank_level,
+            fuel_level_end=CAR_TANK_SIZE,
+        )
+
+        # print(f"{env.now:6.1f} s: {name} refueled with {fuel_required:.1f}L")
+        logger.log_departure(entity_id=name)
+
+
+def gas_station_control(env, station_tank, logger):
+    """Periodically check the level of the gas station tank and call the tank
+    truck if the level falls below a threshold."""
+    truck_call_id = 0
+
+    while True:
+        if station_tank.level / station_tank.capacity * 100 < THRESHOLD:
+            # We need to call the tank truck now!
+            logger.log_arrival(entity_id=f"Call {truck_call_id}")
+            logger.log_queue(entity_id=f"Call {truck_call_id}", event="calling_truck")
+            # print(f"{env.now:6.1f} s: Calling tank truck")
+            # Wait for the tank truck to arrive and refuel the station tank
+            yield env.process(tank_truck(env, station_tank, logger, truck_call_id))
+
+            truck_call_id += 1
+
+        yield env.timeout(120)  # Check every 120 seconds
+
+# Modification to make refuelling a smooth, loggable process
+def tank_truck(env, station_tank, logger, truck_call_id):
+    """Tank truck arrives and refuels the station tank for a fixed duration."""
+    yield env.timeout(TANK_TRUCK_ARRIVAL_TIME)
+    logger.log_departure(entity_id=f"Call {truck_call_id}")
+    logger.log_arrival(entity_id=f"Truck {truck_call_id}")
+    logger.log_queue(entity_id=f"Truck {truck_call_id}", event="refuelling")
+
+    refuel_time = TANK_TRUCK_REFUEL_TIME  # total time truck stays
+    refuel_rate = 10  # L/s (or adjust based on need)
+    step = 1  # seconds between each refill step
+
+    total_refueled = 0
+    elapsed = 0
+
+    while (elapsed < refuel_time) | station_tank.level < (
+        STATION_TANK_SIZE - (STATION_TANK_SIZE * 0.02)
+    ):
+        yield env.timeout(step)
+        elapsed += step
+
+        increment = refuel_rate * step
+        space_available = station_tank.capacity - station_tank.level
+        actual_increment = min(increment, space_available)
+
+        if actual_increment > 0:
+            station_tank.put(actual_increment)
+            total_refueled += actual_increment
+
+    # print(
+    #     f"{env.now:6.1f} s: Truck {truck_call_id} refueled station with {total_refueled:.1f}L"
+    # )
+    logger.log_departure(entity_id=f"Truck {truck_call_id}")
+
+
+def car_generator(env, gas_station, station_tank, logger):
+    """Generate new cars that arrive at the gas station."""
+    for i in itertools.count():
+        yield env.timeout(random.randint(*T_INTER))
+        env.process(car(f"Car {i}", env, gas_station, station_tank, logger))
+
+
+def fuel_monitor(env, station_tank, logger, interval=1):
+    """Logs the fuel level at regular intervals."""
+    while True:
+        logger.log_queue(
+            entity_id="StationTank",
+            event_type="fuel_level_change",
+            event="fuel_level_change",
+            value=station_tank.level,
+        )
+        yield env.timeout(interval)
+
+
+# Setup and start the simulation
+# print("Gas Station refuelling")
+random.seed(RANDOM_SEED)
+
+# Create environment and start processes
+env = simpy.Environment()
+gas_station = VidigiStore(env, num_resources=2, label="pump")
+station_tank = simpy.Container(env, capacity=STATION_TANK_SIZE, init=STATION_TANK_SIZE)
+logger = EventLogger(env=env)
+logger.log_queue(
+    entity_id="parameter",
+    event_type="parameter",
+    event="tank_size",
+    value=STATION_TANK_SIZE,
+)
+env.process(gas_station_control(env, station_tank, logger))
+env.process(car_generator(env, gas_station, station_tank, logger))
+env.process(fuel_monitor(env, station_tank, logger))
+
+
+# Execute!
+env.run(until=SIM_TIME)
+
+logger.to_csv("gas_station_log.csv")
+
+event_log_df = pd.read_csv("gas_station_log.csv")
+
+STEP_SNAPSHOT_MAX = 6
+LIMIT_DURATION = 60 * 60 * 3
+WRAP_QUEUES_AT = 3
+
+# Define positions for animation
+event_positions = create_event_position_df(
+    [
+        EventPosition(event="arrival", x=0, y=400, label="Entrance"),
+        EventPosition(event="pump_queue_wait_begins", x=400, y=350, label="Queue"),
+        EventPosition(
+            event="payment_begins",
+            x=340,
+            y=175,
+            resource="num_pumps",
+            label="Pumping Gas",
+        ),
+        EventPosition(
+            event="pumping_begins",
+            x=340,
+            y=175,
+            resource="num_pumps",
+            label="Pumping Gas",
+        ),
+        EventPosition(event="calling_truck", x=140, y=50, label="Calling Truck"),
+        EventPosition(event="refuelling", x=340, y=50, label="Truck Filling Tank"),
+        EventPosition(event="depart", x=250, y=50, label="Exit"),
+    ]
+)
+
+
+class Params:
+    def __init__(self):
+        self.num_pumps = 2
+
+
+icon_list = [
+    "🚗",
+    "🚙",
+    "🚓",
+    "🚗",
+    "🚙",
+    "🏍️",
+    "🏍️",
+    "🚗",
+    "🚙",
+    "🚑",
+    "🚗",
+    "🚙",
+    "🛻",
+    "🚗",
+    "🚙",
+    "🚛",
+    "🚗",
+    "🚙",
+    "🚕",
+    "🚗",
+    "🚙",
+    "🚒",
+    "🚗",
+    "🚙",
+    "🚑",
+]
+
+random.shuffle(icon_list)
+
+full_entity_df = reshape_for_animations(
+    event_log=event_log_df,
+    every_x_time_units=5,
+    step_snapshot_max=STEP_SNAPSHOT_MAX,
+    limit_duration=LIMIT_DURATION,
+    debug_mode=False,
+)
+
+full_entity_df_plus_pos = generate_animation_df(
+    full_entity_df=full_entity_df,
+    event_position_df=event_positions,
+    wrap_queues_at=WRAP_QUEUES_AT,
+    step_snapshot_max=STEP_SNAPSHOT_MAX,
+    gap_between_entities=150,
+    gap_between_resources=180,
+    gap_between_queue_rows=150,
+    # gap_between_resource_rows=60,
+    debug_mode=False,
+    custom_entity_icon_list=icon_list,
+)
+
+def build_fuel_bar(value, max_value=50, length=10):
+    """Create an ASCII bar to show fuel level."""
+    try:
+        if value is None or (
+            isinstance(value, float) and (value != value)
+        ):  # check for None or NaN
+            proportion = 0
+        else:
+            proportion = min(max(value / max_value, 0), 1)
+    except Exception:
+        proportion = 0  # fallback
+
+    filled = int(proportion * length)
+    empty = length - filled
+    filled_icon = "█"
+    empty_icon = "░"
+    return "[" + filled_icon * filled + empty_icon * empty + "]"
+
+## Same as before, but increase the height to give space for some of it to be taken up by the bar plot later
+
+def custom_icon_rules(row):
+    icon = row.get("icon", "")
+    entity_id = row.get("entity_id", "")
+    event = row.get("event", "")
+    fuel_level_start = row.get("fuel_level_start", None)  # Only for cars
+
+    if "more" not in str(icon):
+        if isinstance(entity_id, str):
+            if "Truck" in entity_id:
+                return "🚚 Truck is refilling the tank..."
+            elif "Call" in entity_id:
+                return "☎️ Calling Truck!"
+            elif "Car" in entity_id:
+                bar = ""
+                if (
+                    event == "arrival" or event == "pump_queue_wait_begins"
+                ) and fuel_level_start is not None:
+                    bar = " " + build_fuel_bar(fuel_level_start)
+                    return icon + "<br>" + bar + "<br><br>"
+                elif event == "payment_begins" and fuel_level_start is not None:
+                    bar = " " + build_fuel_bar(fuel_level_start)
+                    return icon + "<br>" + bar + "<br> Paying"
+                elif event == "pumping_begins" and fuel_level_start is not None:
+                    arrival_time = row["time"]
+                    elapsed = max(float(row["snapshot_time"]) - float(arrival_time), 0)
+                    current_fuel = min(fuel_level_start + elapsed * 1, 50)
+                    bar = " " + build_fuel_bar(current_fuel)
+                    return icon + "<br>" + bar + "<br> Pumping"
+                elif event == "departure" or event == "pumping_ends":
+                    bar = " " + build_fuel_bar(50)  # Car is full when it leaves
+                    return icon + "<br>" + bar + "<br> <br>"
+
+            else:
+                return icon
+    return icon
+
+
+full_entity_df_plus_pos = full_entity_df_plus_pos.assign(
+    icon=full_entity_df_plus_pos.apply(custom_icon_rules, axis=1)
+)
+
+fig = generate_animation(
+    full_entity_df_plus_pos=full_entity_df_plus_pos.sort_values(
+        ["entity_id", "snapshot_time"]
+    ),
+    event_position_df=event_positions,
+    scenario=Params(),
+    simulation_time_unit="seconds",
+    plotly_height=650,
+    plotly_width=850,
+    override_x_max=500,
+    override_y_max=750,
+    entity_icon_size=18,
+    gap_between_resources=180,
+    display_stage_labels=False,
+    # resource_opacity=1,
+    resource_opacity=0,
+    setup_mode=False,
+    # custom_resource_icon="⛽",
+    resource_icon_size=40,
+    add_background_image="https://raw.githubusercontent.com/hsma-tools/vidigi/refs/heads/main/examples/example_15_gas_station_refuelling/gas_station.png",
+    background_image_opacity=1,  # New parameter in 1.1.0
+    overflow_text_color="white",  # New parameter in 1.1.0
+    start_time="09:00:00",
+    time_display_units="%H:%M:%S",
+    debug_mode=False,
+    frame_duration=100,
+    frame_transition_duration=100,
+)
+
+fig = add_subplot_panels(
+    fig,
+    row_heights=[0.78, 0.22],
+    subplot_titles=("", "Station Tank Fuel Level"),
+    hide_new_panel_axes=False,
+)
+
+# One tank reading per animation snapshot (forward-filled between fuel_level_change events)
+tank_level = (
+    event_log_df.loc[
+        event_log_df["event_type"] == "fuel_level_change", ["time", "value"]
+    ]
+    .drop_duplicates("time")
+    .set_index("time")["value"]
+)
+
+station_fuel_df = pd.DataFrame(
+    {"snapshot_time": sorted(full_entity_df_plus_pos["snapshot_time"].unique())}
+)
+station_fuel_df["fuel_level"] = (
+    station_fuel_df["snapshot_time"].map(tank_level).ffill().bfill()
+)
+
+
+def fuel_bar(rows):
+    return go.Bar(
+        x=["Station Tank"],
+        y=list(rows["fuel_level"]),
+        marker_color="#4c78a8",
+        showlegend=False,
+        xaxis="x2",
+        yaxis="y2",
+    )
+
+
+fig = add_synchronised_trace_from_dataframe(
+    fig,
+    station_fuel_df,
+    fuel_bar,
+    frame_time_col="snapshot_time",
+    match="index",
+    accumulate=False,
+)
+
+fig.update_yaxes(range=[0, station_fuel_df["fuel_level"].max() * 1.1], row=2, col=1)
+
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```
+
+:::
+
+::::
 
 ## Plots
 
+Vidigi's EventLogger and TrialLogger come with a wide range of built in plots, helping us to understand how our model is working and communicate this.
+
+
+```{python}
+#| echo: false
+#| eval: true
+import simpy
+from sim_tools.distributions import Exponential, Lognormal
+import pandas as pd
+import math
+from scipy import stats
+import numpy as np
+
+class Patient:
+    def __init__(self, p_id):
+        self.id = p_id
+
+        self.q_time_registration = pd.NA
+        self.q_time_nurse = pd.NA
+
+class Param:
+    def __init__(
+        self,
+        mean_patient_inter = 3,
+        mean_registration_time = 3,
+        sd_registration_time = 0.5,
+        mean_nurse_consult_time = 6,
+        sd_nurse_consult_time = 1,
+        num_receptionists = 1,
+        num_nurses = 1,
+        sim_duration = 120,
+        num_replications = 5
+    ):
+        self.mean_patient_inter = mean_patient_inter
+        self.mean_registration_time = mean_registration_time
+        self.sd_registration_time = sd_registration_time
+        self.mean_nurse_consult_time = mean_nurse_consult_time
+        self.sd_nurse_consult_time = sd_nurse_consult_time
+        self.num_receptionists = num_receptionists
+        self.num_nurses = num_nurses
+        self.sim_duration = sim_duration
+        self.num_replications = num_replications
+
+class Model:
+    def __init__(self, param, replication_id):
+        self.param = param
+        self.replication_id = replication_id
+        self.env = simpy.Environment()
+
+        self.logger = EventLogger(env=env, run_number=self.replication_id)
+
+        self.patient_counter = 0
+
+        self.receptionist = VidigiStore(
+            self.env, num_resources=self.param.num_receptionists, label="receptionist", logger=self.logger
+        )
+        self.nurse = VidigiStore(self.env, num_resources=self.param.num_nurses, label="nurse", logger=self.logger)
+
+        ss = np.random.SeedSequence(self.replication_id)
+        seeds = ss.spawn(3)
+        self.patient_inter_dist = Exponential(
+            mean=self.param.mean_patient_inter,
+            random_seed=seeds[0]
+        )
+        self.registration_time_dist = Lognormal(
+            mean=self.param.mean_registration_time,
+            stdev=self.param.sd_registration_time,
+            random_seed=seeds[1]
+        )
+        self.nurse_consult_time_dist = Lognormal(
+            mean=self.param.mean_nurse_consult_time,
+            stdev=self.param.sd_nurse_consult_time,
+            random_seed=seeds[2]
+        )
+
+        self.list_of_patients = []
+        self.mean_q_time_registration = pd.NA
+        self.sd_q_time_registration = pd.NA
+        self.perc_90_q_time_registration = pd.NA
+        self.mean_q_time_nurse = pd.NA
+        self.sd_q_time_nurse = pd.NA
+        self.perc_90_q_time_nurse = pd.NA
+
+class Model(Model):
+    def attend_clinic(self, patient):
+        start_q_registration = self.env.now
+
+        self.logger.log_arrival(entity_id=patient.id)
+        self.logger.log_queue(entity_id=patient.id, event="start_queue_receptionist")
+
+
+        with self.receptionist.request(entity_id=patient.id, start_event="begin_receptionist_checkin", end_event="end_receptionist_checkin") as req:
+            yield req
+            end_q_registration = self.env.now
+            patient.q_time_registration = (
+                end_q_registration - start_q_registration
+            )
+            sampled_reg_act_time = self.registration_time_dist.sample()
+            yield self.env.timeout(sampled_reg_act_time)
+
+        start_q_nurse = self.env.now
+        self.logger.log_queue(entity_id=patient.id, event="start_queue_nurse")
+
+        with self.nurse.request(entity_id=patient.id, start_event="begin_nurse_consult", end_event="complete_nurse_consult") as req:
+            yield req
+            end_q_nurse = self.env.now
+            patient.q_time_nurse = end_q_nurse - start_q_nurse
+            sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
+            yield self.env.timeout(sampled_nurse_act_time)
+
+        self.logger.log_departure(entity_id=patient.id)
+
+class Model(Model):
+    def generator_patient_arrivals(self):
+        while True:
+            self.patient_counter += 1
+            p = Patient(self.patient_counter)
+            self.list_of_patients.append(p)
+            self.env.process(self.attend_clinic(p))
+            sampled_inter = self.patient_inter_dist.sample()
+            yield self.env.timeout(sampled_inter)
+
+    def run_model(self):
+        self.env.process(self.generator_patient_arrivals())
+        self.env.run(until=self.param.sim_duration)
+
+    def convert_entity_list_to_dataframe(self, entity_list):
+        entity_dateframe = pd.DataFrame(
+            entity.__dict__ for entity in entity_list
+        )
+
+        return entity_dateframe
+
+    def calculate_run_results(self, entity_dataframe):
+        self.mean_q_time_registration = (
+            entity_dataframe["q_time_registration"].mean()
+        )
+        self.sd_q_time_registration = (
+            entity_dataframe["q_time_registration"].std()
+        )
+        self.perc_90_q_time_registration = (
+            entity_dataframe["q_time_registration"].quantile(0.9)
+        )
+
+        self.mean_q_time_nurse = (
+            entity_dataframe["q_time_nurse"].mean()
+        )
+        self.sd_q_time_nurse = entity_dataframe["q_time_nurse"].std()
+        self.perc_90_q_time_nurse = (
+            entity_dataframe["q_time_nurse"].quantile(0.9)
+        )
+
+from vidigi.logging import TrialLogger
+
+class Trial:
+    def __init__(self, param):
+        self.param = param
+        self.list_of_simulation_replications = []
+        self.trial_mean_q_time_registration = pd.NA
+        self.trial_sd_q_time_registration = pd.NA
+        self.trial_perc_90_q_time_registration = pd.NA
+        self.trial_mean_q_time_nurse = pd.NA
+        self.trial_sd_q_time_nurse = pd.NA
+        self.trial_perc_90_q_time_nurse = pd.NA
+        self.ci_lower_q_time_registration = pd.NA
+        self.ci_upper_q_time_registration = pd.NA
+        self.se_q_time_registration = pd.NA
+        self.ci_lower_q_time_nurse = pd.NA
+        self.ci_upper_q_time_nurse = pd.NA
+        self.se_q_time_nurse = pd.NA
+        self.trial_logger = TrialLogger()
+
+    def run_trial(self):
+        for replication_id in range(self.param.num_replications):
+            model_replication = Model(self.param, replication_id)
+            model_replication.run_model()
+            patient_df = model_replication.convert_entity_list_to_dataframe(
+                model_replication.list_of_patients
+            )
+            model_replication.calculate_run_results(patient_df)
+            self.list_of_simulation_replications.append(model_replication)
+            self.trial_logger.add_log(model_replication.logger)
+
+    def calculate_trial_results(self):
+        self.replication_df = pd.DataFrame(
+            replication.__dict__ for replication in
+            self.list_of_simulation_replications
+        )
+
+        self.trial_mean_q_time_registration = (
+            self.replication_df["mean_q_time_registration"].mean()
+        )
+        self.trial_sd_q_time_registration = (
+            self.replication_df["mean_q_time_registration"].std()
+        )
+        self.trial_perc_90_q_time_registration = (
+            self.replication_df["mean_q_time_registration"].quantile(0.9)
+        )
+
+        self.trial_mean_q_time_nurse = (
+            self.replication_df["mean_q_time_nurse"].mean()
+        )
+        self.trial_sd_q_time_nurse = (
+            self.replication_df["mean_q_time_nurse"].std()
+        )
+        self.trial_perc_90_q_time_nurse = (
+            self.replication_df["mean_q_time_nurse"].quantile(0.9)
+        )
+
+        self.se_q_time_registration = (
+            self.trial_sd_q_time_registration / math.sqrt(
+                self.param.num_replications
+            )
+        )
+
+        self.se_q_time_nurse = (
+            self.trial_sd_q_time_nurse / math.sqrt(self.param.num_replications)
+        )
+
+        t = stats.t.ppf(0.975, df=self.param.num_replications-1)
+
+        self.ci_lower_q_time_registration = (
+            self.trial_mean_q_time_registration - (
+                t * self.se_q_time_registration
+            )
+        )
+        self.ci_upper_q_time_registration = (
+            self.trial_mean_q_time_registration + (
+                t * self.se_q_time_registration
+            )
+        )
+
+        self.ci_lower_q_time_nurse = (
+            self.trial_mean_q_time_nurse - (t * self.se_q_time_nurse)
+        )
+        self.ci_upper_q_time_nurse = (
+            self.trial_mean_q_time_nurse + (t * self.se_q_time_nurse)
+        )
+```
+
+```{python}
+#| echo: false
+#| eval: true
+base_case_params = Param()
+base_case_trial = Trial(base_case_params)
+base_case_trial.run_trial()
+base_case_trial.calculate_trial_results()
+
+what_if_params = Param(num_nurses=2, num_receptionists=2)
+what_if_trial = Trial(what_if_params)
+what_if_trial.run_trial()
+what_if_trial.calculate_trial_results()
+```
+
+:::: {.columns}
+
+::: {.column width='50%'}
+
+```{python}
+#| eval: true
+#| echo: true
+base_case_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptionist", "start_queue_nurse"], limit_duration=base_case_params.sim_duration)
+```
+
+:::
+
+::: {.column width='50%'}
+
+```{python}
+#| eval: true
+#| echo: true
+what_if_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptionist", "start_queue_nurse"], limit_duration=what_if_params.sim_duration)
+```
+
+:::
+
+::::
+
+
+
 
 ## Process Maps
+
+Vidigi also provides **process map-style outputs**. These may be familiar if you've played around with the BupaR package.
+
+While these aren't animated, they can provide a valuable way to check your model is working correctly, particularly for different subsets of patients with different pathways.
+
+We can see an example below - this type of graph is called a [**Directly Follows Graph (DFG)**]{style="color:yellow"}
+
+
+```{python}
+#| echo: true
+#| eval: true
+#| lightbox: true
+base_case_trial.trial_logger.generate_dfg(run_number=1)
+```
+
+```{python}
+#| echo: true
+#| eval: true
+#| lightbox: true
+what_if_trial.trial_logger.generate_dfg(run_number=1)
+```
+
+## Process Maps
+
+:::: {.columns}
+
+::: {.column width='50%'}
+These become even more valuable as your systems become more complex.
+:::
+
+::: {.column width='50%'}
+![](assets\2026-08-11-16-35-14.png){height=650 .lightbox}
+:::
+
+::::
