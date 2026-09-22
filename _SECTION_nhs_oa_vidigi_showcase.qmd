@@ -470,10 +470,48 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 
 ::::
 
-## Plots
 
+## Advanced Animations - Ward Example
+
+:::: {.columns}
+
+::: {.column width='30%'}
+
+:::
+
+::: {.column width='70%'}
+![](assets/ward_example_orthopaedic.gif){.lightbox}
+:::
+
+::::
+
+
+
+
+## Advanced Animations - Longer Timescales or Larger Systems
+
+:::: {.columns}
+
+::: {.column width='30%'}
+And there are ways we can use vidigi with larger systems that run over weeks or months and involve hundreds or even thousands of patients.
+:::
+
+::: {.column width='70%'}
+![](assets/Code_1471lS0m98.gif){.lightbox}
+
+:::
+
+::::
+
+
+
+
+
+## Plots - Queues
+
+::: {style='font-size: 75%;'}
 Vidigi's EventLogger and TrialLogger come with a wide range of built in plots, helping us to understand how our model is working and communicate this.
-
+:::
 
 ```{python}
 #| echo: false
@@ -521,7 +559,7 @@ class Model:
         self.replication_id = replication_id
         self.env = simpy.Environment()
 
-        self.logger = EventLogger(env=env, run_number=self.replication_id)
+        self.logger = EventLogger(env=self.env, run_number=self.replication_id)
 
         self.patient_counter = 0
 
@@ -731,9 +769,20 @@ what_if_trial.calculate_trial_results()
 ::: {.column width='50%'}
 
 ```{python}
-#| eval: true
+#| eval: false
 #| echo: true
-base_case_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptionist", "start_queue_nurse"], limit_duration=base_case_params.sim_duration)
+
+base_case_trial.trial_logger.plot_queue_size(
+    event_list=["start_queue_receptionist", "start_queue_nurse"],
+    limit_duration=base_case_params.sim_duration
+    )
+```
+
+
+```{python}
+#| eval: true
+#| echo: false
+HTML(base_case_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptionist", "start_queue_nurse"], limit_duration=base_case_params.sim_duration, width=600, height=400, title="Queues - 1 nurse, 1 receptionist").to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 :::
@@ -741,9 +790,19 @@ base_case_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptioni
 ::: {.column width='50%'}
 
 ```{python}
-#| eval: true
+#| eval: false
 #| echo: true
-what_if_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptionist", "start_queue_nurse"], limit_duration=what_if_params.sim_duration)
+
+what_if_trial.trial_logger.plot_queue_size(
+    event_list=["start_queue_receptionist", "start_queue_nurse"],
+    limit_duration=base_case_params.sim_duration
+    )
+```
+
+```{python}
+#| eval: true
+#| echo: false
+HTML(what_if_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptionist", "start_queue_nurse"], limit_duration=what_if_params.sim_duration, width=600, height=400, title="Queues - 2 nurses, 2 receptionists").to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
 
 :::
@@ -751,6 +810,57 @@ what_if_trial.trial_logger.plot_queue_size(event_list=["start_queue_receptionist
 ::::
 
 
+
+## Plots - Resource Utilisation
+
+:::: {.columns}
+
+::: {.column width='50%'}
+```{python}
+#| eval: false
+#| echo: true
+
+base_case_trial.trial_logger.compare_resource_utilisation(
+    scenario=base_case_params,
+    resource_map={
+        'begin_receptionist_checkin': 'num_receptionists',
+        'begin_nurse_consult': 'num_nurses'
+        })
+```
+
+```{python}
+#| eval: true
+#| echo: false
+
+HTML(base_case_trial.trial_logger.plot_resource_utilisation(scenario=base_case_params, resource_map={'begin_receptionist_checkin': 'num_receptionists', 'begin_nurse_consult': 'num_nurses'}).to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```
+
+:::
+
+::: {.column width='50%'}
+```{python}
+#| eval: false
+#| echo: true
+
+what_if_trial.trial_logger.compare_resource_utilisation(
+    scenario=what_if_params,
+    resource_map={
+        'begin_receptionist_checkin': 'num_receptionists',
+        'begin_nurse_consult': 'num_nurses'
+        })
+```
+
+
+```{python}
+#| eval: true
+#| echo: false
+
+HTML(what_if_trial.trial_logger.plot_resource_utilisation(scenario=what_if_params, resource_map={'begin_receptionist_checkin': 'num_receptionists', 'begin_nurse_consult': 'num_nurses'}).to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```
+
+:::
+
+::::
 
 
 ## Process Maps

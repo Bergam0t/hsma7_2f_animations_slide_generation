@@ -307,3 +307,22 @@ iframe.stlite {
 .reveal div.cell-output-display .custom-widget canvas {
   background-color: transparent;
 }
+
+// Same blanket `div.cell-output-display canvas { background-color: #fff }`
+// rule, same failure shape, different widget: Plotly Express auto-switches
+// `px.line`/`px.scatter` to WebGL (`scattergl`) once a trace has enough
+// points (e.g. TrialLogger.plot_queue_size on a multi-run, fine-grained
+// snapshot grid easily crosses that threshold). A WebGL subplot stacks
+// THREE canvases per axis - `gl-canvas-context` (the actual rendered
+// points/lines), then `gl-canvas-focus` and `gl-canvas-pick` on top, both
+// normally left empty/transparent (focus repaints hover highlights,
+// pick is an offscreen hit-testing buffer never meant to be seen). The
+// blanket white background opacifies all three, so the two empty top
+// layers permanently hide the traces drawn on the layer underneath -
+// legend, axis titles and hover still work (SVG, and JS hit-testing reads
+// the canvas's pixel buffer directly, not its CSS), only the traces vanish.
+// Higher specificity than div.cell-output-display canvas, same as the
+// .custom-widget rule above, so it wins regardless of load order.
+.reveal div.cell-output-display .plotly-graph-div canvas {
+  background-color: transparent;
+}
