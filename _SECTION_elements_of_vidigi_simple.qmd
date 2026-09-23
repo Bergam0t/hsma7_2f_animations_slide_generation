@@ -2,24 +2,18 @@
 
 ## What do you need?
 
-:::: {.columns}
+:::: {.value-box-row icon-position="top" align="center"}
 
-::: {.column width='33%'}
-::: {.value-box value="Step 1" icon="fa-solid fa-clipboard" fragment="true" icon-position="top" align="center" height="300px"}
+::: {.value-box value="Step 1" icon="fa-solid fa-clipboard" fragment="true"}
 Add logging steps for arrivals, queues, resource use, and departures
 :::
-:::
 
-::: {.column width='33%'}
-::: {.value-box value="Step 2" icon="fa-solid fa-table-cells" fragment="true" icon-position="top" align="center" height="300px"}
+::: {.value-box value="Step 2" icon="fa-solid fa-table-cells" fragment="true"}
 Set up a coordinate grid
 :::
-:::
 
-::: {.column width='33%'}
-::: {.value-box value="Step 3" icon="fa-solid fa-clapperboard" fragment="true" icon-position="top"  align="center" height="300px"}
+::: {.value-box value="Step 3" icon="fa-solid fa-clapperboard" fragment="true"}
 Set your animation parameters and generate your animation
-:::
 :::
 
 ::::

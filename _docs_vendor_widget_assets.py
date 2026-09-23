@@ -69,31 +69,35 @@ def read_output_dir():
 
 def main():
     output_dir = read_output_dir()
-    index_html = output_dir / "index.html"
-    if not index_html.is_file():
-        warn(f"could not find {index_html} -- nothing to do")
+    # Don't hardcode "index.html" -- different decks/profiles have different
+    # output-file names (e.g. index_nhs_oa.html), and each only ever renders
+    # one top-level HTML page into its own output-dir.
+    html_files = sorted(output_dir.glob("*.html"))
+    if not html_files:
+        warn(f"no top-level .html file found in {output_dir} -- nothing to do")
         return
 
-    text = index_html.read_text(encoding="utf-8")
+    for index_html in html_files:
+        text = index_html.read_text(encoding="utf-8")
 
-    if not REQUIREJS_SCRIPT_RE.search(text) or not HTML_MANAGER_SCRIPT_RE.search(text):
-        warn(
-            "no ipywidgets CDN <script> tags found in index.html "
-            "(deck may not use any ipywidgets output) -- leaving file untouched"
+        if not REQUIREJS_SCRIPT_RE.search(text) or not HTML_MANAGER_SCRIPT_RE.search(text):
+            warn(
+                f"no ipywidgets CDN <script> tags found in {index_html.name} "
+                "(deck may not use any ipywidgets output) -- leaving file untouched"
+            )
+            continue
+
+        text = REQUIREJS_SCRIPT_RE.sub(REQUIREJS_LOCAL, text, count=1)
+        text = HTML_MANAGER_SCRIPT_RE.sub(
+            CYTOSCAPE_PATH_CONFIG + HTML_MANAGER_LOCAL, text, count=1
         )
-        return
 
-    text = REQUIREJS_SCRIPT_RE.sub(REQUIREJS_LOCAL, text, count=1)
-    text = HTML_MANAGER_SCRIPT_RE.sub(
-        CYTOSCAPE_PATH_CONFIG + HTML_MANAGER_LOCAL, text, count=1
-    )
-
-    index_html.write_text(text, encoding="utf-8")
-    print(
-        "_docs_vendor_widget_assets.py: pointed ipywidgets script tags at "
-        "resources/vendor/ (no CDN calls needed to render the interactive "
-        "process map)"
-    )
+        index_html.write_text(text, encoding="utf-8")
+        print(
+            f"_docs_vendor_widget_assets.py: pointed ipywidgets script tags in "
+            f"{index_html.name} at resources/vendor/ (no CDN calls needed to "
+            "render the interactive process map)"
+        )
 
 
 if __name__ == "__main__":

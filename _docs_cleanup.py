@@ -22,19 +22,35 @@ So this script runs after every render and deletes everything in the output
 directory that isn't on an explicit allowlist.
 
 CONFIGURATION LIVES IN `_quarto.yml` (AND `_quarto-<profile>.yml`), NOT HERE:
-  * the output directory comes from `project: output-dir:`
   * the allowlist comes from the top-level `docs-keep:` list
-
-If this project renders more than one deck via project profiles
-(`quarto render --profile <name>`, see `_quarto-<name>.yml`), each profile
-file can declare its own `project: output-dir:` and its own `docs-keep:` --
-this script picks whichever one matches the output directory actually in use
-for the current render, so one deck's files don't get kept as if they
-belonged in another deck's output-dir. A profile file that only overrides
-`output-dir` and not `docs-keep` inherits the base file's list.
 
 Edit `docs-keep:` (in the right file) -- not this file -- when a deck gains
 a new folder.
+
+MULTIPLE DECKS / PROFILES, AND WHY output-dir ISN'T IN THE YAML:
+
+This project renders more than one deck via Quarto project profiles
+(`quarto render --profile <name>`, see `_quarto-<name>.yml`). Each profile
+needs its own output-dir (docs/, docs_nhs_oa/, ...) and its own docs-keep
+allowlist, so one deck's files don't get kept as if they belonged in
+another deck's output-dir.
+
+output-dir is deliberately NOT set in `project:` in either `_quarto.yml` or
+a `_quarto-<profile>.yml` -- always pass `--output-dir <dir>` on the render
+command line instead (see README.md/notes.md for the exact commands). If
+output-dir is set in the YAML, `quarto preview <file>` for a single ad-hoc
+file not in `project: render:` (e.g. previewing one `_SECTION_*.qmd` on its
+own) anchors its web server at that output-dir, even though the ad-hoc
+file's own rendered output still lands next to the source at the project
+root -- the browser then gets a broken `/../<file>.html` 404.
+
+Since output-dir is only ever supplied via the command line, this script
+can't read it from `_quarto.yml`/`_quarto-<profile>.yml` to pick the right
+docs-keep list. Instead it reads the `QUARTO_PROFILE` env var that Quarto
+sets for pre/post-render scripts (empty string for the default profile,
+e.g. "nhs_oa" when rendered with `--profile nhs_oa`) and uses that profile's
+own docs-keep if `_quarto-<profile>.yml` defines one, else falls back to the
+base file's list.
 """
 
 import os
@@ -87,81 +103,60 @@ def parse_simple_list(text, key):
     return entries
 
 
-def parse_simple_scalar(text, key):
-    """Fallback reader for a `key: value` line, used when pyyaml is absent."""
-    for raw in text.splitlines():
-        line = raw.split("#", 1)[0].strip()
-        if line.startswith(f"{key}:"):
-            return line[len(key) + 1 :].strip().strip("'\"")
-    return None
-
-
-def load_config(path):
-    """Read a _quarto.yml / _quarto-<profile>.yml into
-    {"docs-keep": [...] | None, "output-dir": str | None}."""
+def load_docs_keep(path):
+    """Read just the top-level `docs-keep:` list from a config file."""
+    if not path.is_file():
+        return None
     text = path.read_text(encoding="utf-8")
     if yaml is not None:
         config = yaml.safe_load(text)
         config = config if isinstance(config, dict) else {}
-        return {
-            "docs-keep": config.get("docs-keep"),
-            "output-dir": (config.get("project") or {}).get("output-dir"),
-        }
+        return config.get("docs-keep")
     print(
         "_docs_cleanup.py: pyyaml not installed (pip install pyyaml) -- "
-        "falling back to simple parsing"
+        "falling back to simple parsing of docs-keep"
     )
-    return {
-        "docs-keep": parse_simple_list(text, "docs-keep") or None,
-        "output-dir": parse_simple_scalar(text, "output-dir"),
-    }
+    return parse_simple_list(text, "docs-keep") or None
 
 
-def load_candidates():
-    """One entry per known project config (base + each profile override),
-    as (output-dir-relative-path, docs-keep-list)."""
+def active_docs_keep():
+    """Pick the docs-keep list for whichever profile is currently rendering.
+
+    Quarto sets QUARTO_PROFILE for pre/post-render scripts: empty for the
+    default profile, or the active profile name(s) (comma-separated if more
+    than one) otherwise.
+    """
     if not QUARTO_YML.is_file():
         warn(f"could not find {QUARTO_YML.name}")
+    base_keep = load_docs_keep(QUARTO_YML)
 
-    base = load_config(QUARTO_YML)
-    candidates = [(base["output-dir"] or "docs", base["docs-keep"])]
-
-    for profile_path in sorted(PROJECT_ROOT.glob("_quarto-*.yml")):
-        profile = load_config(profile_path)
-        if not profile["output-dir"]:
-            continue  # doesn't change output-dir -- nothing extra to match
-        candidates.append((profile["output-dir"], profile["docs-keep"] or base["docs-keep"]))
-
-    return candidates
+    profile = (os.environ.get("QUARTO_PROFILE") or "").split(",")[0].strip()
+    if profile:
+        profile_keep = load_docs_keep(PROJECT_ROOT / f"_quarto-{profile}.yml")
+        if profile_keep:
+            return profile_keep
+    return base_keep
 
 
-def resolve_output_dir(default_relative):
+def resolve_output_dir():
     """Quarto sets QUARTO_PROJECT_OUTPUT_DIR for pre/post-render scripts --
     that's the ground truth for what actually got rendered this time."""
     output_dir = os.environ.get("QUARTO_PROJECT_OUTPUT_DIR")
-    return (PROJECT_ROOT / (output_dir or default_relative)).resolve()
+    if not output_dir:
+        warn("QUARTO_PROJECT_OUTPUT_DIR is not set -- run this via `quarto render`")
+    return (PROJECT_ROOT / output_dir).resolve()
 
 
 def main():
-    candidates = load_candidates()
-    output_dir = resolve_output_dir(candidates[0][0])
-
-    keep = None
-    for relative, candidate_keep in candidates:
-        if (PROJECT_ROOT / relative).resolve() == output_dir:
-            keep = candidate_keep
-            break
-    else:
-        # No config declares this output-dir (e.g. a one-off --output-dir on
-        # the command line) -- fall back to the base allowlist.
-        keep = candidates[0][1]
-
+    keep = active_docs_keep()
     if not isinstance(keep, list) or not keep:
         warn(
-            "no matching `docs-keep:` list found for this output-dir -- "
-            "refusing to guess what is safe to delete"
+            "no `docs-keep:` list found for the active profile -- refusing "
+            "to guess what is safe to delete"
         )
     keep = set(keep)
+
+    output_dir = resolve_output_dir()
 
     # Safety rails: never let a misconfigured output-dir turn this into
     # "delete the project".

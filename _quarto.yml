@@ -1,6 +1,14 @@
 project:
   title: "Title"
-  output-dir: docs
+  # output-dir is deliberately NOT set here -- see the render commands in
+  # README.md/notes.md (`quarto render --output-dir docs`). Setting it in
+  # this file makes Quarto anchor `quarto preview <file>` for any ad-hoc
+  # file (e.g. a single _SECTION_*.qmd, not in project.render) at output-dir
+  # as its web root, even though that file's own rendered output still lands
+  # next to the source at the project root -- the preview server then can't
+  # actually serve it (browser gets a broken /../<file>.html 404). Passing
+  # --output-dir on the command line only for real full-deck renders avoids
+  # that without breaking single-section preview.
   execute-dir: project
   resources:
     - assets/

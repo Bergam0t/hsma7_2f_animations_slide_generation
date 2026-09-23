@@ -274,9 +274,9 @@ Vidigi works out the position of every entity and resource based on those few po
 :::
 
 ::: {.r-stack}
-![](assets/vidigi_no_features.png){height=600}
+![](assets/vidigi_no_features.png){.lightbox height=600}
 
-![](assets/vidigi_with_features.png){.fragment height=600}
+![](assets/vidigi_with_features.png){.fragment .lightbox height=600}
 :::
 
 ## Placing Arrival and Departure Events

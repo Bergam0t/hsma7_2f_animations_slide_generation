@@ -3,7 +3,18 @@
 
 ## Why is Resource Use Different to Queues?
 
-So far, we've used a queue for resource use
+:::: {.columns}
+
+::: {.column width='50%'}
+So far, we've used a **queue** for resource use
+:::
+
+::: {.column width='50%'}
+![](assets/queue_example.gif)
+:::
+
+::::
+
 
 And this works, but has a couple of downsides
 
@@ -11,6 +22,25 @@ And this works, but has a couple of downsides
 - You can't see resources that **aren't** being used, so it's difficult to tell whether the system is underutilising resources
 
 (you can usually tell if it's *over* capacity because a queue will be building up!)
+
+
+::: {.fragment}
+
+:::: {.columns}
+
+::: {.column width='50%'}
+Resource use allows us to fix this
+:::
+
+::: {.column width='50%'}
+![](assets/resource_use_example.gif)
+:::
+
+::::
+
+
+:::
+
 
 
 ## What do we change?
@@ -41,12 +71,16 @@ Equivalent to `simpy.PriorityResource`
 
 ::::
 
+<div style="display: flex; justify-content: center; align-items: center;">
+
 ::: {.value-box icon="fa-solid fa-triangle-exclamation" icon-position="left" color="bg-red"}
 We don't want to use *VidigiResource*.
 
 This is a special class that Vidigi uses internally, and by itself it won't allow us to track the resource
 ID in the way we need to.
 :::
+
+</div>
 
 ## Why do we need these?
 

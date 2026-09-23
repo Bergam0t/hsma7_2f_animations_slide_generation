@@ -1,14 +1,18 @@
-# Quarto project profile: renders slides_nhs_oa.qmd to its own output-dir
-# instead of docs/, so this deck doesn't collide with the main deck's
-# published output. Activate with:
+# Quarto project profile: renders slides_nhs_oa.qmd instead of slides.qmd.
+# Activate with:
 #
-#   quarto render --profile nhs_oa
+#   quarto render --profile nhs_oa --output-dir docs_nhs_oa
 #
 # Quarto merges this on top of _quarto.yml when that profile is active --
-# see https://quarto.org/docs/projects/profiles.html. Both project.output-dir
-# and project.render are replaced wholesale (not merged) by this override.
+# see https://quarto.org/docs/projects/profiles.html. project.render is
+# replaced wholesale (not merged) by this override.
+#
+# output-dir is NOT set here, same reasoning as _quarto.yml -- always pass
+# --output-dir docs_nhs_oa on the command line instead, so it doesn't also
+# get inherited by an ad-hoc `quarto preview _SECTION_foo.qmd --profile
+# nhs_oa` and break that the same way a YAML-set output-dir did for the
+# default profile.
 project:
-  output-dir: docs_nhs_oa
   render:
     - slides_nhs_oa.qmd
 
