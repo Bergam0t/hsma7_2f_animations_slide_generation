@@ -442,6 +442,16 @@ if __name__ == "__main__":
 
     # 3. Customise the icons so that high-priority patients are displayed differently
 
+    # 4. Add a synchronised trace panel for each of the three queues (registration,
+    # nurse, specialist), each shown as a line that builds up over time
+    # (see the "Adding Synchronised Traces" section - you'll need more than one
+    # extra row from add_subplot_panels, and one add_synchronised_trace_from_dataframe
+    # call per queue, each targeting a different axis pair)
+
     fig.show()
 
     # Extension: try creating separate process maps for each priority of patient
+
+    # Extension: try creating an animated bar chart of current queue sizes instead
+    # of/as well as the line plots - see
+    # https://hsma-tools.github.io/vidigi/examples/feat_synchronised_traces/#step-2---a-per-frame-bar-add_synchronised_trace_from_dataframe

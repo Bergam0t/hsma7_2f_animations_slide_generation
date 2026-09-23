@@ -8,8 +8,14 @@ import numpy as np
 from vidigi.logging import EventLogger, TrialLogger
 from vidigi.utils import create_event_position_df, EventPosition
 from vidigi.prep import reshape_for_animations, generate_animation_df  # NEW
-from vidigi.animation import generate_animation  # NEW/UPDATED
+from vidigi.animation import (  # NEW/UPDATED
+    generate_animation,
+    add_subplot_panels,  # NEW
+    add_synchronised_trace_from_dataframe,  # NEW
+)
+from vidigi.analysis import queue_size_over_time  # NEW
 from vidigi.resources import VidigiPriorityStore, VidigiStore  # NEW/UPDATED
+import plotly.graph_objects as go  # NEW
 from vidigi.process_mapping import (
     add_sim_timestamp,
     discover_dfg,
@@ -498,16 +504,107 @@ if __name__ == "__main__":
         full_entity_df_plus_pos=animation_df,
         event_position_df=layout,
         scenario=base_case_params,
-        plotly_height=600,
+        plotly_height=1200,
         plotly_width=1100,
         entity_icon_size=16,
+    )
+
+    my_event_log = base_case_trial.trial_logger.get_log_by_run(run=0, as_df=True)
+
+    # 4. Add a synchronised trace panel for each of the three queues (registration,
+    # nurse, specialist), each shown as a line that builds up over time
+    fig = add_subplot_panels(
+        fig,
+        row_heights=[0.55, 0.15, 0.15, 0.15],
+        subplot_titles=("", "Registration Queue", "Nurse Queue", "Specialist Queue"),
+        hide_new_panel_axes=False,
+    )
+
+    queue_panels = [
+        ("receptionist_wait_begins", "x2", "y2"),
+        ("nurse_wait_begins", "x3", "y3"),
+        ("specialist_wait_begins", "x4", "y4"),
+    ]
+
+    for event_name, xaxis, yaxis in queue_panels:
+        queue_lengths_per_frame = queue_size_over_time(
+            my_event_log,
+            every_x_time_units=1,
+            event_list=[event_name],
+            limit_duration=base_case_params.sim_duration,
+        )
+
+        # xaxis/yaxis are captured as default args so each lambda keeps the
+        # value from its own loop iteration rather than the final one
+        fig = add_synchronised_trace_from_dataframe(
+            fig,
+            queue_lengths_per_frame,
+            lambda rows, xaxis=xaxis, yaxis=yaxis: go.Scatter(
+                x=list(rows["snapshot_time"]),
+                y=list(rows["count"]),
+                mode="lines",
+                line_color="#4c78a8",
+                showlegend=False,
+                xaxis=xaxis,
+                yaxis=yaxis,
+            ),
+            frame_time_col="snapshot_time",
+            accumulate=True,
+        )
+
+    fig.show()
+
+    # Extension: animated bar chart of current queue sizes, on a 5th panel
+    queue_labels = {
+        "receptionist_wait_begins": "Registration",
+        "nurse_wait_begins": "Nurse",
+        "specialist_wait_begins": "Specialist",
+    }
+
+    combined_queue_df = pd.concat(
+        [
+            queue_size_over_time(
+                my_event_log,
+                every_x_time_units=1,
+                event_list=[event_name],
+                limit_duration=base_case_params.sim_duration,
+            ).assign(queue_name=label)
+            for event_name, label in queue_labels.items()
+        ]
+    )
+
+    fig = add_subplot_panels(
+        fig,
+        row_heights=[0.45, 0.11, 0.11, 0.11, 0.22],
+        subplot_titles=(
+            "",
+            "Registration Queue",
+            "Nurse Queue",
+            "Specialist Queue",
+            "Patients Waiting Right Now",
+        ),
+        hide_new_panel_axes=False,
+    )
+
+    fig = add_synchronised_trace_from_dataframe(
+        fig,
+        combined_queue_df,
+        lambda rows: go.Bar(
+            x=list(rows["queue_name"]),
+            y=list(rows["count"]),
+            marker_color=["#e45756", "#54a24b", "#eeca3b"],
+            showlegend=False,
+            xaxis="x5",
+            yaxis="y5",
+        ),
+        frame_time_col="snapshot_time",
+        match="index",
+        accumulate=False,
     )
 
     fig.show()
 
     # Extension: separate process maps for each priority of patient
-    my_event_log = base_case_trial.trial_logger.get_log_by_run(run=0, as_df=True)
-
     my_event_log_timestamp = add_sim_timestamp(
         my_event_log, time_unit="minutes", sim_start="09:00:00"
     )
