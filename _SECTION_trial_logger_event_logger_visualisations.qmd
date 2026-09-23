@@ -39,8 +39,13 @@ They will also hopefully save you time!
 
 With `.get_event_duration_stat()`, we can easily pull out average durations for across the whole trial.
 
-[TODO: Add in a by-run tweak to vidigi itself]
+:::: {.columns}
 
+::: {.column width='30%'}
+**For every entity**
+:::
+
+::: {.column width='70%'}
 ```{python}
 #| eval: true
 #| echo: true
@@ -49,22 +54,46 @@ my_trial.trial_logger.get_event_duration_stat(
     first_event="nurse_wait_begins",
     second_event="being_seen_by_nurse",
     what="mean",
-    exclude_incomplete=True
+    exclude_incomplete=True,
+    across="entities"
     )
 ```
+:::
 
+::::
 
+::: {style='font-size: 35%;'}
+<br>
+:::
+
+:::: {.columns}
+
+::: {.column width='30%'}
+**Per Run, Averaged**
+:::
+
+::: {.column width='70%'}
 ```{python}
 #| eval: true
 #| echo: true
 #| label: trial-logger-event-duration_stat_median
 my_trial.trial_logger.get_event_duration_stat(
-    first_event="arrival",
-    second_event="depart",
-    what="median",
-    exclude_incomplete=True
+    first_event="nurse_wait_begins",
+    second_event="being_seen_by_nurse",
+    what="mean",
+    exclude_incomplete=True,
+    across="runs"
     )
 ```
+:::
+
+::::
+
+
+
+
+
+
 
 
 ## TrialLogger - Duration Barplot
@@ -112,22 +141,91 @@ While it's still identically timed to *depart* here
 
 ## TrialLogger - Duration Barplot - Output
 
+:::: {.columns}
 
+::: {.column width='50%'}
+This then gives us a good overview of the time entities are spending queueing for each step.
+:::
 
+::: {.column width='50%'}
 ```{python}
 #| eval: true
 #| echo: true
 #| label: trial-logger-event-duration-barplot
-my_trial.trial_logger.plot_metric_bar(
+my_trial.trial_logger.plot_metric(
     event_pairs, what="mean",
-    title= "Mean step durations",
-    width=1000, height=400
+    kind="bar",
     )
 ```
 
-## Error Bars
+:::
+
+::::
 
 
+## Using TrialLogger Plots to Understand Variation
+
+::: {style='font-size: 75%;'}
+But by using box and bar plots with `across=runs`, we can see how this varied.
+:::
+
+:::: {.columns}
+
+::: {.column width='50%'}
+
+::: {style='font-size: 75%;'}
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-duration-box
+my_trial.trial_logger.plot_metric(
+    event_pairs, what="mean",
+    kind="box", across="runs", show_runs=True
+  )
+```
+:::
+
+:::
+
+::: {.column width='50%'}
+::: {style='font-size: 75%;'}
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-duration-violin
+my_trial.trial_logger.plot_metric(
+    event_pairs, what="mean",
+    kind="violin", across="runs", show_runs=True
+  )
+```
+:::
+:::
+::::
+
+
+##
+
+
+:::: {.columns}
+
+::: {.column width='50%'}
+Or we can add confidence intervals to our original barplot
+:::
+
+::: {.column width='50%'}
+```{python}
+#| eval: true
+#| echo: true
+#| label: trial-logger-event-duration-barplot-ci
+my_trial.trial_logger.plot_metric(
+    event_pairs, what="mean",
+    kind="bar", across="runs",
+    error_bars="ci"
+    )
+```
+:::
+
+::::
 
 ## TrialLogger - Queue length
 
@@ -156,11 +254,25 @@ my_trial.trial_logger.plot_queue_size(
 
 ::::
 
+## And more!
+
+::: {style='font-size: 75%;'}
+There are lots more plots within vidigi, including plots that can compare outputs from multiple runs.
+
+You'll explore more plots in the exercise, and can find out about them all in the API reference (below) and [TrialLogger page](https://hsma-tools.github.io/vidigi/examples/feat_trial_logger/feat_trial_logger.html).
+:::
+
+
+```{=html}
+<iframe width='1200' height='600' src='https://hsma-tools.github.io/vidigi/reference/#analysis-plots' title='Vidigi Plot documentation'></iframe>
+```
+
+
 ## Modifying these plots
 
 Vidigi uses 'Plotly' throughout for its plots - which you've already had some experience with.
 
-The Plotly objects it returns can be further modified if there is something you don't like about them or if they don't provide all of the options you need.
+The Plotly objects returned can be further modified if there is something you don't like about them or if they don't provide all of the options you need.
 
 To do this, we first need to assign the plot to a variable so we can keep accessing it.
 
