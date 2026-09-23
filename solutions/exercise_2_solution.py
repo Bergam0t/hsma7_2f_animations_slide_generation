@@ -490,3 +490,106 @@ if __name__ == "__main__":
             run_number=0, input_time_format="minutes", output_format="cytoscape-jupyter"
         )
     )
+
+    # EXTENSIONS
+
+    # Extension 1: parameters for the static process map (dfg_to_graphviz).
+    # generate_dfg() forwards any extra kwargs straight through to the
+    # renderer, so we don't need to call discover_dfg()/dfg_to_graphviz()
+    # separately just to try these out.
+    display(
+        base_case_trial.trial_logger.generate_dfg(
+            run_number=0,
+            input_time_format="minutes",
+            output_format="graphviz-object",
+            direction="TB",  # lay the graph out top-to-bottom instead of left-to-right
+            time_metric="median",  # label edges with median transition time instead of mean
+            min_probability=0.05,  # drop rarely-taken transitions entirely
+            dashed_infrequent_paths=True,
+            infrequent_path_dash_threshold=0.2,  # dash anything taken <20% of the time
+            size=(10, 0),  # constrain width only, in inches
+        )
+    )
+
+    # Extension 2: parameters for the interactive process map (dfg_to_cytoscape)
+    display(
+        base_case_trial.trial_logger.generate_dfg(
+            run_number=0,
+            input_time_format="minutes",
+            output_format="cytoscape-jupyter",
+            layout_name="breadthfirst",
+            layout_orientation="downward",
+            spacing_factor=1.5,
+            line_color="#e07a5f",
+            node_font_size=12,
+            edge_font_size=9,
+        )
+    )
+
+    # Extension 3: comparison plots. These compare two scenarios, so first we
+    # need a second trial to compare the base case against - let's try adding
+    # an extra nurse.
+    extra_nurse_params = Param(num_nurses=2)
+    extra_nurse_trial = Trial(extra_nurse_params)
+    extra_nurse_trial.run_trial()
+    extra_nurse_trial.calculate_trial_results()
+
+    # plot_scenario_comparison and plot_resource_utilisation_comparison are
+    # plain functions - import them from vidigi.plots and pass each trial's
+    # combined event log (TrialLogger.to_dataframe()).
+    from vidigi.plots import plot_resource_utilisation_comparison, plot_scenario_comparison
+
+    fig = plot_scenario_comparison(
+        base_case_trial.trial_logger.to_dataframe(),
+        extra_nurse_trial.trial_logger.to_dataframe(),
+        first_event="nurse_wait_begins",
+        second_event="being_seen_by_nurse",
+        label_a="1 nurse",
+        label_b="2 nurses",
+    )
+    fig.show()
+
+    # utilisation is NaN unless capacity can be resolved, so tell it how many
+    # of each resource each scenario has - one route is `scenario` + a
+    # `resource_map` from each step to the attribute on that scenario's
+    # Param holding its capacity.
+    fig = plot_resource_utilisation_comparison(
+        base_case_trial.trial_logger.to_dataframe(),
+        extra_nurse_trial.trial_logger.to_dataframe(),
+        label_a="1 nurse",
+        label_b="2 nurses",
+        scenario_a=base_case_params,
+        scenario_b=extra_nurse_params,
+        resource_map={
+            "being_seen_by_receptionist": "num_receptionists",
+            "being_seen_by_nurse": "num_nurses",
+            "being_seen_by_specialist": "num_specialists",
+        },
+    )
+    fig.show()
+
+    # plot_event_duration_comparison has no standalone equivalent in
+    # vidigi.plots - it only exists as a TrialLogger method (it calls
+    # plot_scenario_comparison internally), so call it directly on one trial
+    # logger, passing the other trial logger to compare against.
+    fig = base_case_trial.trial_logger.plot_event_duration_comparison(
+        extra_nurse_trial.trial_logger,
+        first_event="arrival",
+        second_event="depart",
+        label_a="1 nurse",
+        label_b="2 nurses",
+    )
+    fig.show()
+
+    # Extension 4: polish one of our earlier plots with a new theme
+    fig = base_case_trial.trial_logger.plot_queue_size(
+        ["nurse_wait_begins"],
+        limit_duration=base_case_params.sim_duration,
+        every_x_time_units=1,
+    )
+    fig.update_layout(
+        template="plotly_dark",
+        title="Nurse Queue Length",
+        font={"family": "Arial", "size": 13},
+    )
+    fig.show()
