@@ -433,6 +433,23 @@ if __name__ == "__main__":
 
     # 3. Explore the EventLogger and TrialLogger visualisations
 
+    # Recap from the slides: plot_metric(), but for a queue not in the demo model
+    specialist_event_pairs = [
+        {
+            "first_event": "specialist_wait_begins",
+            "second_event": "being_seen_by_specialist",
+            "label": "Specialist Wait Length",
+        },
+    ]
+    fig = base_case_trial.trial_logger.plot_metric(
+        specialist_event_pairs, kind="box", across="runs", show_runs=True
+    )
+    fig.show()
+
+    # Not covered on the slides: utilisation per resource
+    fig = base_case_trial.trial_logger.plot_resource_utilisation(by="resource")
+    fig.show()
+
     # 4. Generate a process map of this system
 
     # NEW

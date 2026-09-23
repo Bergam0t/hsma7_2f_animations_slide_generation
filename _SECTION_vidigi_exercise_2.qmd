@@ -29,7 +29,9 @@ This is the model from the previous exercise, but with the Trial class added in.
 1. Modify the code to account for the presence of the `Trial` class
     - *Don't forget to add the run number to your Logger class!*
 1. Generate an animation for each run of the model. Do they differ significantly?
-1. Explore the EventLogger and TrialLogger visualisations [TODO: make this more specific - let's ask for one or two but specify which?]
+1. Explore some of the EventLogger and TrialLogger visualisations
+    - Recreate `plot_metric()` from the slides, but for a queue not shown there - try the specialist wait (`specialist_wait_begins` → `being_seen_by_specialist`)
+    - Try `plot_resource_utilisation()`, which wasn't covered on the slides, to compare utilisation across your three resource types
 1. Create and display both a static and an interactive process map of this system
     - *You can build these step by step, or use the `generate_dfg()` shortcut on the `TrialLogger`*
 :::
@@ -41,7 +43,8 @@ This is the model from the previous exercise, but with the Trial class added in.
 ### Extensions
 - Play around with some of the parameters available for the static process maps: [LINK](https://hsma-tools.github.io/vidigi/reference/process_mapping.dfg_to_graphviz.html)
 - Try out the parameters available for the interactive version of the process maps: [LINK](https://hsma-tools.github.io/vidigi/reference/process_mapping.dfg_to_cytoscape.html)
-- Try modifying one of the plots you created from the TrialLogger class. [TODO: add vidigi docs page about modifying plots that covers more ideas than we had here]
+- Try exploring some of the comparison plots: [`plot_scenario_comparison`](https://hsma-tools.github.io/vidigi/reference/plots.plot_scenario_comparison.html), [`plot_resource_utilisation_comparison`](https://hsma-tools.github.io/vidigi/reference/plots.plot_resource_utilisation_comparison.html) and `plot_event_duration_comparison`. What do you need to pass to these to run these commands? [**HINT: you need to import these from the `plots` module rather than calling them as a method of your trial logger.**]{style="color:lightgrey"}
+- Try modifying one of the plots you created from the TrialLogger class to polish it by applying a new theme or some other tweaks. You might want to take a look at the plotly theming documentation: [LINK](https://plotly.com/python/templates/) for some ideas.
 :::
 :::
 :::
