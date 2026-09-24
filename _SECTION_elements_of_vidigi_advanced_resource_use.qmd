@@ -10,18 +10,23 @@ So far, we've used a **queue** for resource use
 :::
 
 ::: {.column width='50%'}
-![](assets/queue_example.gif)
+![](assets/queue_example.gif){.lightbox}
 :::
 
 ::::
 
 
-And this works, but has a couple of downsides
+And this works, but has a couple of downsides...
 
+::: {.focus-list}
 - People move through the resource use step like a queue rather than staying with a single resource
 - You can't see resources that **aren't** being used, so it's difficult to tell whether the system is underutilising resources
+:::
 
+
+::: {.fragment}
 (you can usually tell if it's *over* capacity because a queue will be building up!)
+:::
 
 
 ::: {.fragment}
@@ -33,7 +38,7 @@ Resource use allows us to fix this
 :::
 
 ::: {.column width='50%'}
-![](assets/resource_use_example.gif)
+![](assets/resource_use_example.gif){.lightbox}
 :::
 
 ::::

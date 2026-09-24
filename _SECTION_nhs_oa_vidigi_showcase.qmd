@@ -476,11 +476,11 @@ HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 :::: {.columns}
 
 ::: {.column width='30%'}
-
+For a ward, this might look like length of stay, or running counts of completed and cancelled appointments.
 :::
 
 ::: {.column width='70%'}
-![](assets/ward_example_orthopaedic.gif){.lightbox}
+![](assets/ward_example_orthopaedic.gif){.lightbox height=650}
 :::
 
 ::::
@@ -497,7 +497,7 @@ And there are ways we can use vidigi with larger systems that run over weeks or 
 :::
 
 ::: {.column width='70%'}
-![](assets/Code_1471lS0m98.gif){.lightbox}
+![](assets/Code_1471lS0m98.gif){.lightbox height=600}
 
 :::
 

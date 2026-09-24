@@ -10,7 +10,7 @@
 
 Vidigi is a package for creating animations of open-source discrete event simulations (like the ones you've been building in SimPy).
 
-![](assets/vidigi_multistep_demo.gif){.lightbox}
+![](assets/vidigi_multistep_demo.gif){.lightbox height=550}
 
 
 ## Who makes vidigi?

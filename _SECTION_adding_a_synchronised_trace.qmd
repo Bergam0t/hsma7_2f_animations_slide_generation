@@ -504,7 +504,7 @@ In this orthopaedic ward example,
 :::
 
 ::: {.column width='70%'}
-![](assets/ward_example_orthopaedic.gif){.lightbox height="650px"}
+![](assets/ward_example_orthopaedic.gif){.lightbox height=550}
 :::
 
 ::::
