@@ -26,8 +26,8 @@ So if anything isn't working, or if there is a feature you need that doesn't exi
 ## Extra Benefits of vidigi
 
 ::: {.focus-list}
-- Works in common web application frameworks (which we'll introduce you to next week!)
-- Also works in Quarto reports (which we'll introduce you to next module)
+- Works in common web application frameworks like Streamlit, Plotly Dash, and Shiny for Python
+- Also works in Quarto reports
 - Or can output as a standalone file
 - Generates animations quickly enough to allow users to regenerate an animation after changing parameters
 - Supports custom icons
