@@ -32,11 +32,14 @@ format:
 
 {{< include _SECTION_creating_simple_vidigi_animations.qmd >}}
 
+{{< include _SECTION_bonus_name_main.qmd >}}
+
 
 {{< include _SECTION_elements_of_vidigi_advanced_resource_use.qmd >}}
 
 {{< include _SECTION_adding_resource_use_vidigi_animations.qmd >}}
 
+{{< include _SECTION_simple_custom_icons.qmd >}}
 
 {{< include _SECTION_vidigi_exercise_1.qmd >}}
 

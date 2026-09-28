@@ -50,11 +50,27 @@ Resource use allows us to fix this
 
 ## What do we change?
 
-We don't have to change too much
+We don't have to change too much!
 
+
+::: {.fragment}
 1. We will swap in a *custom* resource class instead of Simpy.Resource
+:::
+
+
+::: {.fragment}
 1. We will set up automated logging of our resource use events - vidigi captures the ID of the resource used for us
+:::
+
+
+::: {.fragment}
 1. We will tell our layout which resource to draw, and pass our params to our animation code (so it knows how many resources there are)
+:::
+
+
+
+
+
 
 ## Custom Resource Classes
 
@@ -78,7 +94,7 @@ Equivalent to `simpy.PriorityResource`
 
 <div style="display: flex; justify-content: center; align-items: center;">
 
-::: {.value-box icon="fa-solid fa-triangle-exclamation" icon-position="left" color="bg-red"}
+::: {.value-box icon="fa-solid fa-triangle-exclamation" icon-position="left" color="bg-red" fragment="fade-in"}
 We don't want to use *VidigiResource*.
 
 This is a special class that Vidigi uses internally, and by itself it won't allow us to track the resource

@@ -753,5 +753,3 @@ fig = add_synchronised_trace_from_dataframe(
 #| echo: false
 HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
-
-```

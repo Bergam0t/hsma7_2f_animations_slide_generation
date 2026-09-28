@@ -33,6 +33,10 @@ We can import EventLogger from the `utils` module of vidigi like this.
 ```python
 from vidigi.utils import EventLogger
 ```
+
+
+::: {.fragment}
+
 We then set up an instance of EventLogger like so.
 
 ```python
@@ -41,11 +45,21 @@ my_logger = EventLogger(env=my_simpy_env)
 
 I'll talk about *where* we do that in our model a bit later.
 
+:::
+
+
+::: {.fragment}
+
 Then we record different events like this.
 
 ```python
 my_logger.log_queue()
 ```
+
+:::
+
+
+
 
 
 ## EventLogger's Logging Types

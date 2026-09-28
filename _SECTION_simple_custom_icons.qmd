@@ -1,0 +1,92 @@
+
+## Custom Resource Icons
+
+Optionally, we could use a **custom resource icon** rather than the default blue circle.
+
+```{.python code-line-style="dim:1-4,focus:5-6,dim:7" code-line-style-preset="emphasis"}
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    every_x_time_units=1,
+    scenario=my_params,
+    custom_resource_icon="👩‍⚕️",  # NEW - note the quotation marks!
+    resource_icon_size=32,  # NEW
+)
+```
+
+## What custom Resource Icons can we use?
+
+vidigi supports **emojis** (as well as some other [icon styles](https://hsma-tools.github.io/vidigi/examples/feat_custom_icons/feat_custom_icons.html))
+
+Yep - that kind of emoji.
+
+::: {style='font-size: 150%;'}
+😁 🤣 😉 🤪 🫠 😭 😱
+:::
+
+But there are also quite a lot of relevant ones.
+
+::: {style='font-size: 150%;'}
+👩‍⚕️ 👨🏿‍⚕️ 🛏️ 🏥 🚑
+:::
+
+I find the best place to look them up and copy them in is [emojipedia.org](https://emojipedia.org/)
+
+
+## The Revised Animation - Custom Resource Icons
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: resource-model-custom-resource-icons
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    every_x_time_units=1,
+    plotly_height=600,
+    plotly_width=1180,
+    scenario=my_params,
+    custom_resource_icon="👩‍⚕️",
+    resource_icon_size=32,
+    entity_icon_size=40
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```
+
+
+## Custom Entity Icons
+
+In fact, we can change the list of valid emojis for our patients too!
+
+```{.python code-line-style="dim:1-4,focus:5,dim:6" code-line-style-preset="emphasis"}
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    every_x_time_units=1,
+    scenario=my_params,
+    custom_entity_icon_list=["🤢", "🤒", "🤧", "😷"],
+)
+```
+
+::: {style='font-size: 85%;'}
+Later, we'll learn how to intelligently assign these to different types of patient...
+
+But sometimes you just want to change the default list, or just want every entity to have the same icon, in which case, you can pass a list with just one emoji in it.
+:::
+
+
+## The Revised Animation - Custom Entity Emojis
+
+```{python}
+#| eval: true
+#| echo: false
+#| label: resource-model-custom-entity-emojis
+fig = my_model.logger.animate_activity_log(
+    event_position_df=layout,
+    every_x_time_units=1,
+    plotly_height=600,
+    plotly_width=1180,
+    scenario=my_params,
+    custom_entity_icon_list=["🤢", "🤒", "🤧", "😷"]
+)
+
+HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
+```

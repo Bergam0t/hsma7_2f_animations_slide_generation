@@ -53,7 +53,7 @@ Let's first add an arrival logging step!
 
 ::: {.codewindow .python style="width:90%;"}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:2" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)  # NEW
 ```
@@ -73,7 +73,7 @@ This time, we also need to decide on a name for our event. This can be anything 
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-5,focus:6,dim:7-11" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:2-5,focus:6,dim:7-11" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)
 
@@ -119,8 +119,9 @@ Finally, every patient needs **one** departure event.
 
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1,focus:2" code-line-style-preset="emphasis"}
+```{.python code-line-style="dim:2,focus:3" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
+    ...
     self.logger.log_departure(entity_id=patient.id)  # NEW
 ```
 :::
@@ -226,7 +227,8 @@ EventPosition(
 ::: {.column width='5%'}
 :::
 
-::: {.column width='55%' style="font-size: 75%;"}
+::: {.column width='55%'}
+::: {style="font-size: 75%;"}
 
 For each event we want in our animation, we create an `EventPosition` object and pass four things:
 
@@ -235,6 +237,7 @@ For each event we want in our animation, we create an `EventPosition` object and
 - a y coordinate for the [**front**]{style="color:yellow"} of that queue
 - a nicer label for the event to display in the animation
 
+:::
 :::
 
 ::::
@@ -471,38 +474,3 @@ fig = my_model.logger.animate_activity_log(
 
 HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
 ```
-
-
-
-## BONUS: `if __name__ == 'main'`
-
-If you head to the folder in sample_code, you may notice a funny line:
-
-::: {.codewindow .python}
-b_simple_one_step_model_vidigi.py
-```{.python code-line-style="dim:1-3,focus:4,dim:5-8" code-line-style-preset="emphasis"}
-class Model:
-    ...
-
-if __name__ == "__main__":
-    my_params = Param()
-    my_model = Model(my_params)
-    my_model.run_model()
-    ...
-```
-:::
-
-## BONUS: `if __name__ == 'main'` - explanation
-
-`if __name__ == 'main':` simply means [**'only run the code in this block if you are running the original file'**]{style="color:yellow"}
-
-When you run the file (script) in the terminal or the interactive window, the code in this block will run (execute).
-
-::: {.fragment}
-HOWEVER, if you import pieces of that code into another file, it *won't* run the bit in the `if __name__ == 'main':` block.
-:::
-
-
-::: {.value-box fragment="fade-in" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
-This is really useful if we want to reuse our `Param` and `Model` classes somewhere else, like in a web app, so we'll be getting in the habit of doing this.
-:::

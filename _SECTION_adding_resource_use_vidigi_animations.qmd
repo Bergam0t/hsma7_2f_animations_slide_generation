@@ -35,8 +35,7 @@ whenever we want to use it, but the vidigi documentation uses the convention det
 :::
 
 
-
-## 1b. Swap in the new resource class instead of Simpy.Resource
+## [1b. Swap in the new resource class instead of Simpy.Resource]{style='font-size: 65%;'}
 
 :::: {.columns}
 
@@ -47,6 +46,7 @@ whenever we want to use it, but the vidigi documentation uses the convention det
 :::
 
 ::: {.column width='90%'}
+::: {style='font-size: 85%;'}
 ::: {.codewindow .python}
 b_simple_one_step_model_vidigi.py
 ```{.python code-line-style="dim:1-3,focus:4" code-line-style-preset="emphasis"}
@@ -57,20 +57,16 @@ class Model:
 ```
 :::
 :::
-
+:::
 ::::
-
-
 
 :::: {.columns}
 
-::: {.column width='10%'}
+::: {.column width='55%'}
 ::: {style='font-size: 55%;'}
 **After**
 :::
-:::
-
-::: {.column width='90%'}
+::: {style='font-size: 85%;'}
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
 ```{.python code-line-style="dim:1-3,focus:4-11" code-line-style-preset="emphasis"}
@@ -88,48 +84,21 @@ class Model:
 ```
 :::
 :::
-
-::::
-
-## 1b. Swap in the new resource class instead of Simpy.Resource - Continued
-
-:::: {.columns}
-
-::: {.column width='70%'}
-::: {style='font-size: 55%;'}
-**After**
-:::
-::: {.codewindow .python}
-c_simple_one_step_model_vidigi_resources.py
-```{.python code-line-style="dim:1-3,focus:4-11" code-line-style-preset="emphasis"}
-class Model:
-    def __init__(self, param):
-        ...
-        self.logger = EventLogger(env=self.env)
-
-        self.nurse = VidigiStore(
-            self.env,
-            num_resources=self.param.num_nurses,
-            logger=self.logger,
-            label="nurse",
-        )
-```
-:::
 :::
 
-::: {.column width='30%'}
-::: {style='font-size: 75%;'}
+::: {.column width='45%'}
+::: {style='font-size: 65%;'}
 - We change `simpy.Resource` to `VidigiStore`
 - We change 'capacity' to 'num_resources' (as capacity has its own special meaning in vidigi's resources)
-
+- We add a label to our resource so we can more clearly differentiate between different pools of resources in our logs
 :::
 
 :::
 
 ::::
 
-::: {style='font-size: 75%;'}
-- We add a label to our resource so we can more clearly differentiate between different pools of resources in our logs
+::: {style='font-size: 65%;'}
+
 - We pass our logger to the resource - so we need to create the logger *first*, which is why it has moved above the resource
 :::
 
@@ -215,24 +184,28 @@ def attend_clinic(self, patient):
 ::::
 :::::
 
-## 3a. Remove any placeholder queue events
+## [3a. Remove any *placeholder* queue events]{style='font-size: 75%;'}
 
+::: {style='font-size: 75%;'}
 We can now remove the `log_queue` temporary events we put in place
+:::
 
 :::: {.columns}
 
 ::: {.column width='50%'}
 
-::: {style='font-size: 75%;'}
+::: {style='font-size: 66%;'}
 
 ::: {.codewindow .python}
-```{.python code-line-style="hi:16, hi:21"}
+```{.python code-line-numbers="false" code-line-style="hi:18-20, hi:23-25"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)
 
     start_q_nurse = self.env.now
 
-    self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
+    self.logger.log_queue(
+        entity_id=patient.id, event="nurse_wait_begins"
+        )
 
     with self.nurse.request(
         entity_id=patient.id,
@@ -242,12 +215,16 @@ def attend_clinic(self, patient):
         yield req
 
         end_q_nurse = self.env.now
-        self.logger.log_queue(entity_id=patient.id, event="being_seen_by_nurse")
+        self.logger.log_queue(
+            entity_id=patient.id, event="being_seen_by_nurse"
+            )
         patient.q_time_nurse = end_q_nurse - start_q_nurse
 
         sampled_nurse_act_time = self.nurse_consult_time_dist.sample()
         yield self.env.timeout(sampled_nurse_act_time)
-        self.logger.log_queue(entity_id=patient.id, event="nurse_treatment_ends")
+        self.logger.log_queue(
+            entity_id=patient.id, event="nurse_treatment_ends"
+            )
 
     self.logger.log_departure(entity_id=patient.id)
 ```
@@ -259,17 +236,19 @@ def attend_clinic(self, patient):
 
 ::: {.column width='50%'}
 
-::: {style='font-size: 75%;'}
+::: {style='font-size: 70%;'}
 
 
 ::: {.codewindow .python}
-```{.python code-line-style="chg:8-12"}
+```{.python code-line-numbers="false" code-line-style="chg:10-14"}
 def attend_clinic(self, patient):
     self.logger.log_arrival(entity_id=patient.id)
 
     start_q_nurse = self.env.now
 
-    self.logger.log_queue(entity_id=patient.id, event="nurse_wait_begins")
+    self.logger.log_queue(
+        entity_id=patient.id, event="nurse_wait_begins"
+        )
 
     with self.nurse.request(
         entity_id=patient.id,
@@ -298,9 +277,9 @@ def attend_clinic(self, patient):
 
 
 
-## SUMMARY: our full revised `attend_clinic()` method
+## [SUMMARY: our full revised `attend_clinic()` method]{style='font-size: 75%;'}
 
-::: {.codewindow .python}
+::: {.codewindow .python .full-height-code}
 c_simple_one_step_model_vidigi_resources.py
 ```{.python code-line-style="dim:1-5,focus:6,dim:7,focus:8-12,dim:13-21" code-line-style-preset="emphasis"}
 def attend_clinic(self, patient):
@@ -393,7 +372,7 @@ Then, we need to pass this params class to the `scenario` argument in `.animate_
 
 ::: {.codewindow .python}
 c_simple_one_step_model_vidigi_resources.py
-```{.python code-line-style="dim:1-3,focus:4,dim:5" code-line-style-preset="emphasis"}
+```{.python code-line-style="focus:4" code-line-style-preset="emphasis"}
 fig = my_model.logger.animate_activity_log(
     event_position_df=layout,
     every_x_time_units=1,
@@ -483,99 +462,6 @@ fig = my_model.logger.animate_activity_log(
     plotly_height=550,
     plotly_width=1100,
     scenario=my_params,
-)
-
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
-```
-
-
-## Custom Resource Icons
-
-Optionally, we could use a **custom resource icon** rather than the default blue circle.
-
-```{.python code-line-style="dim:1-4,focus:5-6,dim:7" code-line-style-preset="emphasis"}
-fig = my_model.logger.animate_activity_log(
-    event_position_df=layout,
-    every_x_time_units=1,
-    scenario=my_params,
-    custom_resource_icon="👩‍⚕️",  # NEW - note the quotation marks!
-    resource_icon_size=32,  # NEW
-)
-```
-
-## What custom Resource Icons can we use?
-
-vidigi supports **emojis** (as well as some other [icon styles](https://hsma-tools.github.io/vidigi/examples/feat_custom_icons/feat_custom_icons.html))
-
-Yep - that kind of emoji.
-
-::: {style='font-size: 150%;'}
-😁 🤣 😉 🤪 🫠 😭 😱
-:::
-
-But there are also quite a lot of relevant ones.
-
-::: {style='font-size: 150%;'}
-👩‍⚕️ 👨🏿‍⚕️ 🛏️ 🏥 🚑
-:::
-
-I find the best place to look them up and copy them in is [emojipedia.org](https://emojipedia.org/)
-
-
-## The Revised Animation - Custom Resource Icons
-
-```{python}
-#| eval: true
-#| echo: false
-#| label: resource-model-custom-resource-icons
-fig = my_model.logger.animate_activity_log(
-    event_position_df=layout,
-    every_x_time_units=1,
-    plotly_height=600,
-    plotly_width=1180,
-    scenario=my_params,
-    custom_resource_icon="👩‍⚕️",
-    resource_icon_size=32,
-    entity_icon_size=40
-)
-
-HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
-```
-
-
-## Custom Entity Icons
-
-In fact, we can change the list of valid emojis for our patients too!
-
-```{.python code-line-style="dim:1-4,focus:5,dim:6" code-line-style-preset="emphasis"}
-fig = my_model.logger.animate_activity_log(
-    event_position_df=layout,
-    every_x_time_units=1,
-    scenario=my_params,
-    custom_entity_icon_list=["🤢", "🤒", "🤧", "😷"],
-)
-```
-
-::: {style='font-size: 85%;'}
-Later, we'll learn how to intelligently assign these to different types of patient...
-
-But sometimes you just want to change the default list, or just want every entity to have the same icon, in which case, you can pass a list with just one emoji in it.
-:::
-
-
-## The Revised Animation - Custom Entity Emojis
-
-```{python}
-#| eval: true
-#| echo: false
-#| label: resource-model-custom-entity-emojis
-fig = my_model.logger.animate_activity_log(
-    event_position_df=layout,
-    every_x_time_units=1,
-    plotly_height=600,
-    plotly_width=1180,
-    scenario=my_params,
-    custom_entity_icon_list=["🤢", "🤒", "🤧", "😷"]
 )
 
 HTML(fig.to_html(full_html=False, include_plotlyjs="cdn", auto_play=False))
