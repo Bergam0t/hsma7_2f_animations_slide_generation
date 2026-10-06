@@ -59,12 +59,12 @@ We don't have to change too much!
 
 
 ::: {.fragment}
-1. We will set up automated logging of our resource use events - vidigi captures the ID of the resource used for us
+2. We will set up automated logging of our resource use events - vidigi captures the ID of the resource used for us
 :::
 
 
 ::: {.fragment}
-1. We will tell our layout which resource to draw, and pass our params to our animation code (so it knows how many resources there are)
+3. We will tell our layout which resource to draw, and pass our params to our animation code (so it knows how many resources there are)
 :::
 
 

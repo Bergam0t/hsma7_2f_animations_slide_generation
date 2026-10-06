@@ -22,18 +22,24 @@ Vidigi is a package for creating animations of open-source discrete event simula
 :::
 
 ::: {.column width='60%'}
+<br>
 Us!
 
 We've built it from the ground up with the intention of helping visualise health services.
+:::
 
 So if anything isn't working, or if there is a feature you need that doesn't exist, the chances are we can sort that for you.
-:::
 
 ::::
 
+<br>
+
 <div style="display: flex; justify-content: center; align-items: center;">
 
+::: {.value-box align="center" font-size="2rem"}
 **You and your projects can help shape the package!**
+
+:::
 
 </div>
 

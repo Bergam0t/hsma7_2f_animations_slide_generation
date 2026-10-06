@@ -17,9 +17,11 @@ from vidigi.resources import VidigiStore
 ```
 :::
 
+<br>
+
 ::: {style="display: flex; justify-content: center; align-items: center;"}
 
-::: {.value-box value="Note" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green"}
+::: {.value-box value="Note" icon="fa-solid fa-lightbulb" icon-position="left" align="center" color="bg-green" fragment="fade-in"}
 We *could* instead use
 
 `import vidigi`
