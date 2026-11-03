@@ -21,3 +21,6 @@ _SECTION_*.html
 _SECTION_*/*
 slides_files/
 slides_nhs_oa_files/
+
+solutions/*
+!solutions/.gitkeep
