@@ -18,9 +18,13 @@ _preview/
 
 _SECTION_*.html
 
-_SECTION_*/*
-slides_files/
-slides_nhs_oa_files/
+# Root-level only: the leading slashes matter. Unanchored, `slides_files/`
+# also matches docs/slides_files/ and silently drops each render's new
+# content-hashed theme CSS from commits, so the published deck loses its
+# styling (theme 404s on GitHub Pages).
+/_SECTION_*/
+/slides_files/
+/slides_nhs_oa_files/
 
 solutions/*
 !solutions/.gitkeep
