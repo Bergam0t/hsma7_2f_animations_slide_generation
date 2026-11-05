@@ -1,0 +1,556 @@
+/*-- scss:defaults --*/
+
+$hsma-title-author-color: #7ac943 !default;
+$hsma-title-font-size: 31px !default;
+$hsma-subtitle-font-size: 41px !default;
+$hsma-author-font-size: 32px !default;
+// Top of the column holding the title box (and the image above it): clear
+// of the top-left countdown timer (4% + 64px, ~12%) with a small gap.
+$hsma-title-stack-top: 15% !default;
+$hsma-title-tagline-color: #ffe600 !default;
+$hsma-title-scrim: rgba(0, 0, 0, 0.45) !default;
+
+/*-- scss:rules --*/
+
+// Undo the generic title-slide / section treatment from custom.scss for this
+// specific slide so the banner artwork shows through unobstructed.
+//
+// Deliberately does NOT touch `display` or `position`: reveal.js toggles
+// visibility between slides via a non-`!important` `display: none` / `.present
+// { display: block }` pair, and relies on every top-level section being
+// `position: absolute` so off-screen (non-present) slides don't take up
+// document flow. Overriding either with `!important` here defeats that and
+// pushes every later slide down by this slide's own height.
+.reveal .slides > section.hsma-title-slide {
+  background-color: transparent;
+  padding: 0 !important;
+  text-align: left;
+  overflow: hidden;
+}
+
+// Splash slide shown before the title slide: just logos over the banner.
+.reveal .slides > section.hsma-splash-slide {
+  background-color: transparent;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.hsma-splash-logos {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8%;
+
+  img {
+    height: 120px;
+    width: auto;
+    max-width: 42%;
+    object-fit: contain;
+    margin: 0;
+    // The logos are white-on-transparent - lift them off the bright patches
+    // of the banner.
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.6));
+  }
+
+  // Logos with a `position:` are pinned to a corner instead of sitting in
+  // the centred row.
+  [class*="hsma-splash-logo--"] {
+    position: absolute;
+  }
+
+  // Default size; a logo's own `height:` overrides both (set inline), so
+  // what you ask for is what you get even if it's wider than 45%.
+  img[class^="hsma-splash-logo--"] {
+    height: 80px;
+    max-width: 45%;
+  }
+
+  // A logo with `countdown:` - the timer hangs off the logo's right-hand
+  // side so the logo itself stays exactly where `position:` puts it.
+  .hsma-splash-logo-group {
+    line-height: 0;
+
+    img {
+      display: block;
+      height: 80px;
+      max-width: none;
+    }
+  }
+
+  .hsma-splash-logo--top-left { top: 5%; left: 4%; }
+  .hsma-splash-logo--top-right { top: 5%; right: 4%; }
+  .hsma-splash-logo--bottom-left { bottom: 5%; left: 4%; }
+  .hsma-splash-logo--bottom-right { bottom: 5%; right: 4%; }
+
+  .hsma-splash-logo--top-centre,
+  .hsma-splash-logo--top-center,
+  .hsma-splash-logo--bottom-centre,
+  .hsma-splash-logo--bottom-center {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .hsma-splash-logo--top-centre,
+  .hsma-splash-logo--top-center { top: 5%; }
+  .hsma-splash-logo--bottom-centre,
+  .hsma-splash-logo--bottom-center { bottom: 5%; }
+}
+
+// reveal.js adds the splash slide's data-state as a class on the viewport
+// while it is current, so the deck chrome can be hidden for that slide only.
+// !important beats the inline visibility the reveal-header plugin sets.
+.reveal-viewport.hsma-splash {
+  .reveal-header,
+  .slide-logo,
+  .slide-number,
+  .footer,
+  .verticator {
+    visibility: hidden !important;
+  }
+}
+
+.hsma-title-grid {
+  position: absolute;
+  inset: 0;
+  // No counter-transform for custom.scss's `scaleX(1.1)` on .reveal .slides:
+  // reveal.js sets its own inline transform on that element at every window
+  // size, so the stretch never applies - undoing it squashed every logo and
+  // image on this slide (and the splash slide) to 91% width.
+}
+
+.hsma-title-slide,
+.hsma-title {
+  .hsma-ts-slot {
+    position: absolute;
+  }
+
+  // Top-left media slot (e.g. an intro clip)
+  .hsma-ts-media-a {
+    top: 4%;
+    left: 4%;
+    width: 20%;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  }
+
+  // `position: right` - right-hand column instead, under the partner logo
+  // (which ends ~8% down), pushing the QR code down to make room
+  .hsma-ts-media-a.hsma-ts-media-a--right {
+    top: 11%;
+    left: auto;
+    right: 4%;
+  }
+
+  .hsma-ts-media-a--right ~ .hsma-ts-qr {
+    top: 24%;
+  }
+
+  // Countdown timer (`title-countdown:`), top-left
+  .hsma-ts-countdown {
+    top: 4%;
+    left: 4%;
+  }
+
+  // Funder / partner logo, top-right, on a white plate
+  .hsma-ts-partner {
+    top: 4%;
+    right: 4%;
+    background: #fff;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    line-height: 0;
+
+    img {
+      display: block;
+      max-height: 42px;
+      max-width: 220px;
+      width: auto;
+      height: auto;
+    }
+
+    // White/light logos: drop the plate or swap it for the dark scrim
+    &.hsma-ts-partner--none {
+      background: transparent;
+      padding: 0;
+
+      img {
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+      }
+    }
+
+    &.hsma-ts-partner--dark {
+      background: $hsma-title-scrim;
+    }
+  }
+
+  // Main video panel, bottom-right, level with the text block. Narrow
+  // enough to clear the text block's 56% max-width.
+  .hsma-ts-video {
+    bottom: 6%;
+    right: 4%;
+    width: 34%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    line-height: 0;
+
+    img,
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 0;
+    }
+
+    img,
+    video,
+    iframe {
+      // reveal.js caps media at 95%, which leaves a strip down the right edge
+      max-width: 100%;
+      max-height: none;
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      margin: 0;
+    }
+  }
+
+  // `no-controls: true` - also block the mouse, so hovering can't bring up
+  // YouTube's title bar/buttons. reveal.js still plays/pauses it.
+  .hsma-ts-video.hsma-ts-no-controls iframe,
+  .hsma-ts-video.hsma-ts-no-controls video {
+    pointer-events: none;
+  }
+
+  // YouTube always flashes its title/buttons overlay for ~2-3s when playback
+  // starts, and no embed parameter turns that off - so keep the embed
+  // invisible (thumbnail showing through from the slot) until it has gone.
+  // Re-runs every time the slide becomes .present.
+  .hsma-ts-video.hsma-ts-no-controls {
+    background-color: #000;
+    background-size: cover;
+    background-position: center;
+  }
+}
+
+.reveal .slides section.present .hsma-ts-video.hsma-ts-no-controls iframe {
+  animation: hsma-yt-fade-in 0.6s ease 3.5s both;
+}
+
+// Countdown timer (`title-countdown:`, or `countdown:` on a splash logo), driven
+// by resources/countdown.html. Hangs off the right-hand side of the
+// logo it belongs to, so the logo stays where it is.
+.hsma-countdown {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 48px;
+  white-space: nowrap;
+  font-family: "HSMA Display", "Lexend", sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  color: #fff;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.6));
+  cursor: pointer;
+  user-select: none;
+
+  // Fixed-width digit cells so the timer doesn't jiggle as it counts
+  // (the HSMA font's digits aren't tabular).
+  span {
+    display: inline-block;
+    width: 0.62em;
+    text-align: center;
+  }
+
+  span.hsma-countdown-sep {
+    width: 0.3em;
+  }
+
+  &.is-paused {
+    opacity: 0.5;
+  }
+
+  &.is-done {
+    animation: hsma-countdown-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+// The title slide's timer has a slot of its own rather than hanging off a
+// logo
+.hsma-ts-countdown .hsma-countdown {
+  position: static;
+  transform: none;
+  margin: 0;
+  font-size: 64px;
+}
+
+@keyframes hsma-countdown-pulse {
+  50% { opacity: 0.35; }
+}
+
+@keyframes hsma-yt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hsma-title-slide,
+.hsma-title {
+  .hsma-ts-video-placeholder {
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $hsma-title-scrim;
+    border: 2px dashed rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.6em;
+    line-height: 1.2;
+  }
+
+  // QR code for the hosted deck, right-hand side above the video, on a
+  // white plate (scanners need the light quiet zone around it)
+  .hsma-ts-qr {
+    top: 16%;
+    right: 4%;
+    width: 150px;
+    padding: 6px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    line-height: 0;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+    }
+
+    p {
+      margin: 4px 0 0 0 !important;
+      width: auto !important;
+      color: #000;
+      font-size: 16px;
+      line-height: 1.2;
+      text-align: center;
+    }
+  }
+
+  // Bottom-right row of small media panels
+  .hsma-ts-media-row {
+    bottom: 5%;
+    right: 4%;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .hsma-ts-media-item {
+    width: 140px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+
+    img,
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .hsma-ts-slot.hsma-ts-media-a img,
+  .hsma-ts-slot.hsma-ts-media-a video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  // `bare: true` - no shadow/rounding, e.g. for a transparent logo
+  .hsma-ts-slot.hsma-ts-media-a.hsma-ts-bare {
+    box-shadow: none;
+    border-radius: 0;
+
+    img,
+    video {
+      border-radius: 0;
+    }
+  }
+
+  // Column holding the title box, sitting on the box's usual spot and
+  // reaching up to just under the timer. The box sits at the bottom; an
+  // optional image (`title-box-image`) takes whatever room is left above
+  // it, so it can never run into the timer.
+  .hsma-ts-text-stack {
+    position: absolute;
+    left: 4%;
+    bottom: 6%;
+    top: $hsma-title-stack-top;
+    max-width: 56%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    > .hsma-ts-text {
+      position: static;
+      max-width: none;
+    }
+  }
+
+  // The image: as wide as the box (`width: 0; min-width: 100%` stops the
+  // image's own size from widening the column), shrinking - aspect ratio
+  // kept, centred - when the space above the box is too short for it.
+  .hsma-ts-box-image {
+    flex: 0 1 auto;
+    min-height: 0;
+    width: 0;
+    min-width: 100%;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    line-height: 0;
+
+    img {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      margin: 0;
+      border-radius: 12px;
+    }
+  }
+
+  .hsma-ts-box-image-placeholder {
+    width: 100%;
+    height: 140px;
+    max-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $hsma-title-scrim;
+    border: 2px dashed rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    box-sizing: border-box;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.6em;
+    line-height: 1.2;
+  }
+
+  // Text block: module title / session subtitle / author / tagline
+  .hsma-ts-text {
+    position: absolute;
+    left: 4%;
+    bottom: 6%;
+    max-width: 56%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    background: $hsma-title-scrim;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+
+    .hsma-ts-title-image {
+      width: 30%;
+      max-width: 160px;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+    }
+
+    h1.title {
+      margin: 0 0 0.25rem 0;
+      text-align: left;
+      width: auto;
+      font-size: $hsma-title-font-size;
+    }
+
+    p.subtitle {
+      margin: 0 0 0.5rem 0 !important;
+      text-align: left;
+      width: auto;
+      font-size: $hsma-subtitle-font-size;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
+    .quarto-title-authors {
+      justify-content: flex-start;
+      margin: 0;
+    }
+
+    .quarto-title-author,
+    .quarto-title-author-name,
+    p {
+      text-align: left;
+      width: auto;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .quarto-title-author-name {
+      color: $hsma-title-author-color;
+      font-size: $hsma-author-font-size;
+      font-weight: 400;
+    }
+
+    p.hsma-ts-tagline {
+      margin: 0.25rem 0 0 0 !important;
+      color: $hsma-title-tagline-color;
+      font-weight: 700;
+      text-align: left;
+      width: auto;
+    }
+
+    p.date {
+      margin: 0.25rem 0 0 0 !important;
+      opacity: 0.8;
+      text-align: left;
+      width: auto;
+    }
+  }
+}
+
+// Fallback: when none of the extra slots are used, centre the text block
+// like the original stock title slide so plain decks are unaffected.
+.hsma-title-slide:not(:has(.hsma-ts-media-a, .hsma-ts-partner, .hsma-ts-video, .hsma-ts-qr, .hsma-ts-countdown, .hsma-ts-media-row, .hsma-ts-title-image, .hsma-ts-box-image)) {
+  .hsma-ts-text-stack {
+    inset: 0;
+    max-width: none;
+  }
+
+  .hsma-ts-text {
+    position: static;
+    max-width: none;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    text-align: center;
+    background: rgba(56, 56, 56, 0.8);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+
+    h1.title,
+    p.subtitle,
+    .quarto-title-authors,
+    .quarto-title-author,
+    .quarto-title-author-name,
+    p {
+      text-align: center;
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,115 @@
+<style>
+/* Declared here rather than in title-slide.scss: Quarto compiles the SCSS
+   into slides_files/libs/..., so a relative url() there would point at the
+   wrong folder. Here it resolves against the page itself. */
+@font-face {
+  font-family: "HSMA Display";
+  src: url("resources/fonts/HSMADisplay-Regular.woff2") format("woff2"),
+       url("resources/fonts/HSMADisplay-Regular.ttf") format("truetype");
+  font-display: block;
+}
+</style>
+<script>
+(function () {
+  // Countdown timer: the title slide's `title-countdown:`, or one beside a
+  // splash logo that has `countdown:` set (see title-slide.html). `true` = 10
+  // minutes; a number is minutes (decimals fine); "m:ss" also works. It
+  // starts the first time its slide is reached and then counts towards a
+  // fixed end time, so it stays correct while you move around the deck.
+  // Click to pause/resume, double-click to restart.
+  var DEFAULT_MINUTES = 10;
+
+  function parseSeconds(value) {
+    var mmss = /^(\d+):(\d{1,2})$/.exec(value);
+    if (mmss) return Number(mmss[1]) * 60 + Number(mmss[2]);
+    var minutes = parseFloat(value);
+    return Math.round((minutes > 0 ? minutes : DEFAULT_MINUTES) * 60);
+  }
+
+  function format(totalSeconds) {
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.floor((totalSeconds % 3600) / 60);
+    var s = totalSeconds % 60;
+    var text = (h ? h + ":" + String(m).padStart(2, "0") : String(m)) +
+      ":" + String(s).padStart(2, "0");
+    return text.split("").map(function (c) {
+      return c === ":" ? '<span class="hsma-countdown-sep">:</span>'
+                       : "<span>" + c + "</span>";
+    }).join("");
+  }
+
+  function setUp(el) {
+    var duration = parseSeconds(el.getAttribute("data-minutes"));
+    var endTime = null, remainingWhenPaused = null, shown = null;
+
+    function remaining() {
+      if (endTime === null) return duration;
+      if (remainingWhenPaused !== null) return remainingWhenPaused;
+      return Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    }
+
+    function render() {
+      var left = remaining();
+      if (left !== shown) {
+        el.innerHTML = format(left);
+        el.setAttribute("aria-label", "Starting in " + Math.ceil(left / 60) + " minutes");
+        shown = left;
+      }
+      el.classList.toggle("is-done", left === 0);
+      el.classList.toggle("is-paused", remainingWhenPaused !== null && left > 0);
+    }
+
+    function restart() {
+      endTime = Date.now() + duration * 1000;
+      remainingWhenPaused = null;
+      render();
+    }
+
+    el.addEventListener("click", function () {
+      if (endTime === null || remaining() === 0) return;
+      if (remainingWhenPaused === null) {
+        remainingWhenPaused = remaining();
+      } else {
+        endTime = Date.now() + remainingWhenPaused * 1000;
+        remainingWhenPaused = null;
+      }
+      render();
+    });
+    el.addEventListener("dblclick", restart);
+
+    render();
+    setInterval(render, 250);
+
+    return function startIfNotStarted() {
+      if (endTime === null) restart();
+    };
+  }
+
+  var timers = [];
+  document.querySelectorAll(".hsma-countdown").forEach(function (el) {
+    timers.push({ el: el, start: setUp(el) });
+  });
+  if (!timers.length) return;
+
+  function startTimersOn(slide) {
+    timers.forEach(function (t) {
+      if (slide && slide.contains(t.el)) t.start();
+    });
+  }
+
+  function whenRevealReady(callback) {
+    if (window.Reveal && typeof window.Reveal.on === "function") {
+      callback(window.Reveal);
+    } else {
+      setTimeout(function () { whenRevealReady(callback); }, 50);
+    }
+  }
+
+  whenRevealReady(function (Reveal) {
+    Reveal.on("ready", function (event) { startTimersOn(event.currentSlide); });
+    Reveal.on("slidechanged", function (event) { startTimersOn(event.currentSlide); });
+    // Deck already initialised (e.g. loaded straight onto the timer's slide)
+    if (Reveal.isReady()) startTimersOn(Reveal.getCurrentSlide());
+  });
+})();
+</script>

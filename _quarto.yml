@@ -20,6 +20,11 @@ project:
   render:
     - slides.qmd
 
+  # Regenerates assets/slides_qr.svg from the deck header's `qr-code:`
+  # (`auto` = this repo's hosted deck, or a URL) -- see the script's docstring.
+  pre-render:
+    - _make_slides_qr.py
+
   # Quarto's default (non-website) project type copies the WHOLE project
   # directory into output-dir on every render, and it ignores .gitignore.
   # This hook deletes everything in output-dir that isn't listed in docs-keep

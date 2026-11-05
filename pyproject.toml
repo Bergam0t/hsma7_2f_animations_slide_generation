@@ -8,6 +8,8 @@ dependencies = [
     "ipykernel>=7.3.0",
     "itables>=2.9.1",
     "nbformat>4.2.0",
+    # Pre-render QR code for the title slide (_make_slides_qr.py)
+    "segno>=1.6.6",
     "sim-tools>=1.3.0",
     "simpy>=4.1.2",
     "tqdm>=4.70.0",

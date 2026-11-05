@@ -1,0 +1,102 @@
+<script>
+(function () {
+  // reveal.js starts a `data-autoplay` YouTube embed by posting it a
+  // "playVideo" command the moment its slide is shown. If the deck is loaded
+  // (or refreshed) straight onto that slide, the YouTube player inside the
+  // iframe isn't listening yet, so the command is lost and the video sits on
+  // its thumbnail - and with the title slide's `no-controls` it can't even
+  // be clicked. Arriving from another slide works, because by then the
+  // player has long since loaded.
+  //
+  // Fix: keep asking each such player to report in (the "listening"
+  // handshake YouTube's own iframe API uses). When one answers "onReady" and
+  // its slide is the current one, send "playVideo" ourselves. Everything
+  // else - pausing on leave, resuming on return - is still reveal.js's job.
+  var frames = Array.prototype.slice.call(
+    document.querySelectorAll('iframe[data-autoplay][src*="youtube.com/embed/"]')
+  );
+  if (!frames.length) return;
+
+  function send(frame, message) {
+    if (frame.contentWindow) {
+      frame.contentWindow.postMessage(JSON.stringify(message), "*");
+    }
+  }
+
+  function revealReady() {
+    return !!(window.Reveal && window.Reveal.isReady && window.Reveal.isReady());
+  }
+
+  // Players that have answered, but whose first play is still undecided
+  // because reveal.js wasn't ready to say which slide is current.
+  var waiting = frames.slice();
+  var readyBeforeReveal = [];
+
+  // Frames we've just started, whose fade-in restarts once actually playing
+  var awaitingPlayback = [];
+
+  function playIfCurrent(frame) {
+    if (window.Reveal.getCurrentSlide().contains(frame)) {
+      send(frame, { event: "command", func: "playVideo", args: "" });
+      restartFadeIn(frame);
+      awaitingPlayback.push(frame);
+    }
+  }
+
+  // With `no-controls`, title-slide.scss keeps the embed invisible for its
+  // first 3.5s on the slide, covering YouTube's start-up overlay. That clock
+  // starts when the slide appears - but here playback starts later, once the
+  // player has loaded and buffered. So restart the fade when we ask it to
+  // play (hiding the buffering), and again when it reports it's playing,
+  // since the overlay lasts ~3s from then. (No-op without the fade.)
+  function restartFadeIn(frame) {
+    frame.style.animation = "none";
+    void frame.offsetWidth; // force a style flush so the animation restarts
+    frame.style.animation = "";
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!/^https:\/\/www\.youtube\.com$/.test(event.origin)) return;
+    var data;
+    try { data = JSON.parse(event.data); } catch (e) { return; }
+    if (data && data.info && data.info.playerState === 1) { // 1 = playing
+      awaitingPlayback = awaitingPlayback.filter(function (frame) {
+        if (frame.contentWindow !== event.source) return true;
+        restartFadeIn(frame);
+        return false;
+      });
+    }
+    if (!data || data.event !== "onReady") return;
+    waiting = waiting.filter(function (frame) {
+      if (frame.contentWindow !== event.source) return true;
+      if (revealReady()) playIfCurrent(frame);
+      else readyBeforeReveal.push(frame);
+      return false;
+    });
+  });
+
+  (function whenRevealLoaded() {
+    if (window.Reveal && typeof window.Reveal.on === "function") {
+      window.Reveal.on("ready", function () {
+        readyBeforeReveal.forEach(playIfCurrent);
+        readyBeforeReveal = [];
+      });
+    } else {
+      setTimeout(whenRevealLoaded, 50);
+    }
+  })();
+
+  // Ask until every player has answered (YouTube's API polls the same way);
+  // give up after 30s so a blocked/offline embed doesn't poll forever.
+  var started = Date.now();
+  var poll = setInterval(function () {
+    if (!waiting.length || Date.now() - started > 30000) {
+      clearInterval(poll);
+      return;
+    }
+    waiting.forEach(function (frame) {
+      send(frame, { event: "listening", id: 1, channel: "widget" });
+    });
+  }, 250);
+})();
+</script>

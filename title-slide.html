@@ -1,0 +1,157 @@
+$if(splash)$
+<section id="$idprefix$splash-slide" class="hsma-splash-slide" data-state="hsma-splash" data-menu-title="Welcome"$if(splash.background)$ data-background-image="$splash.background$"$else$$if(title-slide-attributes.data-background-image)$ data-background-image="$title-slide-attributes.data-background-image$"$endif$$endif$>
+<div class="hsma-splash-logos">
+$for(splash.logos)$
+$if(it.countdown)$
+<div class="hsma-splash-logo-group$if(it.position)$ hsma-splash-logo--$it.position$$endif$">
+<img src="$it.image$" alt="$if(it.alt)$$it.alt$$endif$"$if(it.height)$ style="height: $it.height$; max-width: none;"$endif$>
+<div class="hsma-countdown" data-minutes="$it.countdown$" role="timer" title="Click to pause/resume, double-click to restart"></div>
+</div>
+$else$
+<img src="$it.image$" alt="$if(it.alt)$$it.alt$$endif$"$if(it.position)$ class="hsma-splash-logo--$it.position$"$endif$$if(it.height)$ style="height: $it.height$; max-width: none;"$endif$>
+$endif$
+$endfor$
+</div>
+</section>
+$endif$
+
+<section id="$idprefix$title-slide"$for(title-slide-attributes/pairs)$ $it.key$="$it.value$"$endfor$ class="quarto-title-block hsma-title-slide">
+<div class="hsma-title-grid">
+
+$if(title-countdown)$
+<div class="hsma-ts-slot hsma-ts-countdown">
+<div class="hsma-countdown" data-minutes="$title-countdown$" role="timer" title="Click to pause/resume, double-click to restart"></div>
+</div>
+$endif$
+
+$if(title-media-a)$
+<div class="hsma-ts-slot hsma-ts-media-a$if(title-media-a.position)$ hsma-ts-media-a--$title-media-a.position$$endif$$if(title-media-a.bare)$ hsma-ts-bare$endif$">
+$if(title-media-a.video)$
+<video src="$title-media-a.video$"$if(title-media-a.poster)$ poster="$title-media-a.poster$"$endif$ muted loop playsinline controls$if(title-media-a.autoplay)$ autoplay$endif$></video>
+$elseif(title-media-a.image)$
+<img src="$title-media-a.image$" alt="$if(title-media-a.alt)$$title-media-a.alt$$endif$">
+$endif$
+</div>
+$endif$
+
+$if(partner-logo)$
+<div class="hsma-ts-slot hsma-ts-partner$if(partner-logo-plate)$ hsma-ts-partner--$partner-logo-plate$$endif$">
+<img src="$partner-logo$" alt="$if(partner-logo-alt)$$partner-logo-alt$$endif$">
+</div>
+$endif$
+
+<div class="hsma-ts-text-stack">
+
+$if(title-box-image)$
+<div class="hsma-ts-box-image">
+$if(title-box-image.image)$
+<img src="$title-box-image.image$" alt="$if(title-box-image.alt)$$title-box-image.alt$$endif$">
+$elseif(title-box-image.placeholder)$
+<div class="hsma-ts-box-image-placeholder">Image goes here</div>
+$endif$
+</div>
+$endif$
+
+<div class="hsma-ts-text">
+
+$if(title-image.video)$
+<video class="hsma-ts-slot hsma-ts-title-image" src="$title-image.video$"$if(title-image.poster)$ poster="$title-image.poster$"$endif$ muted loop playsinline controls$if(title-image.autoplay)$ autoplay$endif$></video>
+$else$
+$if(title-image.image)$
+<img class="hsma-ts-slot hsma-ts-title-image" src="$title-image.image$" alt="$if(title-image.alt)$$title-image.alt$$endif$">
+$endif$
+$endif$
+
+  <h1 class="title">$title$</h1>
+$if(subtitle)$
+  <p class="subtitle">$subtitle$</p>
+$endif$
+
+<div class="quarto-title-authors">
+$for(by-author)$
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+$if(by-author.url)$<a href="$by-author.url$">$endif$$if(by-author.name.literal)$$by-author.name.literal$$endif$$if(by-author.url)$</a>$endif$$if(by-author.orcid)$ <a href="https://orcid.org/$by-author.orcid$" class="quarto-title-author-orcid" aria-label="ORCID profile for $by-author.name.literal$"> <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a>$endif$
+</div>
+$if(by-author.email)$
+<div class="quarto-title-author-email">
+<a href="mailto:$by-author.email$">$by-author.email$</a>
+</div>
+$endif$
+$if(by-author.affiliations)$
+    $for(by-author.affiliations)$
+    <p class="quarto-title-affiliation">
+      $if(it.url)$
+      <a href="$it.url$">
+      $endif$
+      $it.name$
+      $if(it.url)$
+      </a>
+      $endif$
+    </p>
+    $endfor$
+$endif$
+</div>
+$endfor$
+</div>
+
+$if(tagline)$
+  <p class="hsma-ts-tagline">$tagline$</p>
+$endif$
+
+$if(date)$
+  <p class="date">$date$</p>
+$endif$
+
+</div>
+</div>
+
+$-- enablejsapi=1 must be in the src from the start: otherwise reveal.js
+$-- appends it after load, the embed reloads, and the player API sometimes
+$-- never comes up - so reveal can't play/pause it.
+$if(title-video)$
+<div class="hsma-ts-slot hsma-ts-video$if(title-video.no-controls)$ hsma-ts-no-controls$endif$"$if(title-video.youtube)$ style="background-image: url('https://i.ytimg.com/vi/$title-video.youtube$/hqdefault.jpg');"$endif$>
+$if(title-video.youtube)$
+<iframe src="https://www.youtube.com/embed/$title-video.youtube$?enablejsapi=1&rel=0&playsinline=1&iv_load_policy=3$if(title-video.no-controls)$&controls=0&disablekb=1&fs=0$endif$$if(title-video.muted)$&mute=1$endif$$if(title-video.loop)$&loop=1&playlist=$title-video.youtube$$endif$" title="$if(title-video.alt)$$title-video.alt$$else$Video$endif$" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"$if(title-video.autoplay)$ data-autoplay$endif$></iframe>
+$elseif(title-video.video)$
+<video src="$title-video.video$"$if(title-video.poster)$ poster="$title-video.poster$"$endif$ playsinline$if(title-video.no-controls)$$else$ controls$endif$$if(title-video.muted)$ muted$endif$$if(title-video.loop)$ loop$endif$$if(title-video.autoplay)$ data-autoplay$endif$></video>
+$elseif(title-video.image)$
+<img src="$title-video.image$" alt="$if(title-video.alt)$$title-video.alt$$endif$">
+$elseif(title-video.placeholder)$
+<div class="hsma-ts-video-placeholder">Video goes here</div>
+$endif$
+</div>
+$endif$
+
+$-- assets/slides_qr.svg is (re)generated by _make_slides_qr.py on render
+$if(qr-code)$
+<div class="hsma-ts-slot hsma-ts-qr">
+<img src="assets/slides_qr.svg" alt="QR code linking to these slides">
+$if(qr-code-caption)$
+<p>$qr-code-caption$</p>
+$endif$
+</div>
+$endif$
+
+$if(title-media)$
+<div class="hsma-ts-slot hsma-ts-media-row">
+$for(title-media)$
+<div class="hsma-ts-media-item">
+$if(it.video)$
+<video src="$it.video$"$if(it.poster)$ poster="$it.poster$"$endif$ muted loop playsinline controls$if(it.autoplay)$ autoplay$endif$></video>
+$else$
+$if(it.image)$
+<img src="$it.image$" alt="$if(it.alt)$$it.alt$$endif$">
+$endif$
+$endif$
+</div>
+$endfor$
+</div>
+$endif$
+
+</div>
+
+$if(title-audio.src)$
+<audio class="hsma-ts-audio" src="$title-audio.src$" preload="auto" data-autoplay$if(title-audio.loop)$ loop$endif$></audio>
+$endif$
+</section>

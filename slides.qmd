@@ -1,12 +1,57 @@
 ---
-title: "Animaniacs"
-subtitle: "Bringing your simulations to life with vidigi"
+title: "Module 2: 'I want to fix my delays, and see what works before I try it'"
+subtitle: "2F: Bringing your simulations to life with vidigi"
 author:
     name: Sammi Rosser
-    affiliation: Health Service Modelling Associates Programme
+# Title slides (title-slide.html / title-slide.scss): a splash slide with just
+# the logos, then the title slide itself. Every key is optional.
+splash:
+  logos:
+    - image: "assets/nihr_logo_trimmed.png"
+      alt: "NIHR logo"
+      position: top-centre # top-/bottom- + left/centre/right; omit for the centred row
+      height: "56px"
+    - image: "assets/hsma_logo_tall_tagline_trimmed.png"
+      alt: "HSMA logo - Learn, Apply, Implement"
+      position: bottom-centre
+      height: "600px"
+tagline: "We're Animaniacs!"
+partner-logo: "assets/nihr_logo_trimmed.png"
+partner-logo-alt: "NIHR logo"
+partner-logo-plate: none # the NIHR logo is white - it vanishes on the default white plate
+title-video:
+  youtube: "AExH1e6SvZA" # the ID after `watch?v=` - an unlisted video works fine
+  autoplay: true
+  muted: true
+  loop: true
+  no-controls: true # no player controls/hover overlay, no click-to-pause; YouTube shows its thumbnail for ~3.5s to hide its start-up overlay
+qr-code: auto # QR code to the hosted deck: `auto` (from the git remote) or a URL, e.g. "https://..."
+qr-code-caption: "Get the slides"
+title-box-image:
+  # placeholder: true # dashed "Image goes here" box - replace with `image:` (+ `alt:`)
+  image: "assets/animaniacs-yakko-wakko-dot.webp"
+  # alt: "Description of the image"
+title-audio:
+  src: "https://github.com/hsma-programme/hsma_assets/raw/refs/heads/main/h6_theme.mp3"
+  loop: false
+title-countdown: true # top-left timer, starting when this slide is reached: true = 10 minutes, or e.g. 5 / 2.5 / "5:30"
+title-media-a:
+  image: "assets/hsma_logo.png"
+  alt: "HSMA logo"
+  bare: true # no shadow box behind the transparent logo
+  position: right # under the NIHR logo; omit for top-left
 format:
   live-revealjs:
     output-file: index.html # ensures picked up by github hosting
+    # Title-slide wiring lives here rather than in the shared _metadata.yml so
+    # it only applies to this deck -- slides_nhs_oa.qmd keeps the stock title
+    # slide. Quarto adds these list entries to _metadata.yml's own.
+    theme: [title-slide.scss]
+    template-partials:
+      - title-slide.html
+    include-after-body:
+      - file: resources/countdown.html # title-slide countdown timer (`title-countdown:`)
+      - file: resources/youtube-autoplay.html # starts the title video when the deck is loaded straight onto it
 # The output *directory* (docs/) is set at the project level in _quarto.yml,
 # not here -- a per-document output-dir key looks like it should work but
 # Quarto silently ignores it for this project type, which is why docs/ went
