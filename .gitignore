@@ -26,5 +26,13 @@ _SECTION_*.html
 /slides_files/
 /slides_nhs_oa_files/
 
+# `quarto preview slides.qmd` / `slides_nhs_oa.qmd` (and VS Code's Preview
+# button) render without --output-dir, so each deck's `output-file:` lands
+# here at the root as a stray copy. Root-anchored for the same reason as
+# above: the published decks are docs/index.html and
+# docs_nhs_oa/index_nhs_oa.html, which must stay tracked.
+/index.html
+/index_nhs_oa.html
+
 solutions/*
 !solutions/.gitkeep
